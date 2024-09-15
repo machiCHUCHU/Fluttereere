@@ -6,6 +6,7 @@ import 'package:capstone/brandnew/newLoginPage.dart';
 import 'package:capstone/connect/laravel.dart';
 import 'package:capstone/customer/NewNotificationInfoPage.dart';
 import 'package:capstone/customer/newCustomerRatingPage.dart';
+import 'package:capstone/customer/newProfileEditPage.dart';
 import 'package:capstone/customer/newServiceSummaryPage.dart';
 import 'package:capstone/customer/newShopInfoPage.dart';
 import 'package:capstone/services/services.dart';
@@ -57,14 +58,6 @@ class _NewCustomerHomeScreenState extends State<NewCustomerHomeScreen> {
   @override
   void initState() {
     super.initState();
-    _timer = Timer.periodic(Duration(seconds: 1), (Timer timer){
-      setState(() {
-        _homeScreenKey.currentState?.shopreqDisplay();
-        _trackScreenKey.currentState?.laundryDisplay();
-        _notifScreenKey.currentState?.laundryNotif();
-        // _accountScreenKey.currentState?.myProfile();
-      });
-    });
   }
 
   @override
@@ -154,19 +147,21 @@ class _HomeScreenState extends State<HomeScreen> {
   final GlobalKey<_HomeScreenState> _homeKey = GlobalKey<_HomeScreenState>();
   List<dynamic> shops = [];
   final TextEditingController _code = TextEditingController();
-  bool isLoad = true;
-  Future<void> shopreqDisplay() async{
+  bool isloading = true;
+  Future<void> shopreqDisplay() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     ApiResponse response = await getRequestShops('${prefs.get('token')}');
-    if(response.error == null){
+    if (response.error == null) {
       setState(() {
         shops = response.data as List<dynamic>;
+        isloading = false;
+        print('${prefs.get('token')}');
       });
-
-    }else{
-
+    } else {
+      throw ('${response.error}');
     }
   }
+
 
   Future<void> requestShops() async{
     final SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -174,14 +169,24 @@ class _HomeScreenState extends State<HomeScreen> {
 
     if(response.error == null){
       setState(() {
-        isLoad = false;
+        isloading = false;
       });
       await successDialog(context, '${response.data}');
-      shopreqDisplay();
     }else{
       setState(() {
-        isLoad = false;
+        isloading = false;
       });
+      await errorDialog(context, '${response.error}');
+    }
+  }
+
+  Future<void> shopUnffolow(String addshopid) async{
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    ApiResponse response = await unfollowShop(addshopid, '${prefs.get('token')}');
+
+    if(response.error == null){
+      await successDialog(context, '${response.data}');
+    }else{
       await errorDialog(context, '${response.error}');
     }
   }
@@ -196,66 +201,107 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
 
     return Scaffold(
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            ListView.builder(
-                shrinkWrap: true,
-                itemCount: shops.length,
-                itemBuilder: (context,index){
-                  Map req = shops[index] as Map;
-                  Color status;
-                  switch(req['ShopStatus']){
-                    case 'open':
-                      status = Colors.green;
-                      break;
-                    case 'full':
-                      status = Colors.orange;
-                      break;
-                    default:
-                      status = Colors.red;
-                      break;
-                  }
+      body: ListView.builder(
+          shrinkWrap: true,
+          itemCount: shops.length,
+          itemBuilder: (context,index){
+            Map req = shops[index] as Map;
+            Color status;
+            switch(req['ShopStatus']){
+              case 'open':
+                status = Colors.green;
+                break;
+              case 'full':
+                status = Colors.orange;
+                break;
+              default:
+                status = Colors.red;
+                break;
+            }
 
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 4),
-                    child: InkWell(
-                      onTap: (){
-                        pushWithoutNavBar(context, MaterialPageRoute(
-                          builder: (context) => NewShopInfoScreen(shopId: '${req['ShopID']}'),
-                        ),);
+            bool isEmptySlot = req['RemainingLoad'] == 0;
 
-                      },
-                      child: Ink(
-                        color: Colors.white,
-                        child: ListTile(
-                          contentPadding: const EdgeInsets.all(8),
-                          minTileHeight: 80,
-                          title: Row(
-                            children: [
-                              Text('${req['ShopName']} ', style: TextStyle(fontWeight: FontWeight.bold),),
-                              Icon(Icons.circle, size: 8, color: status),
-                              Text(' ${req['ShopStatus']}'),
-                            ],
-                          ),
-                          subtitle: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              RowItem(
-                                title: Text('Address: ${req['ShopAddress']}'),
-                                description: Text('Remaining Load: ${req['RemainingLoad']}'),
-                              ),
-                            ],
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 4),
+              child: InkWell(
+                  onTap: (){
+                    pushWithoutNavBar(context, MaterialPageRoute(
+                      builder: (context) => NewShopInfoScreen(shopId: '${req['ShopID']}'),
+                    ),);
+
+                  },
+                  child: Ink(
+                    color: Colors.white,
+                    child: ListTile(
+                      contentPadding: const EdgeInsets.all(0),
+                      minTileHeight: 80,
+                      leadingAndTrailingTextStyle: TextStyle(
+                        overflow: TextOverflow.ellipsis
+                      ),
+                      leading: Stack(
+                      children: [
+                        CircleAvatar(
+                          backgroundColor: ColorStyle.tertiary,
+                          radius: 42,
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.all(2.0),
+                          child: CircleAvatar(
+                            backgroundImage: NetworkImage('$picaddress/${req['ShopImage']}'),
+                            radius: 40,
                           ),
                         ),
-                      )
 
+                      ],
                     ),
-                  );
-                }
-            )
-          ],
-        ),
+                      title: Row(
+                        children: [
+                          Text('${req['ShopName']} ',
+                            style: TextStyle(fontWeight: FontWeight.bold,color: ColorStyle.tertiary),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                      ),
+                      subtitle: Row(
+                        children: [
+                          Text('Status:' ,style: TextStyle(fontSize: 12)),
+                          Text('${req['ShopStatus']}',style: TextStyle(fontSize: 12,color: status),),
+                        ],
+                      ),
+                      trailing: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: OutlinedButton(
+                          style: OutlinedButton.styleFrom(
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(0),
+                              ),
+                              padding: const EdgeInsets.all(4),
+                              side: BorderSide(color: req['IsValued'] == '0' ? Colors.grey
+                                  : ColorStyle.tertiary,width: 2),
+                            fixedSize: Size(80, 10)
+                          ),
+                          onPressed: isEmptySlot || req['ShopStatus'] == 'full' || req['ShopStatus'] == 'closed'
+                              ? null : (){
+                            confirmDialog(context, 'Unfollow Shop?', (){
+                              shopUnffolow('${req['AddedShopID']}');
+                            });
+                          },
+                          child: Text(
+                              req['IsValued'] == '0' ? 'Pending  ' : 'Following',
+                            style: TextStyle(
+                              color: req['IsValued'] == '0' ? Colors.grey
+                                  : ColorStyle.tertiary
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      ),
+                    ),
+                  )
+
+              ),
+            );
+          }
       ),
       floatingActionButton: FloatingActionButton(
         backgroundColor: ColorStyle.tertiary,
@@ -992,6 +1038,7 @@ class AccountScreen extends StatefulWidget {
 class _AccountScreenState extends State<AccountScreen> {
   List<dynamic> profile = [];
   Map prof = {};
+  bool isloading = true;
 
   Future<void> myProfile() async{
     final SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -1001,6 +1048,7 @@ class _AccountScreenState extends State<AccountScreen> {
       setState(() {
         profile = response.data as List<dynamic>;
         prof = profile[0] as Map;
+        isloading = false;
       });
     }else{
 
@@ -1021,6 +1069,15 @@ class _AccountScreenState extends State<AccountScreen> {
     }
   }
 
+  Center loading(){
+    return Center(
+      child: LoadingAnimationWidget.staggeredDotsWave(
+        color: Colors.black,
+        size: 50,
+      ),
+    );
+  }
+
   @override
   void initState() {
     super.initState();
@@ -1029,7 +1086,9 @@ class _AccountScreenState extends State<AccountScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
+      body: isloading
+          ? loading()
+          : Container(
         color: Colors.white,
         padding: const EdgeInsets.symmetric(vertical: 8),
         child: SingleChildScrollView(
@@ -1039,26 +1098,27 @@ class _AccountScreenState extends State<AccountScreen> {
                 color: Colors.white,
                 padding: const EdgeInsets.all(40),
                 child: Center(
-                  child: Stack(
-                    alignment: Alignment.center,
-                    children: [
-                      CircleAvatar(
-                        radius: 60,
-                        backgroundColor: ColorStyle.tertiary,
-                      ),
-                      CircleAvatar(
-                        backgroundImage: NetworkImage('$picaddress/${prof['CustomerImage']}'),
-                        radius: 55,
-                      ),
-                    ],
-                  )
+                    child: Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        CircleAvatar(
+                          radius: 60,
+                          backgroundColor: ColorStyle.tertiary,
+                        ),
+                        CircleAvatar(
+                          backgroundImage: NetworkImage('$picaddress/${prof['CustomerImage']}'),
+                          radius: 55,
+                        ),
+                      ],
+                    )
                 ),
               ),
               Container(
                 padding: const EdgeInsets.all(14),
                 decoration: BoxDecoration(
                     border: Border(
-                      bottom: BorderSide(color: Colors.grey.shade300)
+                        bottom: BorderSide(color: Colors.grey.shade300),
+                        top: BorderSide(color: Colors.grey.shade300)
                     ),
                     color: Colors.white
                 ),
@@ -1067,22 +1127,22 @@ class _AccountScreenState extends State<AccountScreen> {
                   description: Text('${prof['CustomerName']}', overflow: TextOverflow.ellipsis,textAlign: TextAlign.end,),),
               ),
               Container(
-                    padding: const EdgeInsets.all(14),
-                    decoration: BoxDecoration(
-                        border: Border(
-                          bottom: BorderSide(color: Colors.grey.shade300)
-                        ),
-                        color: Colors.white
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                    border: Border(
+                        bottom: BorderSide(color: Colors.grey.shade300)
                     ),
-                    child: RowItem(
-                        title: const Text('Sex'),
-                        description: Text('${prof['CustomerSex']}', overflow: TextOverflow.ellipsis,textAlign: TextAlign.end,),),
+                    color: Colors.white
+                ),
+                child: RowItem(
+                  title: const Text('Sex'),
+                  description: Text('${prof['CustomerSex']}', overflow: TextOverflow.ellipsis,textAlign: TextAlign.end,),),
               ),
               Container(
                 padding: const EdgeInsets.all(14),
                 decoration: BoxDecoration(
                     border: Border(
-                      bottom: BorderSide(color: Colors.grey.shade300)
+                        bottom: BorderSide(color: Colors.grey.shade300)
                     ),
                     color: Colors.white
                 ),
@@ -1094,7 +1154,7 @@ class _AccountScreenState extends State<AccountScreen> {
                 padding: const EdgeInsets.all(14),
                 decoration: BoxDecoration(
                     border: Border(
-                      bottom: BorderSide(color: Colors.grey.shade300)
+                        bottom: BorderSide(color: Colors.grey.shade300)
                     ),
                     color: Colors.white
                 ),
@@ -1107,15 +1167,25 @@ class _AccountScreenState extends State<AccountScreen> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: ColorStyle.tertiary,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(5)
+                        borderRadius: BorderRadius.circular(5)
                     ),
                     fixedSize: Size(MediaQuery.of(context).size.width * .8, 20),
                   ),
-                  onPressed: (){},
+                  onPressed: ()async{
+                    final result = await pushWithoutNavBar(context, MaterialPageRoute(builder: (context) =>
+                        NewProfileEditScreen(
+                            image: '${prof['CustomerImage']}', name: '${prof['CustomerName']}',
+                            sex: '${prof['CustomerSex']}', address: '${prof['CustomerAddress']}',
+                            contact: '${prof['CustomerContactNumber']}', id: '${prof['CustomerID']}',)));
+
+                    if(result == true){
+                      myProfile();
+                    }
+                  },
                   child: const Text(
                     'Edit Profile',
                     style: TextStyle(
-                      color: Colors.white
+                        color: Colors.white
                     ),
                   )
               ),
@@ -1124,7 +1194,7 @@ class _AccountScreenState extends State<AccountScreen> {
                 child: OutlinedButton(
                     style: OutlinedButton.styleFrom(
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(5)
+                          borderRadius: BorderRadius.circular(5)
                       ),
                       fixedSize: Size(MediaQuery.of(context).size.width * .8, 20),
                     ),

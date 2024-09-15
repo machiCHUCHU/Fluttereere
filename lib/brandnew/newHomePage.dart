@@ -198,7 +198,6 @@ class _NewHomeScreenState extends State<NewHomeScreen> {
   void initState(){
     super.initState();
     getUser();
-    startTimer();
   }
 
   @override
@@ -217,7 +216,7 @@ class _NewHomeScreenState extends State<NewHomeScreen> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) {print(token);
     return Scaffold(
       appBar: const ForAppBar(
         title: Text('Laundry Mate'),

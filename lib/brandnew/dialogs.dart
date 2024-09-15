@@ -1,8 +1,10 @@
 import 'package:awesome_dialog/awesome_dialog.dart';
+import 'package:capstone/api_response.dart';
 import 'package:capstone/brandnew/newLoginPage.dart';
 import 'package:capstone/services/services.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'setWidget/appbar.dart';
 
 Future<void> successDialog(BuildContext context, String title) async {
@@ -115,5 +117,23 @@ Future<void> warningDialog(BuildContext context, String title) async {
     dialogType: DialogType.warning,
     autoHide: const Duration(seconds: 2),
     title: title,
+  ).show();
+}
+
+Future<void> reloginDialog(BuildContext context) async {
+
+
+
+  await AwesomeDialog(
+    context: context,
+    animType: AnimType.topSlide,
+    dismissOnBackKeyPress: false,
+    dismissOnTouchOutside: false,
+    dialogType: DialogType.warning,
+    btnOkOnPress: (){
+      Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => NewLoginScreen()), (route) => false);
+    },
+    title: 'Phone Number Changed',
+    desc: 'Please login again!'
   ).show();
 }

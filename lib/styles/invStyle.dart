@@ -19,7 +19,7 @@ class InvStyle {
   );
 
   static const TextStyle formTitle = TextStyle(
-      color: ColorStyle.primary,
+      color: Colors.white,
       fontWeight: FontWeight.bold,
       fontSize: 14
   );
@@ -29,32 +29,33 @@ class InvStyle {
       fontWeight: FontWeight.bold
   );
 
-  static InputDecoration emailForm = InputDecoration(
+  static InputDecoration emailForm = const InputDecoration(
     filled: true,
     fillColor: Colors.white,
     errorBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(5),
-        borderSide: const BorderSide(
+        borderRadius: BorderRadius.vertical(bottom: Radius.circular(5)),
+        borderSide: BorderSide(
             color: Colors.red,
-            width: 2
+            width: 1
         )
     ),
     enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(5),
-        borderSide: const BorderSide(
+        borderRadius: BorderRadius.vertical(bottom: Radius.circular(5)),
+        borderSide: BorderSide(
             color: Colors.black,
-            width: 2
+            width: 1
         )
     ),
-    focusedBorder: const OutlineInputBorder(
+    focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.vertical(bottom: Radius.circular(10)),
         borderSide: BorderSide(
             color: Colors.grey,
-            width: 2
+            width: 1
         )
     ),
     focusedErrorBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(5),
-        borderSide: const BorderSide(
+        borderRadius: BorderRadius.vertical(bottom: Radius.circular(10)),
+        borderSide: BorderSide(
             color: Colors.red,
             width: 2
         )

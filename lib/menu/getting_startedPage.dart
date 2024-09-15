@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:ui';
 import 'package:capstone/api_response.dart';
 import 'package:capstone/brandnew/newHomePage.dart';
@@ -185,6 +186,7 @@ class _ShopSetupScreenState extends State<ShopSetupScreen> {
         _shopName.text, _shopAdd.text, _maxLoad.text, _washPcs.text, _washDuration.text,
         _dryPcs.text, _dryDuration.text, _lightWeight.text, _heaveWeight.text, _comforterWeight.text,
         _serviceCost.text, _serviceCost2.text, _serviceCost3.text, _openHrs.toString(), _openDays.toString(), _foldDuration.text,
+        base64Encode(Uint8List(0)),
         '${prefs.getString('token')}'
     );
 

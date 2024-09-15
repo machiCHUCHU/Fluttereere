@@ -103,7 +103,7 @@ flutter:
 
 flutter_native_splash:
   color: "#34abed"
-  image: assets/pepe.png
+  image: assets/LMateLogo.png
   android_12:
     color: "#34abed"
     image: assets/LMateLogo.png

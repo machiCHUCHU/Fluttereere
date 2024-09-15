@@ -21,7 +21,7 @@ class _NewServiceBookingScreenState extends State<NewServiceBookingScreen> {
   List<dynamic> services = [];
   int? serviceId;
   String pickedDate = '';
-  DateTime? dateNow;
+  DateTime? dateSelected;
   bool isLoading = true;
   int total = 0;
   String load = '';
@@ -32,13 +32,14 @@ class _NewServiceBookingScreenState extends State<NewServiceBookingScreen> {
       context: context,
       minDate: DateTime(2024),
       maxDate: DateTime(2100),
-      initialDate: dateNow,
+      initialDate: pickedDate == '' ? DateTime.now() : dateSelected,
+      currentDate: pickedDate == '' ? DateTime.now() : dateSelected,
       slidersColor: ColorStyle.tertiary,
       highlightColor: ColorStyle.tertiary,
     );
     setState(() {
-      dateNow = date;
       pickedDate = DateFormat('yyyy-MM-dd').format(date!);
+      dateSelected = DateTime.parse(pickedDate);
     });
   }
 
@@ -90,6 +91,7 @@ class _NewServiceBookingScreenState extends State<NewServiceBookingScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Avail Service'),
+        titleTextStyle: TextStyle(color: Colors.white,fontSize: 18,fontWeight: FontWeight.bold),
       ),
       body: isLoading
           ? loading()

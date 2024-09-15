@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:ui';
 
 import 'package:capstone/api_response.dart';
@@ -12,6 +13,8 @@ import 'package:flutter/painting.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:simple_time_range_picker/simple_time_range_picker.dart';
 
@@ -30,15 +33,12 @@ class _NewSetupScreenState extends State<NewSetupScreen> {
         padding: const EdgeInsets.all(8.0),
         child: Column(
           children: [
-            Expanded(
-                child: Center(
+            Center(
                   child: Image.asset(
-                    'assets/pepe.png',
-                    width: MediaQuery.of(context).size.width * .7,
-                    height: MediaQuery.of(context).size.height * .5,
+                    'assets/LMateLogo.png',
+                    scale: 1,
                   ),
                 ),
-            ),
             const Text(
                 'Welcome to Laundry Mate!',
                 style: TextStyle(
@@ -110,11 +110,87 @@ class _SetupInformationScreenState extends State<SetupInformationScreen> {
   final TextEditingController _heavyCost = TextEditingController();
   final TextEditingController _comforterLoad = TextEditingController();
   final TextEditingController _comforterCost = TextEditingController();
+  Uint8List? _pickedImageBytes;
 
   String _shopTime = ''; String? _workDays;
 
   TimeOfDay selectedTime = TimeOfDay.now();
+  Future<void> _pickAndUploadImage() async {
+    final ImageSource? source = await showMaterialModalBottomSheet<ImageSource>(
+      shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(
+              top: Radius.circular(25)
+          )
+      ),
+      context: context,
+      builder: (context) => SizedBox(
+        height: 200,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                IconButton(
+                  onPressed: (){
+                    Navigator.pop(context, ImageSource.camera);
+                  },
+                  icon: const Icon(Icons.camera_alt),
+                  iconSize: 75,
+                  color: ColorStyle.tertiary,
+                  splashColor: Colors.transparent,
+                  highlightColor: Colors.transparent,
+                ),
+                const Text(
+                  'Camera',
+                  style: SignupStyle.imagePick,
+                )
+              ],
+            ),
+            Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                IconButton(
+                  onPressed: (){
+                    Navigator.pop(context, ImageSource.gallery);
+                  },
+                  icon: const Icon(Icons.image),
+                  iconSize: 75,
+                  color: ColorStyle.tertiary,
+                  splashColor: Colors.transparent,
+                  highlightColor: Colors.transparent,
+                ),
+                const Text(
+                  'Gallery',
+                  style: SignupStyle.imagePick,
+                )
+              ],
+            )
+          ],
+        ),
+      ),
+    );
 
+    if (source != null) {
+      final XFile? pickedImage = await ImagePicker().pickImage(
+          source: source,
+          maxHeight: 500,
+          maxWidth: 500
+      );
+
+      if (pickedImage != null) {
+        final byteData = await pickedImage.readAsBytes();
+
+        setState(() {
+          _pickedImageBytes = byteData;
+        });
+
+
+      } else {
+
+      }
+    }
+  }
   Future<void> addSetup() async{
     final SharedPreferences prefs = await SharedPreferences.getInstance();
 
@@ -122,6 +198,7 @@ class _SetupInformationScreenState extends State<SetupInformationScreen> {
         _shopName.text, _shopAddress.text, _maxLoad.text, _washerQty.text, _washerTime.text,
         _dryerQty.text, _dryerTime.text, _lightLoad.text, _heavyLoad.text, _comforterLoad.text,
         _lightCost.text, _heavyCost.text, _comforterCost.text, _shopTime, _workDays ?? '', _foldingTime.text,
+        base64Encode(_pickedImageBytes ?? Uint8List(0)),
         '${prefs.getString('token')}');
 
     if(response.error == null){
@@ -131,6 +208,9 @@ class _SetupInformationScreenState extends State<SetupInformationScreen> {
       errorDialog(context, '${response.error}');
     }
   }
+
+
+  
 
   @override
   Widget build(BuildContext context) {
@@ -158,6 +238,49 @@ class _SetupInformationScreenState extends State<SetupInformationScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
+                          Center(child: SizedBox(
+                            height: 130,
+                            width: 100,
+                            child: Stack(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(2),
+                                  decoration: const BoxDecoration(
+                                      color: ColorStyle.tertiary,
+                                      shape: BoxShape.circle
+                                  ),
+                                  child: CircleAvatar(
+                                    backgroundColor: Colors.white,
+                                    backgroundImage: _pickedImageBytes == null
+                                        ? AssetImage('assets/user.png')
+                                        : MemoryImage(_pickedImageBytes!) as ImageProvider,
+                                    radius: 50,
+                                  ),
+                                ),
+                                Positioned(
+                                    top: 70,
+                                    left: 70,
+                                    child: Container(
+                                        height: 30,
+                                        width: 30,
+                                        decoration: BoxDecoration(
+                                          borderRadius: BorderRadius.circular(50),
+                                          color: ColorStyle.tertiary,
+                                        ),
+                                        child: IconButton(
+                                          onPressed: () {
+                                            _pickAndUploadImage();
+                                          },
+                                          icon: const Icon(
+                                            Icons.camera_alt,
+                                            color: Colors.white,
+                                            size: 15,
+                                            weight: 50,
+                                          ),
+                                        )))
+                              ],
+                            ),
+                          ),),
                           const Text(
                             'Shop Name',
                             style: SignupStyle.formTitle,

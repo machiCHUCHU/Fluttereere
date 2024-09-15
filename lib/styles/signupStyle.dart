@@ -33,30 +33,31 @@ class SignupStyle{
     filled: true,
     fillColor: Colors.white,
     errorBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(5),
+        borderRadius: BorderRadius.vertical(bottom: Radius.circular(5)),
         borderSide: const BorderSide(
             color: Colors.red,
-            width: 2
+            width: 1
         )
     ),
     enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(5),
+        borderRadius: BorderRadius.vertical(bottom: Radius.circular(5)),
         borderSide: const BorderSide(
             color: Colors.black,
-            width: 2
+            width: 1
         )
     ),
     focusedBorder: const OutlineInputBorder(
+        borderRadius: BorderRadius.vertical(bottom: Radius.circular(5)),
         borderSide: BorderSide(
             color: Colors.grey,
-            width: 2
+            width: 1
         )
     ),
     focusedErrorBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(5),
+        borderRadius: BorderRadius.vertical(bottom: Radius.circular(5)),
         borderSide: const BorderSide(
             color: Colors.red,
-            width: 2
+            width: 1
         )
     ),
   );
@@ -74,7 +75,7 @@ class SignupStyle{
       filled: true,
       fillColor: Colors.white,
       errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(5),
+          borderRadius: BorderRadius.vertical(bottom: Radius.circular(5)),
           borderSide: const BorderSide(
               color: Colors.red,
               width: 2

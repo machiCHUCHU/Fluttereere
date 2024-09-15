@@ -379,7 +379,7 @@ class _EditUserScreenState extends State<EditUserScreen> {
       hasPickedImage = image!;
     }
 
-    ApiResponse apiResponse = await updateProfile(
+    ApiResponse apiResponse = await updateOwnerProfile(
         widget.id, _name.text, _selectedGender!,
         _address.text, _contact.text, hasPickedImage,
     '${prefs.getString('token')}');

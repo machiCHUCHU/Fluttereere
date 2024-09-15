@@ -7,6 +7,7 @@ import 'package:capstone/brandnew/setWidget/appbar.dart';
 import 'package:capstone/services/services.dart';
 import 'package:capstone/styles/invStyle.dart';
 import 'package:capstone/styles/mainColorStyle.dart';
+import 'package:capstone/styles/signupStyle.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/painting.dart';
@@ -34,6 +35,15 @@ class _NewInventoryScreenState extends State<NewInventoryScreen> {
   int? total;
   int? out;
   bool hasData = false;
+  String? categoryName;
+  bool isDefault = false;
+
+  List<String> category = [
+    'Detergent',
+    'Fabric Conditioner',
+    'Bleach',
+    'Fabric Freshener'
+  ];
 
   void getUser() async{
     final SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -550,6 +560,16 @@ class _InventoryAddScreenState extends State<InventoryAddScreen> {
   String? token;
   int? userid;
   int? shopid;
+  String? categoryName;
+  bool setUse = false;
+  String isDefault = '';
+  List<String> category = [
+    'Detergent',
+    'Fabric Conditioner',
+    'Bleach',
+    'Fabric Freshener Spray'
+  ];
+
   void getUser() async{
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
@@ -603,6 +623,8 @@ class _InventoryAddScreenState extends State<InventoryAddScreen> {
     }
   }
 
+
+
   @override
   Widget build(BuildContext context) {
 
@@ -616,11 +638,18 @@ class _InventoryAddScreenState extends State<InventoryAddScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    'Detergent Name',
-                    style: InvStyle.formTitle,
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(4),
+                    decoration: BoxDecoration(
+                      color: ColorStyle.tertiary,
+                      borderRadius: BorderRadius.vertical(top: Radius.circular(5))
+                    ),
+                    child: const Text(
+                      'Item Name',
+                      style: InvStyle.formTitle,
+                    ),
                   ),
-                  const SizedBox(height: 5,),
                   TextFormField(
                     controller: _itemname,
                     decoration: InvStyle.emailForm,
@@ -634,11 +663,18 @@ class _InventoryAddScreenState extends State<InventoryAddScreen> {
                   ),
                   const SizedBox(height: 15,),
 
-                  const Text(
-                    'Detergent Quantity',
-                  style: InvStyle.formTitle,
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(4),
+                    decoration: BoxDecoration(
+                        color: ColorStyle.tertiary,
+                        borderRadius: BorderRadius.vertical(top: Radius.circular(5))
+                    ),
+                    child: const Text(
+                      'Item Quantity',
+                      style: InvStyle.formTitle,
+                    ),
                   ),
-                  const SizedBox(height: 5,),
                   TextFormField(
                     controller: _itemqty,
                     keyboardType: TextInputType.number,
@@ -653,11 +689,54 @@ class _InventoryAddScreenState extends State<InventoryAddScreen> {
                   ),
                   const SizedBox(height: 15,),
 
-                  const Text(
-                    'Detergent Volume',
-                    style: InvStyle.formTitle,
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(4),
+                    decoration: BoxDecoration(
+                        color: ColorStyle.tertiary,
+                        borderRadius: BorderRadius.vertical(top: Radius.circular(5))
+                    ),
+                    child: const Text(
+                      'Item Type',
+                      style: InvStyle.formTitle,
+                    ),
                   ),
-                  const SizedBox(height: 5,),
+                  DropdownButtonFormField<String>(
+                    decoration: SignupStyle.allForm,
+                    value: categoryName,
+                    items: category.map<DropdownMenuItem<String>>((dynamic category){
+                      return DropdownMenuItem<String>(
+                          value: category,
+                          child: Text(category)
+                      );
+                    }).toList(),
+                    onChanged: (newValue) {
+                      setState(() {
+                        categoryName = newValue;
+                        print(categoryName);
+                      });
+                    },
+                    validator: (String? value) {
+                      if (value == null || value.isEmpty) {
+                        return 'This field is required.';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 15,),
+
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(4),
+                    decoration: BoxDecoration(
+                        color: ColorStyle.tertiary,
+                        borderRadius: BorderRadius.vertical(top: Radius.circular(5))
+                    ),
+                    child: const Text(
+                      'Item Volume (ml)',
+                      style: InvStyle.formTitle,
+                    ),
+                  ),
                   TextFormField(
                     controller: _itemvolume,
                     keyboardType: TextInputType.number,
@@ -672,10 +751,18 @@ class _InventoryAddScreenState extends State<InventoryAddScreen> {
                   ),
                   const SizedBox(height: 15,),
 
-                  const Text(
-                    'Volume Usage per Load',
-                    style: InvStyle.formTitle            ),
-                  const SizedBox(height: 5,),
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(4),
+                    decoration: BoxDecoration(
+                        color: ColorStyle.tertiary,
+                        borderRadius: BorderRadius.vertical(top: Radius.circular(5))
+                    ),
+                    child: const Text(
+                      'Item Usage per Load (ml)',
+                      style: InvStyle.formTitle,
+                    ),
+                  ),
                   TextFormField(
                     controller: _itemuse,
                     keyboardType: TextInputType.number,
@@ -688,7 +775,30 @@ class _InventoryAddScreenState extends State<InventoryAddScreen> {
                       return null;
                     },
                   ),
-                  const SizedBox(height: 15,)
+                  const SizedBox(height: 15,),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Checkbox(
+                          value: setUse,
+                          activeColor: ColorStyle.tertiary,
+                          onChanged: (value){
+                            setState(() {
+                              setUse = value!;
+                            });
+                          }
+                      ),
+                      const Text('Set as default')
+                    ],
+                  ),
+                  const Text(
+                    'Note: Setting this as default will update the status of this item accordingly per laundry service made.',
+                    style: TextStyle(
+                      fontStyle: FontStyle.italic,
+                      color: Colors.blue,
+                    ),
+                    textAlign: TextAlign.justify,
+                  )
                 ],
               ),
             )

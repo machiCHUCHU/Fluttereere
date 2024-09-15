@@ -168,7 +168,7 @@ Future<ApiResponse> logout(String token) async{
 Future<ApiResponse> shopInfoRegister(
     String shopName, String shopAdd, String maxLoad, String washerQty, String washerTime,String dryerQty,
     String dryerTime, String lightWeight, String heavyWeight, String comfWeight, String lightCost,
-    String heavyCost, String comfCost, String workHour, String workDay, String foldTime, String token
+    String heavyCost, String comfCost, String workHour, String workDay, String foldTime, String shopimage, String token
     ) async {
 
   ApiResponse apiResponse = ApiResponse();
@@ -183,6 +183,7 @@ Future<ApiResponse> shopInfoRegister(
         },
         body: {
           'ShopName':shopName,
+          'ShopImage': shopimage,
           'ShopAddress':shopAdd,
           'MaxLoad':maxLoad,
           'WasherQty':washerQty,
@@ -1396,7 +1397,7 @@ Future<ApiResponse> getInfos(String token) async {
   return apiResponse;
 }
 
-Future<ApiResponse> updateProfile(String id, String name, String sex, String address, String contact, String image, String token) async{
+Future<ApiResponse> updateOwnerProfile(String id, String name, String sex, String address, String contact, String image, String token) async{
   ApiResponse apiResponse = ApiResponse();
 
   try{
@@ -2553,6 +2554,82 @@ Future<ApiResponse> updateShop(
         break;
       default:
         apiResponse.error = jsonDecode(response.body)['message'];
+        break;
+    }
+  }catch(e){
+    apiResponse.error = '$e';
+  }
+
+  return apiResponse;
+}
+
+Future<ApiResponse> unfollowShop(String addshopid,String token) async{
+  ApiResponse apiResponse = ApiResponse();
+
+  try{
+    final response = await http.put(
+      Uri.parse('$ipaddress/shop-request/update/$addshopid'),
+      headers: {
+        'Authorization': 'Bearer $token'
+      },
+    );
+
+    switch(response.statusCode){
+      case 200:
+        apiResponse.data = jsonDecode(response.body)['message'];
+        break;
+      case 422:
+        final errors = jsonDecode(response.body)['message'];
+        apiResponse.error = errors;
+        break;
+      case 403:
+        apiResponse.error = jsonDecode(response.body)['message'];
+        break;
+      default:
+        apiResponse.error = jsonDecode(response.body)['message'];
+        break;
+    }
+  }catch(e){
+    apiResponse.error = '$e';
+  }
+
+  return apiResponse;
+}
+
+Future<ApiResponse> updateCustomerProfile(
+    String id, String name, String sex, String address,
+    String contact, String image, String token) async{
+  ApiResponse apiResponse = ApiResponse();
+
+  try{
+    final response = await http.put(Uri.parse('$ipaddress/customer/profile/update/$id'),
+        headers: {
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $token'
+        },
+        body: {
+          'name':name,
+          'sex':sex,
+          'address':address,
+          'contact': contact,
+          'image': image
+        }
+    );
+
+    switch(response.statusCode){
+      case 200:
+        apiResponse.data = jsonDecode(response.body)['message'];
+        break;
+      case 422:
+        final errors = jsonDecode(response.body)['message'];
+        apiResponse.error = errors;
+        break;
+      case 403:
+        apiResponse.error = jsonDecode(response.body)['message'];
+        break;
+      default:
+        final errors = jsonDecode(response.body)['message'];
+        apiResponse.error = errors;
         break;
     }
   }catch(e){
