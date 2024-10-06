@@ -1,12 +1,11 @@
-import 'dart:async';
 import 'dart:core';
 
 import 'package:capstone/api_response.dart';
 import 'package:capstone/brandnew/dialogs.dart';
-import 'package:capstone/brandnew/setWidget/appbar.dart';
 import 'package:capstone/services/services.dart';
 import 'package:capstone/styles/loginStyle.dart';
 import 'package:capstone/styles/mainColorStyle.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
@@ -32,7 +31,6 @@ class _NewBookingScreenState extends State<NewBookingScreen> {
 
   List<dynamic> bookings = [];
   List<dynamic> walkins = [];
-  Timer? _timer;
 
 
   Future<void> bookingsDisplay() async {
@@ -52,12 +50,16 @@ class _NewBookingScreenState extends State<NewBookingScreen> {
   }
 
   Future<void> walkinDisplay() async {
-    ApiResponse response = await getWalkin(token.toString());
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    ApiResponse response = await getWalkin('${prefs.getString('token')}');
 
     if (response.error == null) {
-        walkins = response.data as List<dynamic>;
-        hasWalkin = walkins.isNotEmpty;
+        setState(() {
+          walkins = response.data as List<dynamic>;
+          hasWalkin = walkins.isNotEmpty;
+        });
     } else {
+      print(response.error);
     }
   }
 
@@ -70,11 +72,12 @@ class _NewBookingScreenState extends State<NewBookingScreen> {
       if (stat == '1') {
         await successDialog(context, '${response.data}');
       } else {
-        await errorDialog(context, '${response.data}');
+        await warningDialog(context, '${response.data}');
       }
       walkinDisplay();
     } else {
       await errorDialog(context, '${response.error}');
+      print(response.error);
     }
   }
 
@@ -95,81 +98,16 @@ class _NewBookingScreenState extends State<NewBookingScreen> {
     }
   }
 
-  Future<void> paymentUpdate(String type, String id) async {
-    showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (context) {
-          return Center(
-            child: LoadingAnimationWidget.staggeredDotsWave(
-              color: Colors.black,
-              size: 50,
-            ),
-          );
-        });
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    ApiResponse response =
-        await updatePayment(type, id, '${prefs.getString('token')}');
-
-    if(!mounted) return;
-    Navigator.pop(context);
-
-    if (response.error == null) {
-
-      if(!mounted) return;
-      await successDialog(context, '${response.data}');
-      Navigator.pop(context);
-    } else {
-      await errorDialog(context, '${response.error}');
-    }
-  }
-
-  Future<void> completeUpdate(String type, String id, String paid) async {
-    showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (context) {
-          return Center(
-            child: LoadingAnimationWidget.staggeredDotsWave(
-              color: Colors.black,
-              size: 50,
-            ),
-          );
-        });
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    ApiResponse response =
-        await updateComplete(type, id, paid, '${prefs.getString('token')}');
-
-    Navigator.pop(context);
-
-    if (response.error == null) {
-      await successDialog(context, '${response.data}');
-      Navigator.pop(context);
-
-    } else {
-      await errorDialog(context, '${response.error}');
-    }
-  }
-
   void _bottomModalBookings(
-      String name,
-      String contact,
-      String load,
-      String total,
-      String date,
-      String payment,
-      String service,
-      String bookingId,
-      bool isCancelled,
-      bool isPickup,
-      bool isPending,
-      bool isComplete) {
+      String name, String contact, String load, String total, String date,
+      String payment, String service, String bookingId, bool isCancelled, bool isPickup,
+      bool isPending, bool isComplete) {
     showMaterialModalBottomSheet(
         context: context,
         shape: const RoundedRectangleBorder(
             borderRadius: BorderRadius.vertical(top: Radius.circular(25))),
         builder: (context) {
-          bool isPaid = payment == 'paid';
+
           return SizedBox(
               height: MediaQuery.of(context).size.height * .5,
               child: Padding(
@@ -286,7 +224,7 @@ class _NewBookingScreenState extends State<NewBookingScreen> {
                                         ],
                                       ),
                                       description: Text(
-                                        total,
+                                        '₱$total.00',
                                         style: const TextStyle(
                                             fontWeight: FontWeight.bold),
                                       )),
@@ -310,86 +248,6 @@ class _NewBookingScreenState extends State<NewBookingScreen> {
                                 ],
                               ),
                             ))),
-                    isPending
-                        ? const SizedBox.shrink()
-                        : isCancelled
-                            ? const SizedBox.shrink()
-                            : isPaid
-                                ? isComplete
-                                    ? const SizedBox.shrink()
-                                    : Align(
-                                        alignment: Alignment.bottomCenter,
-                                        child: ElevatedButton(
-                                            style: ElevatedButton.styleFrom(
-                                                backgroundColor:
-                                                    ColorStyle.tertiary,
-                                                shape: RoundedRectangleBorder(
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            5)),
-                                                fixedSize: Size(
-                                                    MediaQuery.of(context)
-                                                        .size
-                                                        .width,
-                                                    20)),
-                                            onPressed: () {
-                                              completeUpdate(
-                                                  'booking', bookingId, 'paid');
-                                            },
-                                            child: const Text(
-                                              'Complete',
-                                              style: TextStyle(
-                                                  color: Colors.white),
-                                            )))
-                                : Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceEvenly,
-                                    children: [
-                                      ElevatedButton(
-                                          style: ElevatedButton.styleFrom(
-                                              backgroundColor:
-                                                  ColorStyle.tertiary,
-                                              shape: RoundedRectangleBorder(
-                                                  borderRadius:
-                                                      BorderRadius.circular(5)),
-                                              fixedSize: Size(
-                                                  MediaQuery.of(context)
-                                                          .size
-                                                          .width *
-                                                      .40,
-                                                  20)),
-                                          onPressed: () {
-                                            paymentUpdate('booking', bookingId);
-                                          },
-                                          child: const Text(
-                                            'Paid',
-                                            style:
-                                                TextStyle(color: Colors.white),
-                                          )),
-                                      ElevatedButton(
-                                          style: ElevatedButton.styleFrom(
-                                              backgroundColor:
-                                                  ColorStyle.tertiary,
-                                              shape: RoundedRectangleBorder(
-                                                  borderRadius:
-                                                      BorderRadius.circular(5)),
-                                              fixedSize: Size(
-                                                  MediaQuery.of(context)
-                                                          .size
-                                                          .width *
-                                                      .40,
-                                                  20)),
-                                          onPressed: () {
-                                            completeUpdate('booking', bookingId,
-                                                'notpaid');
-                                          },
-                                          child: const Text(
-                                            'Complete',
-                                            style:
-                                                TextStyle(color: Colors.white),
-                                          )),
-                                    ],
-                                  )
                   ],
                 ),
               ));
@@ -397,23 +255,13 @@ class _NewBookingScreenState extends State<NewBookingScreen> {
   }
 
   void _bottomModalWalkins(
-      String contact,
-      String load,
-      String total,
-      String date,
-      String payment,
-      String service,
-      String walkinId,
-      bool isCancelled,
-      bool isPickup,
-      bool isPending,
-      bool isComplete) {
+      String contact, String load, String total, String date, String payment,
+      String service, String walkinId, bool isCancelled, bool isPickup, bool isPending, bool isComplete) {
     showMaterialModalBottomSheet(
         context: context,
         shape: const RoundedRectangleBorder(
             borderRadius: BorderRadius.vertical(top: Radius.circular(25))),
         builder: (context) {
-          bool isPaid = payment == 'paid';
           return SizedBox(
               height: MediaQuery.of(context).size.height * .5,
               child: Padding(
@@ -530,85 +378,6 @@ class _NewBookingScreenState extends State<NewBookingScreen> {
                                 ],
                               ),
                             ))),
-                    isPending
-                        ? const SizedBox.shrink()
-                        : isCancelled
-                            ? const SizedBox.shrink()
-                            : !isPickup
-                                ? isPaid
-                                    ? const SizedBox.shrink()
-                                    : Align(
-                                        alignment: Alignment.bottomCenter,
-                                        child: ElevatedButton(
-                                            style: ElevatedButton.styleFrom(
-                                                backgroundColor:
-                                                    ColorStyle.tertiary,
-                                                shape: RoundedRectangleBorder(
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            5)),
-                                                fixedSize: Size(
-                                                    MediaQuery.of(context)
-                                                        .size
-                                                        .width,
-                                                    20)),
-                                            onPressed: () {
-                                              paymentUpdate('walkin', walkinId);
-                                            },
-                                            child: const Text(
-                                              'Paid',
-                                              style: TextStyle(
-                                                  color: Colors.white),
-                                            )))
-                                : Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceEvenly,
-                                    children: [
-                                      ElevatedButton(
-                                          style: ElevatedButton.styleFrom(
-                                              backgroundColor:
-                                                  ColorStyle.tertiary,
-                                              shape: RoundedRectangleBorder(
-                                                  borderRadius:
-                                                      BorderRadius.circular(5)),
-                                              fixedSize: Size(
-                                                  MediaQuery.of(context)
-                                                          .size
-                                                          .width *
-                                                      .40,
-                                                  20)),
-                                          onPressed: () {
-                                            paymentUpdate('walkin', walkinId);
-                                          },
-                                          child: const Text(
-                                            'Paid',
-                                            style:
-                                                TextStyle(color: Colors.white),
-                                          )),
-                                      ElevatedButton(
-                                          style: ElevatedButton.styleFrom(
-                                              backgroundColor:
-                                                  ColorStyle.tertiary,
-                                              shape: RoundedRectangleBorder(
-                                                  borderRadius:
-                                                      BorderRadius.circular(5)),
-                                              fixedSize: Size(
-                                                  MediaQuery.of(context)
-                                                          .size
-                                                          .width *
-                                                      .40,
-                                                  20)),
-                                          onPressed: () {
-                                            completeUpdate(
-                                                'walkin', walkinId, 'notpaid');
-                                          },
-                                          child: const Text(
-                                            'Complete',
-                                            style:
-                                                TextStyle(color: Colors.white),
-                                          )),
-                                    ],
-                                  )
                   ],
                 ),
               ));
@@ -619,26 +388,39 @@ class _NewBookingScreenState extends State<NewBookingScreen> {
   void initState() {
     super.initState();
     bookingsDisplay();
+    walkinDisplay();
   }
 
   @override
   Widget build(BuildContext context) {
-    print(isLoading);
+    print(hasWalkin);
       return DefaultTabController(
           length: 2,
           child: Scaffold(
-              appBar: ForAppBar(
+              appBar: AppBar(
                 title: const Text('Booked'),
-                tabBar: const TabBar(
-                  indicatorColor: ColorStyle.primary,
-                  labelColor: ColorStyle.tertiary,
-                  unselectedLabelColor: Colors.grey,
-                  tabs: [
-                    Tab(text: 'Bookings'),
-                    Tab(text: 'Walk-in'),
-                  ],
-                ),
-                tabBarColor: Colors.grey.shade50,
+                titleTextStyle: const TextStyle(fontWeight: FontWeight.bold,fontSize: 18),
+                  leading: IconButton(
+                    onPressed: (){
+                      Navigator.pop(context);
+                    },
+                    icon: const Icon(CupertinoIcons.chevron_left,color: Colors.white,),
+                  ),
+                bottom: PreferredSize(
+                  preferredSize: const Size.fromHeight(kToolbarHeight),
+                  child: Container(
+                    color: Colors.grey.shade200,
+                    child: const TabBar(
+                      indicatorColor: ColorStyle.primary,
+                      labelColor: ColorStyle.tertiary,
+                      unselectedLabelColor: Colors.grey,
+                      tabs: [
+                        Tab(text: 'Bookings'),
+                        Tab(text: 'Walk-in'),
+                      ],
+                    ),
+                  ),
+                )
               ),
               body: isLoading ? Center(
                 child: LoadingAnimationWidget.staggeredDotsWave(
@@ -727,8 +509,8 @@ class _NewBookingScreenState extends State<NewBookingScreen> {
                                     _bottomModalBookings(
                                         '${book['CustomerName']}',
                                         '${book['CustomerContactNumber']}',
-                                        '${book['LoadWeight']}',
                                         '${book['CustomerLoad']}',
+                                        '${book['LoadCost']}',
                                         '${book['Schedule']}',
                                         '${book['PaymentStatus']}',
                                         '${book['ServiceName']}',
@@ -1025,9 +807,11 @@ class _NewWashScreenState extends State<NewWashScreen> {
 
   void getUser() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
-      token = prefs.getString('token');
-      userid = prefs.getInt('userid');
-      shopid = prefs.getInt('shopid');
+      setState(() {
+        token = prefs.getString('token');
+        userid = prefs.getInt('userid');
+        shopid = prefs.getInt('shopid');
+      });
     washDisplay();
   }
 
@@ -1035,12 +819,13 @@ class _NewWashScreenState extends State<NewWashScreen> {
     ApiResponse response = await getWashing(token.toString());
 
     if (response.error == null) {
-
+      setState(() {
         bookings = response.data as List<dynamic>;
         walkins = response.data1 as List<dynamic>;
         hasBook = bookings.isNotEmpty;
         hasWalkin = walkins.isNotEmpty;
         isLoading = false;
+      });
     } else {
     }
   }
@@ -1075,15 +860,8 @@ class _NewWashScreenState extends State<NewWashScreen> {
   }
 
   void _bottomModalBookings(
-      String name,
-      String contact,
-      String load,
-      String total,
-      String date,
-      String payment,
-      String service,
-      String bookingId,
-      bool isCancelled) {
+      String name, String contact, String load, String total, String date,
+      String payment, String service, String bookingId, bool isCancelled) {
     showMaterialModalBottomSheet(
         context: context,
         shape: const RoundedRectangleBorder(
@@ -1256,14 +1034,8 @@ class _NewWashScreenState extends State<NewWashScreen> {
   }
 
   void _bottomModalWalkins(
-      String contact,
-      String load,
-      String total,
-      String date,
-      String payment,
-      String service,
-      String walkinId,
-      bool isCancelled) {
+      String contact, String load, String total, String date, String payment,
+      String service, String walkinId, bool isCancelled) {
     showMaterialModalBottomSheet(
         context: context,
         shape: const RoundedRectangleBorder(
@@ -1423,18 +1195,30 @@ class _NewWashScreenState extends State<NewWashScreen> {
       return DefaultTabController(
           length: 2,
           child: Scaffold(
-              appBar: ForAppBar(
-                title: const Text('Booked'),
-                tabBar: const TabBar(
-                  indicatorColor: ColorStyle.primary,
-                  labelColor: ColorStyle.tertiary,
-                  unselectedLabelColor: Colors.grey,
-                  tabs: [
-                    Tab(text: 'Bookings'),
-                    Tab(text: 'Walk-in'),
-                  ],
-                ),
-                tabBarColor: Colors.grey.shade50,
+              appBar: AppBar(
+                  title: const Text('Washing'),
+                  titleTextStyle: const TextStyle(fontWeight: FontWeight.bold,fontSize: 18),
+                  leading: IconButton(
+                    onPressed: (){
+                      Navigator.pop(context);
+                    },
+                    icon: const Icon(CupertinoIcons.chevron_left,color: Colors.white,),
+                  ),
+                  bottom: PreferredSize(
+                    preferredSize: const Size.fromHeight(kToolbarHeight),
+                    child: Container(
+                      color: Colors.grey.shade200,
+                      child: const TabBar(
+                        indicatorColor: ColorStyle.primary,
+                        labelColor: ColorStyle.tertiary,
+                        unselectedLabelColor: Colors.grey,
+                        tabs: [
+                          Tab(text: 'Bookings'),
+                          Tab(text: 'Walk-in'),
+                        ],
+                      ),
+                    ),
+                  )
               ),
               body: Center(
                 child: LoadingAnimationWidget.staggeredDotsWave(
@@ -1446,18 +1230,30 @@ class _NewWashScreenState extends State<NewWashScreen> {
     return DefaultTabController(
       length: 2, // Number of tabs
       child: Scaffold(
-        appBar: ForAppBar(
-          title: const Text('Booked'),
-          tabBar: const TabBar(
-            indicatorColor: ColorStyle.primary,
-            labelColor: ColorStyle.tertiary,
-            unselectedLabelColor: Colors.grey,
-            tabs: [
-              Tab(text: 'Bookings'),
-              Tab(text: 'Walk-in'),
-            ],
-          ),
-          tabBarColor: Colors.grey.shade50,
+        appBar: AppBar(
+            title: const Text('Washing'),
+            titleTextStyle: const TextStyle(fontWeight: FontWeight.bold,fontSize: 18),
+            leading: IconButton(
+              onPressed: (){
+                Navigator.pop(context);
+              },
+              icon: const Icon(CupertinoIcons.chevron_left,color: Colors.white,),
+            ),
+            bottom: PreferredSize(
+              preferredSize: const Size.fromHeight(kToolbarHeight),
+              child: Container(
+                color: Colors.grey.shade200,
+                child: const TabBar(
+                  indicatorColor: ColorStyle.primary,
+                  labelColor: ColorStyle.tertiary,
+                  unselectedLabelColor: Colors.grey,
+                  tabs: [
+                    Tab(text: 'Bookings'),
+                    Tab(text: 'Walk-in'),
+                  ],
+                ),
+              ),
+            )
         ),
         body: TabBarView(
           children: [
@@ -1534,10 +1330,10 @@ class _NewWashScreenState extends State<NewWashScreen> {
                               return InkWell(
                                   onTap: () {
                                     _bottomModalBookings(
-                                        '${book['Name']}',
-                                        '${book['ContactNumber']}',
-                                        '${book['LoadWeight']}',
+                                        '${book['CustomerName']}',
+                                        '${book['CustomerContactNumber']}',
                                         '${book['CustomerLoad']}',
+                                        '${book['LoadCost']}',
                                         '${book['Schedule']}',
                                         '${book['PaymentStatus']}',
                                         '${book['ServiceName']}',
@@ -1557,7 +1353,7 @@ class _NewWashScreenState extends State<NewWashScreen> {
                                         children: [
                                           Expanded(
                                               child: Text(
-                                            '${book['Name']}',
+                                            '${book['CustomerName']}',
                                             style: const TextStyle(
                                                 fontWeight: FontWeight.bold),
                                           )),
@@ -1749,9 +1545,11 @@ class _NewDryScreenState extends State<NewDryScreen> {
 
   void getUser() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
-      token = prefs.getString('token');
-      userid = prefs.getInt('userid');
-      shopid = prefs.getInt('shopid');
+      setState(() {
+        token = prefs.getString('token');
+        userid = prefs.getInt('userid');
+        shopid = prefs.getInt('shopid');
+      });
     dryDisplay();
   }
 
@@ -1760,11 +1558,13 @@ class _NewDryScreenState extends State<NewDryScreen> {
 
     if (response.error == null) {
 
-        bookings = response.data as List<dynamic>;
-        walkins = response.data1 as List<dynamic>;
-        hasBook = bookings.isNotEmpty;
-        hasWalkin = walkins.isNotEmpty;
-        isLoading = false;
+        setState(() {
+          bookings = response.data as List<dynamic>;
+          walkins = response.data1 as List<dynamic>;
+          hasBook = bookings.isNotEmpty;
+          hasWalkin = walkins.isNotEmpty;
+          isLoading = false;
+        });
 
     } else {
     }
@@ -1800,15 +1600,8 @@ class _NewDryScreenState extends State<NewDryScreen> {
   }
 
   void _bottomModalBookings(
-      String name,
-      String contact,
-      String load,
-      String total,
-      String date,
-      String payment,
-      String service,
-      String bookingId,
-      bool isCancelled) {
+      String name, String contact, String load, String total, String date,
+      String payment, String service, String bookingId, bool isCancelled) {
     showMaterialModalBottomSheet(
         context: context,
         shape: const RoundedRectangleBorder(
@@ -1981,14 +1774,8 @@ class _NewDryScreenState extends State<NewDryScreen> {
   }
 
   void _bottomModalWalkins(
-      String contact,
-      String load,
-      String total,
-      String date,
-      String payment,
-      String service,
-      String walkinId,
-      bool isCancelled) {
+      String contact, String load, String total, String date, String payment,
+      String service, String walkinId, bool isCancelled) {
     showMaterialModalBottomSheet(
         context: context,
         shape: const RoundedRectangleBorder(
@@ -2148,18 +1935,30 @@ class _NewDryScreenState extends State<NewDryScreen> {
       return DefaultTabController(
           length: 2,
           child: Scaffold(
-              appBar: ForAppBar(
-                title: const Text('Booked'),
-                tabBar: const TabBar(
-                  indicatorColor: ColorStyle.primary,
-                  labelColor: ColorStyle.tertiary,
-                  unselectedLabelColor: Colors.grey,
-                  tabs: [
-                    Tab(text: 'Bookings'),
-                    Tab(text: 'Walk-in'),
-                  ],
-                ),
-                tabBarColor: Colors.grey.shade50,
+              appBar: AppBar(
+                title: const Text('Drying'),
+                titleTextStyle: const TextStyle(fontWeight: FontWeight.bold,fontSize: 18),
+                  leading: IconButton(
+                    onPressed: (){
+                      Navigator.pop(context);
+                    },
+                    icon: const Icon(CupertinoIcons.chevron_left,color: Colors.white,),
+                  ),
+                bottom: PreferredSize(
+                  preferredSize: const Size.fromHeight(kToolbarHeight),
+                  child: Container(
+                    color: Colors.grey.shade200,
+                    child: const TabBar(
+                      indicatorColor: ColorStyle.primary,
+                      labelColor: ColorStyle.tertiary,
+                      unselectedLabelColor: Colors.grey,
+                      tabs: [
+                        Tab(text: 'Bookings'),
+                        Tab(text: 'Walk-in'),
+                      ],
+                    ),
+                  ),
+                )
               ),
               body: Center(
                 child: LoadingAnimationWidget.staggeredDotsWave(
@@ -2171,19 +1970,31 @@ class _NewDryScreenState extends State<NewDryScreen> {
     return DefaultTabController(
       length: 2, // Number of tabs
       child: Scaffold(
-        appBar: ForAppBar(
-          title: const Text('Booked'),
-          tabBar: const TabBar(
-            indicatorColor: ColorStyle.primary,
-            labelColor: ColorStyle.tertiary,
-            unselectedLabelColor: Colors.grey,
-            tabs: [
-              Tab(text: 'Bookings'),
-              Tab(text: 'Walk-in'),
-            ],
-          ),
-          tabBarColor: Colors.grey.shade50,
-        ),
+        appBar: AppBar(
+                title: const Text('Drying'),
+                titleTextStyle: const TextStyle(fontWeight: FontWeight.bold,fontSize: 18),
+            leading: IconButton(
+              onPressed: (){
+                Navigator.pop(context);
+              },
+              icon: const Icon(CupertinoIcons.chevron_left,color: Colors.white,),
+            ),
+                bottom: PreferredSize(
+                  preferredSize: const Size.fromHeight(kToolbarHeight),
+                  child: Container(
+                    color: Colors.grey.shade200,
+                    child: const TabBar(
+                      indicatorColor: ColorStyle.primary,
+                      labelColor: ColorStyle.tertiary,
+                      unselectedLabelColor: Colors.grey,
+                      tabs: [
+                        Tab(text: 'Bookings'),
+                        Tab(text: 'Walk-in'),
+                      ],
+                    ),
+                  ),
+                )
+              ),
         body: TabBarView(
           children: [
             hasBook
@@ -2259,8 +2070,8 @@ class _NewDryScreenState extends State<NewDryScreen> {
                               return InkWell(
                                   onTap: () {
                                     _bottomModalBookings(
-                                        '${book['Name']}',
-                                        '${book['ContactNumber']}',
+                                        '${book['CustomerName']}',
+                                        '${book['CustomerContactNumber']}',
                                         '${book['LoadWeight']}',
                                         '${book['CustomerLoad']}',
                                         '${book['Schedule']}',
@@ -2282,7 +2093,7 @@ class _NewDryScreenState extends State<NewDryScreen> {
                                         children: [
                                           Expanded(
                                               child: Text(
-                                            '${book['Name']}',
+                                            '${book['CustomerName']}',
                                             style: const TextStyle(
                                                 fontWeight: FontWeight.bold),
                                           )),
@@ -2475,9 +2286,11 @@ class _NewFoldScreenState extends State<NewFoldScreen> {
   void getUser() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
 
-      token = prefs.getString('token');
-      userid = prefs.getInt('userid');
-      shopid = prefs.getInt('shopid');
+      setState(() {
+        token = prefs.getString('token');
+        userid = prefs.getInt('userid');
+        shopid = prefs.getInt('shopid');
+      });
 
     foldDisplay();
   }
@@ -2487,11 +2300,13 @@ class _NewFoldScreenState extends State<NewFoldScreen> {
 
     if (response.error == null) {
 
-        bookings = response.data as List<dynamic>;
-        walkins = response.data1 as List<dynamic>;
-        hasBook = bookings.isNotEmpty;
-        hasWalkin = walkins.isNotEmpty;
-        isLoading = false;
+        setState(() {
+          bookings = response.data as List<dynamic>;
+          walkins = response.data1 as List<dynamic>;
+          hasBook = bookings.isNotEmpty;
+          hasWalkin = walkins.isNotEmpty;
+          isLoading = false;
+        });
 
     } else {
     }
@@ -2527,15 +2342,8 @@ class _NewFoldScreenState extends State<NewFoldScreen> {
   }
 
   void _bottomModalBookings(
-      String name,
-      String contact,
-      String load,
-      String total,
-      String date,
-      String payment,
-      String service,
-      String bookingId,
-      bool isCancelled) {
+      String name, String contact, String load, String total, String date,
+      String payment, String service, String bookingId, bool isCancelled) {
     showMaterialModalBottomSheet(
         context: context,
         shape: const RoundedRectangleBorder(
@@ -2708,14 +2516,8 @@ class _NewFoldScreenState extends State<NewFoldScreen> {
   }
 
   void _bottomModalWalkins(
-      String contact,
-      String load,
-      String total,
-      String date,
-      String payment,
-      String service,
-      String walkinId,
-      bool isCancelled) {
+      String contact, String load, String total, String date,
+      String payment, String service, String walkinId, bool isCancelled) {
     showMaterialModalBottomSheet(
         context: context,
         shape: const RoundedRectangleBorder(
@@ -2875,18 +2677,30 @@ class _NewFoldScreenState extends State<NewFoldScreen> {
       return DefaultTabController(
           length: 2,
           child: Scaffold(
-              appBar: ForAppBar(
-                title: const Text('Booked'),
-                tabBar: const TabBar(
-                  indicatorColor: ColorStyle.primary,
-                  labelColor: ColorStyle.tertiary,
-                  unselectedLabelColor: Colors.grey,
-                  tabs: [
-                    Tab(text: 'Bookings'),
-                    Tab(text: 'Walk-in'),
-                  ],
-                ),
-                tabBarColor: Colors.grey.shade50,
+              appBar: AppBar(
+                title: const Text('Folding'),
+                titleTextStyle: const TextStyle(fontWeight: FontWeight.bold,fontSize: 18),
+                  leading: IconButton(
+                    onPressed: (){
+                      Navigator.pop(context);
+                    },
+                    icon: const Icon(CupertinoIcons.chevron_left,color: Colors.white,),
+                  ),
+                bottom: PreferredSize(
+                  preferredSize: const Size.fromHeight(kToolbarHeight),
+                  child: Container(
+                    color: Colors.grey.shade200,
+                    child: const TabBar(
+                      indicatorColor: ColorStyle.primary,
+                      labelColor: ColorStyle.tertiary,
+                      unselectedLabelColor: Colors.grey,
+                      tabs: [
+                        Tab(text: 'Bookings'),
+                        Tab(text: 'Walk-in'),
+                      ],
+                    ),
+                  ),
+                )
               ),
               body: Center(
                 child: LoadingAnimationWidget.staggeredDotsWave(
@@ -2898,19 +2712,31 @@ class _NewFoldScreenState extends State<NewFoldScreen> {
     return DefaultTabController(
       length: 2, // Number of tabs
       child: Scaffold(
-        appBar: ForAppBar(
-          title: const Text('Booked'),
-          tabBar: const TabBar(
-            indicatorColor: ColorStyle.primary,
-            labelColor: ColorStyle.tertiary,
-            unselectedLabelColor: Colors.grey,
-            tabs: [
-              Tab(text: 'Bookings'),
-              Tab(text: 'Walk-in'),
-            ],
-          ),
-          tabBarColor: Colors.grey.shade50,
-        ),
+        appBar: AppBar(
+                title: const Text('Folding'),
+                titleTextStyle: const TextStyle(fontWeight: FontWeight.bold,fontSize: 18),
+            leading: IconButton(
+              onPressed: (){
+                Navigator.pop(context);
+              },
+              icon: const Icon(CupertinoIcons.chevron_left,color: Colors.white,),
+            ),
+                bottom: PreferredSize(
+                  preferredSize: const Size.fromHeight(kToolbarHeight),
+                  child: Container(
+                    color: Colors.grey.shade200,
+                    child: const TabBar(
+                      indicatorColor: ColorStyle.primary,
+                      labelColor: ColorStyle.tertiary,
+                      unselectedLabelColor: Colors.grey,
+                      tabs: [
+                        Tab(text: 'Bookings'),
+                        Tab(text: 'Walk-in'),
+                      ],
+                    ),
+                  ),
+                )
+              ),
         body: TabBarView(
           children: [
             hasBook
@@ -2986,8 +2812,8 @@ class _NewFoldScreenState extends State<NewFoldScreen> {
                               return InkWell(
                                   onTap: () {
                                     _bottomModalBookings(
-                                        '${book['Name']}',
-                                        '${book['ContactNumber']}',
+                                        '${book['CustomerName']}',
+                                        '${book['CustomerContactNumber']}',
                                         '${book['LoadWeight']}',
                                         '${book['CustomerLoad']}',
                                         '${book['Schedule']}',
@@ -3009,7 +2835,7 @@ class _NewFoldScreenState extends State<NewFoldScreen> {
                                         children: [
                                           Expanded(
                                               child: Text(
-                                            '${book['Name']}',
+                                            '${book['CustomerName']}',
                                             style: const TextStyle(
                                                 fontWeight: FontWeight.bold),
                                           )),
@@ -3202,9 +3028,11 @@ class _NewPickupScreenState extends State<NewPickupScreen> {
   void getUser() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
 
-      token = prefs.getString('token');
-      userid = prefs.getInt('userid');
-      shopid = prefs.getInt('shopid');
+      setState(() {
+        token = prefs.getString('token');
+        userid = prefs.getInt('userid');
+        shopid = prefs.getInt('shopid');
+      });
 
     pickDisplay();
   }
@@ -3214,11 +3042,13 @@ class _NewPickupScreenState extends State<NewPickupScreen> {
 
     if (response.error == null) {
 
-        bookings = response.data as List<dynamic>;
-        walkins = response.data1 as List<dynamic>;
-        hasBook = bookings.isNotEmpty;
-        hasWalkin = walkins.isNotEmpty;
-        isLoading = false;
+        setState(() {
+          bookings = response.data as List<dynamic>;
+          walkins = response.data1 as List<dynamic>;
+          hasBook = bookings.isNotEmpty;
+          hasWalkin = walkins.isNotEmpty;
+          isLoading = false;
+        });
 
     } else {
     }
@@ -3283,16 +3113,8 @@ class _NewPickupScreenState extends State<NewPickupScreen> {
   }
 
   void _bottomModalBookings(
-      String name,
-      String contact,
-      String load,
-      String total,
-      String date,
-      String payment,
-      String service,
-      String bookingId,
-      bool isCancelled,
-      bool isPending) {
+      String name, String contact, String load, String total, String date,
+      String payment, String service, String bookingId, bool isCancelled, bool isPending) {
     showMaterialModalBottomSheet(
         context: context,
         shape: const RoundedRectangleBorder(
@@ -3508,15 +3330,8 @@ class _NewPickupScreenState extends State<NewPickupScreen> {
   }
 
   void _bottomModalWalkins(
-      String contact,
-      String load,
-      String total,
-      String date,
-      String payment,
-      String service,
-      String walkinId,
-      bool isCancelled,
-      bool isPending) {
+      String contact, String load, String total, String date, String payment,
+      String service, String walkinId, bool isCancelled, bool isPending) {
     showMaterialModalBottomSheet(
         context: context,
         shape: const RoundedRectangleBorder(
@@ -3719,18 +3534,30 @@ class _NewPickupScreenState extends State<NewPickupScreen> {
       return DefaultTabController(
           length: 2,
           child: Scaffold(
-              appBar: ForAppBar(
-                title: const Text('Booked'),
-                tabBar: const TabBar(
-                  indicatorColor: ColorStyle.primary,
-                  labelColor: ColorStyle.tertiary,
-                  unselectedLabelColor: Colors.grey,
-                  tabs: [
-                    Tab(text: 'Bookings'),
-                    Tab(text: 'Walk-in'),
-                  ],
-                ),
-                tabBarColor: Colors.grey.shade50,
+              appBar: AppBar(
+                title: const Text('Pick-up'),
+                titleTextStyle: const TextStyle(fontWeight: FontWeight.bold,fontSize: 18),
+                  leading: IconButton(
+                    onPressed: (){
+                      Navigator.pop(context);
+                    },
+                    icon: const Icon(CupertinoIcons.chevron_left,color: Colors.white,),
+                  ),
+                bottom: PreferredSize(
+                  preferredSize: const Size.fromHeight(kToolbarHeight),
+                  child: Container(
+                    color: Colors.grey.shade200,
+                    child: const TabBar(
+                      indicatorColor: ColorStyle.primary,
+                      labelColor: ColorStyle.tertiary,
+                      unselectedLabelColor: Colors.grey,
+                      tabs: [
+                        Tab(text: 'Bookings'),
+                        Tab(text: 'Walk-in'),
+                      ],
+                    ),
+                  ),
+                )
               ),
               body: Center(
                 child: LoadingAnimationWidget.staggeredDotsWave(
@@ -3742,19 +3569,31 @@ class _NewPickupScreenState extends State<NewPickupScreen> {
     return DefaultTabController(
       length: 2, // Number of tabs
       child: Scaffold(
-        appBar: ForAppBar(
-          title: const Text('Booked'),
-          tabBar: const TabBar(
-            indicatorColor: ColorStyle.primary,
-            labelColor: ColorStyle.tertiary,
-            unselectedLabelColor: Colors.grey,
-            tabs: [
-              Tab(text: 'Bookings'),
-              Tab(text: 'Walk-in'),
-            ],
-          ),
-          tabBarColor: Colors.grey.shade50,
-        ),
+        appBar: AppBar(
+                title: const Text('Pick-up'),
+                titleTextStyle: const TextStyle(fontWeight: FontWeight.bold,fontSize: 18),
+            leading: IconButton(
+              onPressed: (){
+                Navigator.pop(context);
+              },
+              icon: const Icon(CupertinoIcons.chevron_left,color: Colors.white,),
+            ),
+                bottom: PreferredSize(
+                  preferredSize: const Size.fromHeight(kToolbarHeight),
+                  child: Container(
+                    color: Colors.grey.shade200,
+                    child: const TabBar(
+                      indicatorColor: ColorStyle.primary,
+                      labelColor: ColorStyle.tertiary,
+                      unselectedLabelColor: Colors.grey,
+                      tabs: [
+                        Tab(text: 'Bookings'),
+                        Tab(text: 'Walk-in'),
+                      ],
+                    ),
+                  ),
+                )
+              ),
         body: TabBarView(
           children: [
             hasBook
@@ -3831,8 +3670,8 @@ class _NewPickupScreenState extends State<NewPickupScreen> {
                               return InkWell(
                                   onTap: () {
                                     _bottomModalBookings(
-                                        '${book['Name']}',
-                                        '${book['ContactNumber']}',
+                                        '${book['CustomerName']}',
+                                        '${book['CustomerContactNumber']}',
                                         '${book['LoadWeight']}',
                                         '${book['CustomerLoad']}',
                                         '${book['Schedule']}',
@@ -3855,7 +3694,7 @@ class _NewPickupScreenState extends State<NewPickupScreen> {
                                         children: [
                                           Expanded(
                                               child: Text(
-                                            '${book['Name']}',
+                                            '${book['CustomerName']}',
                                             style: const TextStyle(
                                                 fontWeight: FontWeight.bold),
                                           )),
@@ -4049,11 +3888,11 @@ class _NewCompleteScreenState extends State<NewCompleteScreen> {
 
   void getUser() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
-
-      token = prefs.getString('token');
-      userid = prefs.getInt('userid');
-      shopid = prefs.getInt('shopid');
-
+      setState(() {
+        token = prefs.getString('token');
+        userid = prefs.getInt('userid');
+        shopid = prefs.getInt('shopid');
+      });
     dryDisplay();
   }
 
@@ -4061,13 +3900,13 @@ class _NewCompleteScreenState extends State<NewCompleteScreen> {
     ApiResponse response = await getComplete(token.toString());
 
     if (response.error == null) {
-
+      setState(() {
         bookings = response.data as List<dynamic>;
         walkins = response.data1 as List<dynamic>;
         hasBook = bookings.isNotEmpty;
         hasWalkin = walkins.isNotEmpty;
         isLoading = false;
-
+      });
     } else {
     }
   }
@@ -4106,16 +3945,8 @@ class _NewCompleteScreenState extends State<NewCompleteScreen> {
   }
 
   void _bottomModalBookings(
-      String name,
-      String contact,
-      String load,
-      String total,
-      String date,
-      String payment,
-      String service,
-      String bookingId,
-      bool isCancelled,
-      bool isPickup) {
+      String name, String contact, String load, String total, String date,
+      String payment, String service, String bookingId, bool isCancelled, bool isPickup) {
     showMaterialModalBottomSheet(
         context: context,
         shape: const RoundedRectangleBorder(
@@ -4288,15 +4119,8 @@ class _NewCompleteScreenState extends State<NewCompleteScreen> {
   }
 
   void _bottomModalWalkins(
-      String contact,
-      String load,
-      String total,
-      String date,
-      String payment,
-      String service,
-      String walkinId,
-      bool isCancelled,
-      bool isComplete) {
+      String contact, String load, String total, String date, String payment,
+      String service, String walkinId, bool isCancelled, bool isComplete) {
     showMaterialModalBottomSheet(
         context: context,
         shape: const RoundedRectangleBorder(
@@ -4502,18 +4326,30 @@ class _NewCompleteScreenState extends State<NewCompleteScreen> {
       return DefaultTabController(
           length: 2,
           child: Scaffold(
-              appBar: ForAppBar(
-                title: const Text('Booked'),
-                tabBar: const TabBar(
-                  indicatorColor: ColorStyle.primary,
-                  labelColor: ColorStyle.tertiary,
-                  unselectedLabelColor: Colors.grey,
-                  tabs: [
-                    Tab(text: 'Bookings'),
-                    Tab(text: 'Walk-in'),
-                  ],
-                ),
-                tabBarColor: Colors.grey.shade50,
+              appBar: AppBar(
+                title: const Text('Completed'),
+                titleTextStyle: const TextStyle(fontWeight: FontWeight.bold,fontSize: 18),
+                  leading: IconButton(
+                    onPressed: (){
+                      Navigator.pop(context);
+                    },
+                    icon: const Icon(CupertinoIcons.chevron_left,color: Colors.white,),
+                  ),
+                bottom: PreferredSize(
+                  preferredSize: const Size.fromHeight(kToolbarHeight),
+                  child: Container(
+                    color: Colors.grey.shade200,
+                    child: const TabBar(
+                      indicatorColor: ColorStyle.primary,
+                      labelColor: ColorStyle.tertiary,
+                      unselectedLabelColor: Colors.grey,
+                      tabs: [
+                        Tab(text: 'Bookings'),
+                        Tab(text: 'Walk-in'),
+                      ],
+                    ),
+                  ),
+                )
               ),
               body: Center(
                 child: LoadingAnimationWidget.staggeredDotsWave(
@@ -4525,19 +4361,31 @@ class _NewCompleteScreenState extends State<NewCompleteScreen> {
     return DefaultTabController(
       length: 2, // Number of tabs
       child: Scaffold(
-        appBar: ForAppBar(
-          title: const Text('Booked'),
-          tabBar: const TabBar(
-            indicatorColor: ColorStyle.primary,
-            labelColor: ColorStyle.tertiary,
-            unselectedLabelColor: Colors.grey,
-            tabs: [
-              Tab(text: 'Bookings'),
-              Tab(text: 'Walk-in'),
-            ],
-          ),
-          tabBarColor: Colors.grey.shade50,
-        ),
+        appBar: AppBar(
+                title: const Text('Completed'),
+                titleTextStyle: const TextStyle(fontWeight: FontWeight.bold,fontSize: 18),
+            leading: IconButton(
+              onPressed: (){
+                Navigator.pop(context);
+              },
+              icon: const Icon(CupertinoIcons.chevron_left,color: Colors.white,),
+            ),
+                bottom: PreferredSize(
+                  preferredSize: const Size.fromHeight(kToolbarHeight),
+                  child: Container(
+                    color: Colors.grey.shade200,
+                    child: const TabBar(
+                      indicatorColor: ColorStyle.primary,
+                      labelColor: ColorStyle.tertiary,
+                      unselectedLabelColor: Colors.grey,
+                      tabs: [
+                        Tab(text: 'Bookings'),
+                        Tab(text: 'Walk-in'),
+                      ],
+                    ),
+                  ),
+                )
+              ),
         body: TabBarView(
           children: [
             hasBook
@@ -4614,8 +4462,8 @@ class _NewCompleteScreenState extends State<NewCompleteScreen> {
                               return InkWell(
                                   onTap: () {
                                     _bottomModalBookings(
-                                        '${book['Name']}',
-                                        '${book['ContactNumber']}',
+                                        '${book['CustomerName']}',
+                                        '${book['CustomerContactNumber']}',
                                         '${book['LoadWeight']}',
                                         '${book['CustomerLoad']}',
                                         '${book['Schedule']}',
@@ -4638,7 +4486,7 @@ class _NewCompleteScreenState extends State<NewCompleteScreen> {
                                         children: [
                                           Expanded(
                                               child: Text(
-                                            '${book['Name']}',
+                                            '${book['CustomerName']}',
                                             style: const TextStyle(
                                                 fontWeight: FontWeight.bold),
                                           )),

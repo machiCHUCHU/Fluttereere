@@ -4,7 +4,9 @@ import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:capstone/api_response.dart';
 import 'package:capstone/brandnew/dialogs.dart';
 import 'package:capstone/brandnew/newLoginPage.dart';
+import 'package:capstone/brandnew/newSelectAddress.dart';
 import 'package:capstone/services/services.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:capstone/styles/mainColorStyle.dart';
 import 'package:capstone/styles/signupStyle.dart';
@@ -15,8 +17,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 import 'package:pinput/pinput.dart';
-import 'package:top_snackbar_flutter/custom_snack_bar.dart';
-import 'package:top_snackbar_flutter/top_snack_bar.dart';
+import 'package:capstone/services/validation.dart';
 
 class NewSignupScreen extends StatefulWidget {
   final String usertype;
@@ -37,6 +38,32 @@ class _NewSignupScreenState extends State<NewSignupScreen> {
   bool loading = true;
   bool isSubmitted = false;
   String? _selectedGender;
+  bool exist = false;
+  bool validateNumber(String contactNumber) {
+    final regex = RegExp(r'^(09|\+639)\d{9}$');
+
+    return regex.hasMatch(contactNumber);
+  }
+
+  bool validatePassword(String password){
+    final regex = RegExp(r'^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$');
+
+    return regex.hasMatch(password);
+  }
+
+  Future<bool> isNumberExists() async{
+    ApiResponse response = await numberExist(_contactForm.text);
+
+    if(response.error == null){
+        return exist = response.data as bool;
+    }else{
+      throw ('');
+    }
+  }
+
+  Future<void> otpDisplay() async{/*widget.contact*/
+   await otpVerification(_contactForm.text);
+  }
 
   Uint8List? _pickedImageBytes;
   Future<void> _pickAndUploadImage() async {
@@ -116,6 +143,11 @@ class _NewSignupScreenState extends State<NewSignupScreen> {
     }
   }
 
+  @override
+  void initState() {
+    super.initState();
+  }
+
   void _confirmationDialog() {
     AwesomeDialog(
       context: context,
@@ -128,6 +160,7 @@ class _NewSignupScreenState extends State<NewSignupScreen> {
       btnCancelOnPress: (){
       },
       btnOkOnPress: (){
+        otpDisplay();
         Navigator.push(context, MaterialPageRoute(builder: (context) =>
             NewOTPScreen(
               address: _addressForm.text, contact: _contactForm.text,
@@ -140,15 +173,24 @@ class _NewSignupScreenState extends State<NewSignupScreen> {
 
   @override
   Widget build(BuildContext context) {
-
-    return SafeArea(
-        child: Scaffold(
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Register'),
+        titleTextStyle: const TextStyle(fontWeight: FontWeight.bold,fontSize: 18),
+        leading: IconButton(
+          onPressed: (){
+            Navigator.pop(context,true);
+          },
+          icon: const Icon(CupertinoIcons.chevron_left,color: Colors.white,),
+        ),
+      ),
       body: Padding(
         padding: const EdgeInsets.all(15),
         child: Form(
           key: _formKey,
           child: Column(
             children: [
+              /*const SizedBox(height: 10,),
               const Align(
                 alignment: Alignment.centerLeft,
                 child: Text(
@@ -162,8 +204,8 @@ class _NewSignupScreenState extends State<NewSignupScreen> {
                   'Create a new account',
                   style: SignupStyle.secondaryTitle,
                 ),
-              ),
-              const SizedBox(height: 30,),
+              ),*/
+              const SizedBox(height: 10,),
               Expanded(
                   child: SingleChildScrollView(
                     physics: const ClampingScrollPhysics(),
@@ -271,13 +313,6 @@ class _NewSignupScreenState extends State<NewSignupScreen> {
                         TextFormField(
                           controller: _nameForm,
                           decoration: SignupStyle.allForm,
-                          autovalidateMode: AutovalidateMode.onUserInteraction,
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'This field is required.';
-                            }
-                            return null;
-                          },
                         ),
                         const SizedBox(height: 15,),
 
@@ -289,16 +324,9 @@ class _NewSignupScreenState extends State<NewSignupScreen> {
                         TextFormField(
                           controller: _addressForm,
                           decoration: SignupStyle.allForm,
-                          autovalidateMode: AutovalidateMode.onUserInteraction,
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'This field is required.';
-                            }
-                            return null;
-                          },
                         ),
-
                         const SizedBox(height: 15,),
+
                         const Text(
                           'Contact Number',
                           style: SignupStyle.formTitle,
@@ -308,13 +336,6 @@ class _NewSignupScreenState extends State<NewSignupScreen> {
                           controller: _contactForm,
                           keyboardType: TextInputType.number,
                           decoration: SignupStyle.allForm,
-                          autovalidateMode: AutovalidateMode.onUserInteraction,
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'This field is required.';
-                            }
-                            return null;
-                          },
                         ),
 
                         const SizedBox(height: 15,),
@@ -325,7 +346,6 @@ class _NewSignupScreenState extends State<NewSignupScreen> {
                         const SizedBox(height: 5,),
                         DropdownButtonFormField<String>(
                           decoration: SignupStyle.allForm,
-                          hint: const Text('Select Sex'),
                           value: _selectedGender,
                           items: ['Male', 'Female'].map((String value) {
                             return DropdownMenuItem<String>(
@@ -363,7 +383,6 @@ class _NewSignupScreenState extends State<NewSignupScreen> {
                               });
                             },
                           ),
-                          autovalidateMode: AutovalidateMode.onUserInteraction,
                           validator: (value) {
                             if (value == null || value.isEmpty) {
                               return 'Please enter your password!';
@@ -371,7 +390,15 @@ class _NewSignupScreenState extends State<NewSignupScreen> {
                             return null;
                           },
                         ),
-                        const SizedBox(height: 5,),
+                        const SizedBox(height: 20,),
+
+                        Text(
+                          'Password must consist of: \n- atleast 8 characters \n- 1 uppercase letter \n- 1 lowercase letter'
+                          '\n- 1 number \n- 1 special character',
+                          style: TextStyle(
+                            fontStyle: FontStyle.italic
+                          ),
+                        ),
 
                         const SizedBox(height: 30,),
                         SizedBox(
@@ -379,8 +406,25 @@ class _NewSignupScreenState extends State<NewSignupScreen> {
                           height: 50,
                           child: ElevatedButton(
                               style: SignupStyle.signButton(),
-                              onPressed: (){
-                                if(_formKey.currentState!.validate()){
+                              onPressed: ()async{
+                                await isNumberExists();
+                                if(_nameForm.text.isEmpty || _addressForm.text.isEmpty
+                                    || _contactForm.text.isEmpty || _selectedGender == null || _passForm.text.isEmpty){
+                                  warningDialog(context, 'Please fill out all the form');
+
+                                }else if(exist == true){
+                                  warningTextDialog(context, 'Invalid Contact Number',
+                                      'Contact number already existed. Please input another number.');
+                                }else if(!validateNumber(_contactForm.text)){
+                                  warningTextDialog(context, 'Invalid Contact Number',
+                                      'Please input a valid contact number.\n'
+                                          'e.g. 09123456789');
+                                }else if(!validatePassword(_passForm.text)){
+                                  warningTextDialog(context, 'Invalid Password Format',
+                                      'Your password should contain atleast 8 characters, one uppercase letter, '
+                                          'one lowercase letter, one number, and one special character');
+                                }
+                                else{
                                   _confirmationDialog();
                                 }
                               },
@@ -417,8 +461,7 @@ class _NewSignupScreenState extends State<NewSignupScreen> {
             ],
           ),
         ),
-      ),
-    )
+        ),
     );
   }
 }
@@ -465,10 +508,15 @@ class _NewOTPScreenState extends State<NewOTPScreen> {
         }
       } else {
         await errorDialog(context, '${apiResponse.error}');
+        print(apiResponse.error);
         Navigator.pop(context);
       }
     }
 
+  Future<void> otpDisplay() async{/*widget.contact*/
+    await otpVerification(widget.contact);
+
+  }
 
   @override
   void initState(){
@@ -479,7 +527,6 @@ class _NewOTPScreenState extends State<NewOTPScreen> {
     widget.contact;
     widget.password;
     widget.image;
-    otpDisplay();
   }
 
   final defaultPinTheme = PinTheme(
@@ -494,23 +541,22 @@ class _NewOTPScreenState extends State<NewOTPScreen> {
 
   bool showTimer = true;
   bool? isVerified;
+  String otp = '';
 
-  String? code;
-  Future<void> otpDisplay() async{/*widget.contact*/
-    ApiResponse response = await otpVerification(widget.contact);
+  Future<void> inputCodeCheck() async{
+   ApiResponse response = await otpCheck(otp);
 
-    if(response.error == null){
-      setState(() {
-        code = response.data.toString();
-      });
-    } else {
-
-    }
+   if(response.error == null){
+     regForm();
+   }else{
+     warningTextDialog(context, 'Invalid OTP', '${response.error}');
+   }
   }
+
 
   @override
   Widget build(BuildContext context) {
-    print(code);
+    print(otp);
     return SafeArea(
         child: Scaffold(
           body: SingleChildScrollView(
@@ -549,13 +595,7 @@ class _NewOTPScreenState extends State<NewOTPScreen> {
                     ),
                     Pinput(
                       validator: (value){
-                        if(value == code){
-                          isVerified = true;
-                          return null;
-                        }else{
-                          isVerified = false;
-                          return null;
-                        }
+                        otp = value!;
                       },
                       length: 4,
                       defaultPinTheme: defaultPinTheme,
@@ -580,7 +620,7 @@ class _NewOTPScreenState extends State<NewOTPScreen> {
                                 timeTextStyle: const TextStyle(
                                     fontSize: 15
                                 ),
-                                endTime: DateTime.now().add(const Duration(minutes: 1)),
+                                endTime: DateTime.now().add(const Duration(minutes: 5)),
                                 onEnd: () {
                                   setState(() {
                                     showTimer = false;
@@ -611,13 +651,7 @@ class _NewOTPScreenState extends State<NewOTPScreen> {
                     ElevatedButton(
                         style: SignupStyle.signButton(),
                         onPressed: (){
-                          if(isVerified == true){
-                            setState(() {
-                              regForm();
-                            });
-                          }else{
-                            const Text('Wrong Code');
-                          }
+                          inputCodeCheck();
                         },
                         child: const Text(
                           'Submit',

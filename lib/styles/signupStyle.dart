@@ -65,7 +65,6 @@ class SignupStyle{
   static InputDecoration passForm({
     required bool isHidden,
     required VoidCallback visibility,
-
   }){
     return InputDecoration(
       suffixIcon: IconButton(
@@ -78,27 +77,27 @@ class SignupStyle{
           borderRadius: BorderRadius.vertical(bottom: Radius.circular(5)),
           borderSide: const BorderSide(
               color: Colors.red,
-              width: 2
+              width: 1
           )
       ),
       enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(5),
+          borderRadius: BorderRadius.vertical(bottom: Radius.circular(5)),
           borderSide: const BorderSide(
               color: Colors.black,
-              width: 2
+              width: 1
           )
       ),
       focusedBorder: const OutlineInputBorder(
           borderSide: BorderSide(
               color: Colors.grey,
-              width: 2
+              width: 1
           )
       ),
       focusedErrorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(5),
+          borderRadius: BorderRadius.vertical(bottom: Radius.circular(5)),
           borderSide: const BorderSide(
               color: Colors.red,
-              width: 2
+              width: 1
           )
       ),
     );

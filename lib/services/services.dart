@@ -1,42 +1,9 @@
 import 'dart:convert';
-import 'dart:io';
-import 'dart:typed_data';
 import 'package:capstone/api_response.dart';
-import 'package:capstone/model/booking.dart';
-import 'package:capstone/model/chart.dart';
-import 'package:capstone/model/rating.dart';
 import 'package:http/http.dart' as http;
 import 'package:capstone/connect/laravel.dart';
 import 'package:capstone/model/user.dart';
-
-Future<ApiResponse> pictureAdd(String base64Image) async {
-  ApiResponse apiResponse = ApiResponse();
-
-  try {
-    final response = await http.post(
-      Uri.parse('$ipaddress/picture'),
-      headers: {'Accept': 'application/json'},
-      body: {
-        'image': base64Image,
-      },
-    );
-
-    switch (response.statusCode) {
-      case 200:
-        apiResponse.data = jsonDecode(response.body)['path'];
-        break;
-      case 422:
-      case 403:
-      default:
-        apiResponse.error = jsonDecode(response.body)['message'];
-        break;
-    }
-  } catch (e) {
-    apiResponse.error = "$e";
-  }
-
-  return apiResponse;
-}
+String? session;
 
 Future<ApiResponse> register(String name, String sex, String address,
     String contact, String pass, String image, String usertype) async {
@@ -67,15 +34,12 @@ Future<ApiResponse> register(String name, String sex, String address,
       case 422:
         final errors = jsonDecode(response.body)['message'];
         apiResponse.error = errors;
-        print(apiResponse.error);
         break;
       case 403:
         apiResponse.error = jsonDecode(response.body)['message'];
-        print(apiResponse.error);
         break;
       default:
         apiResponse.error = jsonDecode(response.body)['message'];
-        print(apiResponse.error);
         break;
     }
 
@@ -112,11 +76,9 @@ Future<ApiResponse> login(String contact, String password) async {
       case 403:
         final errors = jsonDecode(response.body)['message'];
         apiResponse.error = errors;
-        print(apiResponse.error);
         break;
       default:
         apiResponse.error = jsonDecode(response.body)['message'];
-        print(apiResponse.error);
         break;
     }
 
@@ -149,11 +111,49 @@ Future<ApiResponse> logout(String token) async{
       case 403:
         final errors = jsonDecode(response.body)['message'];
         apiResponse.error = errors;
-        print(apiResponse.error);
         break;
       default:
         apiResponse.error = jsonDecode(response.body)['message'];
-        print(apiResponse.error);
+        break;
+    }
+
+  } catch(e){
+    apiResponse.error = '$e';
+  }
+
+  return apiResponse;
+
+}
+
+Future<ApiResponse> changePassword(String contact, String password) async{
+  ApiResponse apiResponse = ApiResponse();
+
+  try{
+    final response = await http.post(
+        Uri.parse('$ipaddress/change-password'),
+        headers: {
+          'Accept': 'application/json'
+        },
+      body: {
+          'contact':contact,
+          'password': password
+      }
+    );
+
+    switch(response.statusCode){
+      case 200:
+        apiResponse.data = jsonDecode(response.body)['message'];
+        break;
+      case 422:
+        final errors = jsonDecode(response.body)['message'];
+        apiResponse.error = errors;
+        break;
+      case 403:
+        final errors = jsonDecode(response.body)['message'];
+        apiResponse.error = errors;
+        break;
+      default:
+        apiResponse.error = jsonDecode(response.body)['message'];
         break;
     }
 
@@ -226,47 +226,9 @@ Future<ApiResponse> shopInfoRegister(
 
 }
 
-Future<ApiResponse> getShopCode(String id) async {
 
-  ApiResponse apiResponse = ApiResponse();
-
-  try {
-
-    final response = await http.get(
-        Uri.parse('$ipaddress/shop-code/$id'),
-        headers: {
-          'Accept': 'application/json',
-        },
-    );
-
-    switch(response.statusCode){
-      case 200:
-        apiResponse.shopcode = jsonDecode(response.body)['shopcode'];
-        apiResponse.total = jsonDecode(response.body)['newshopid'];
-        print('success');
-        break;
-      case 422:
-        final errors = jsonDecode(response.body)['message'];
-        apiResponse.error = errors;
-        break;
-      case 403:
-        apiResponse.error = jsonDecode(response.body)['message'];
-        break;
-      default:
-        apiResponse.error = jsonDecode(response.body)['message'];
-        break;
-
-    }
-
-  } catch(e){
-    apiResponse.error = '$e';
-  }
-
-  return apiResponse;
-}
-
-
-Future<ApiResponse> addInventory(String itemname, String itemqty, String itemvol, String voluse, String token) async {
+Future<ApiResponse> addInventory(String itemname, String itemqty, String itemvol, String voluse,
+    String category, String isuse, String token) async {
 
   ApiResponse apiResponse = ApiResponse();
 
@@ -282,7 +244,9 @@ Future<ApiResponse> addInventory(String itemname, String itemqty, String itemvol
           'ItemName':itemname,
           'ItemQty':itemqty,
           'itemVolume':itemvol,
-          'volumeuse':voluse
+          'volumeuse':voluse,
+          'category': category,
+          'isuse': isuse
         }
     );
 
@@ -296,7 +260,6 @@ Future<ApiResponse> addInventory(String itemname, String itemqty, String itemvol
         break;
       case 403:
         apiResponse.error = jsonDecode(response.body)['message'];
-        print(apiResponse.error);
         break;
       default:
         apiResponse.error = jsonDecode(response.body)['message'];
@@ -376,7 +339,6 @@ Future<ApiResponse> updateAddedShop(String token,String id, String status) async
         apiResponse.error = jsonDecode(response.body)['message'];
         break;
       default:
-        print(response.body);
         break;
     }
   }catch(e){
@@ -459,22 +421,29 @@ Future<ApiResponse> deleteInventory(String id, String token) async{
 }
 
                             /*String number v*/
-Future<ApiResponse> otpVerification(String number) async{
+Future<ApiResponse> otpVerification(String contact) async{
   ApiResponse apiResponse = ApiResponse();
 
   try {
 
     final response = await http.post( /* $number*/
-        Uri.parse('$ipaddress/verification/$number'),
+        Uri.parse('$ipaddress/verification'),
         headers: {
           'Accept': 'application/json',
-        }
+        },
+      body: {
+          'contact': contact
+      }
     );
+
+    String? rawCookie = response.headers['set-cookie'];
+    if (rawCookie != null) {
+      session = rawCookie.split(';')[0];
+    }
 
     switch(response.statusCode){
       case 200:
-        apiResponse.data = jsonDecode(response.body)['code'];
-        print('success');
+        apiResponse.data = jsonDecode(response.body)['message'];
         break;
       case 422:
         final errors = jsonDecode(response.body)['message'];
@@ -496,19 +465,63 @@ Future<ApiResponse> otpVerification(String number) async{
   return apiResponse;
 }
 
-Future<ApiResponse> updateInventory(String id, String itemname, String itemqty, String itemvol, String voluse) async{
+Future<ApiResponse> otpCheck(String otpinput) async{
+  ApiResponse apiResponse = ApiResponse();
+
+  try {
+
+    final response = await http.post( /* $number*/
+        Uri.parse('$ipaddress/verification/otp'),
+        headers: {
+          'Accept': 'application/json',
+          'Cookie': session ?? ''
+        },
+        body: {
+          'otpinput': otpinput
+        }
+    );
+
+    switch(response.statusCode){
+      case 200:
+        apiResponse.data = jsonDecode(response.body)['message'];
+        break;
+      case 422:
+        final errors = jsonDecode(response.body)['message'];
+        apiResponse.error = errors;
+        break;
+      case 403:
+        apiResponse.error = jsonDecode(response.body)['message'];
+        break;
+      default:
+        apiResponse.error = jsonDecode(response.body)['message'];
+        break;
+
+    }
+
+  } catch(e){
+    apiResponse.error = '$e';
+  }
+
+  return apiResponse;
+}
+
+Future<ApiResponse> updateInventory(String id, String itemname, String itemqty,
+    String itemvol, String voluse, String token, String category, String isuse) async{
   ApiResponse apiResponse = ApiResponse();
 
   try{
     final response = await http.put(Uri.parse('$ipaddress/shop-inventory/update/$id'),
       headers: {
-        'Accept': 'application/json'
+        'Accept': 'application/json',
+        'Authorization': 'Bearer $token'
       },
       body: {
         'ItemName':itemname,
         'ItemQty':itemqty,
         'itemVolume':itemvol,
-        'volumeuse': voluse
+        'volumeuse': voluse,
+        'category': category,
+        'isuse': isuse
       }
     );
 
@@ -529,315 +542,6 @@ Future<ApiResponse> updateInventory(String id, String itemname, String itemqty, 
         break;
     }
   }catch(e){
-    apiResponse.error = '$e';
-  }
-
-  return apiResponse;
-}
-
-Future<ApiResponse> getPendingBooking(String token) async{
-  ApiResponse apiResponse = ApiResponse();
-
-  try {
-
-    final response = await http.get(
-        Uri.parse('$ipaddress/bookings/pending'),
-        headers: {
-          'Accept': 'application/json',
-          'Authorization': 'Bearer $token'
-        }
-    );
-
-    switch(response.statusCode){
-      case 200:
-        apiResponse.data = jsonDecode(response.body)['pending'];
-
-        break;
-      case 422:
-        final errors = jsonDecode(response.body)['message'];
-        apiResponse.error = errors;
-        break;
-      case 403:
-        apiResponse.error = jsonDecode(response.body)['message'];
-        break;
-      default:
-        apiResponse.error = jsonDecode(response.body)['message'];
-        break;
-
-    }
-
-  } catch(e){
-    apiResponse.error = '$e';
-  }
-
-  return apiResponse;
-}
-
-Future<ApiResponse> getPendingBookingCount(String token) async{
-  ApiResponse apiResponse = ApiResponse();
-
-  try {
-
-    final response = await http.get(
-        Uri.parse('$ipaddress/bookings/pending'),
-        headers: {
-          'Accept': 'application/json',
-          'Authorization': 'Bearer $token'
-        }
-    );
-
-    switch(response.statusCode){
-      case 200:
-        apiResponse.total = jsonDecode(response.body)['pending_count'];
-        print(apiResponse.data);
-        break;
-      case 422:
-        final errors = jsonDecode(response.body)['message'];
-        apiResponse.error = errors;
-        break;
-      case 403:
-        apiResponse.error = jsonDecode(response.body)['message'];
-        break;
-      default:
-        apiResponse.error = jsonDecode(response.body)['message'];
-        break;
-
-    }
-
-  } catch(e){
-    apiResponse.error = '$e';
-  }
-
-  return apiResponse;
-}
-
-Future<ApiResponse> pendingBookingStatus(String id, String stat, String detergentid, String token) async{
-  ApiResponse apiResponse = ApiResponse();
-
-  try{
-    final response = await http.put(Uri.parse('$ipaddress/bookings/pending/update/$id'),
-        headers: {
-          'Accept': 'application/json',
-          'Authorization': 'Bearer $token'
-        },
-        body: {
-          'stat':stat,
-          'detergentId': detergentid
-        }
-    );
-
-    switch(response.statusCode){
-      case 200:
-        apiResponse.status = jsonDecode(response.body)['status'];
-        apiResponse.message = jsonDecode(response.body)['message'];
-        apiResponse.data = jsonDecode(response.body)['response'];
-        break;
-      case 422:
-        final errors = jsonDecode(response.body)['message'];
-        apiResponse.error = errors;
-        break;
-      case 403:
-        apiResponse.error = jsonDecode(response.body)['message'];
-        break;
-      default:
-        final errors = jsonDecode(response.body)['message'];
-        apiResponse.error = errors;
-
-        break;
-    }
-  }catch(e){
-    apiResponse.error = '$e';
-  }
-
-  return apiResponse;
-}
-
-Future<ApiResponse> getProcessBooking(String token) async{
-  ApiResponse apiResponse = ApiResponse();
-
-  try {
-
-    final response = await http.get(
-        Uri.parse('$ipaddress/bookings/process'),
-        headers: {
-          'Accept': 'application/json',
-          'Authorization': 'Bearer $token'
-        }
-    );
-
-    switch(response.statusCode){
-      case 200:
-        apiResponse.data = jsonDecode(response.body)['process'];
-        print(apiResponse.data);
-        break;
-      case 422:
-        final errors = jsonDecode(response.body)['message'];
-        apiResponse.error = errors;
-        break;
-      case 403:
-        apiResponse.error = jsonDecode(response.body)['message'];
-        break;
-      default:
-        apiResponse.error = jsonDecode(response.body)['message'];
-        break;
-
-    }
-
-  } catch(e){
-    apiResponse.error = '$e';
-  }
-
-  return apiResponse;
-}
-
-Future<ApiResponse> getProcessBookingCount(String token) async{
-  ApiResponse apiResponse = ApiResponse();
-
-  try {
-
-    final response = await http.get(
-        Uri.parse('$ipaddress/bookings/process'),
-        headers: {
-          'Accept': 'application/json',
-          'Authorization': 'Bearer $token'
-        }
-    );
-
-    switch(response.statusCode){
-      case 200:
-        apiResponse.total = jsonDecode(response.body)['process_count'];
-        print(apiResponse.data);
-        break;
-      case 422:
-        final errors = jsonDecode(response.body)['message'];
-        apiResponse.error = errors;
-        break;
-      case 403:
-        apiResponse.error = jsonDecode(response.body)['message'];
-        break;
-      default:
-        apiResponse.error = jsonDecode(response.body)['message'];
-        break;
-
-    }
-
-  } catch(e){
-    apiResponse.error = '$e';
-  }
-
-  return apiResponse;
-}
-
-Future<ApiResponse> processBookingStatus(String id, String stat, String token) async{
-  ApiResponse apiResponse = ApiResponse();
-
-  try{
-    final response = await http.put(Uri.parse('$ipaddress/bookings/process/update/$id'),
-        headers: {
-          'Accept': 'application/json',
-          'Authorization': 'Bearer $token'
-        },
-        body: {
-          'stat':stat,
-        }
-    );
-
-    switch(response.statusCode){
-      case 200:
-        apiResponse.status = jsonDecode(response.body)['status'];
-        apiResponse.message = jsonDecode(response.body)['message'];
-        apiResponse.data = jsonDecode(response.body)['response'];
-        apiResponse.notif = jsonDecode(response.body)['notif'];
-        break;
-      case 422:
-        final errors = jsonDecode(response.body)['message'];
-        apiResponse.error = errors;
-        break;
-      case 403:
-        apiResponse.error = jsonDecode(response.body)['message'];
-        break;
-      default:
-        final errors = jsonDecode(response.body)['message'];
-        apiResponse.error = errors;
-        break;
-    }
-  }catch(e){
-    apiResponse.error = '$e';
-  }
-
-  return apiResponse;
-}
-
-Future<ApiResponse> getFinishedBooking(String token) async{
-  ApiResponse apiResponse = ApiResponse();
-
-  try {
-
-    final response = await http.get(
-        Uri.parse('$ipaddress/bookings/finished'),
-        headers: {
-          'Accept': 'application/json',
-          'Authorization': 'Bearer $token'
-        }
-    );
-
-    switch(response.statusCode){
-      case 200:
-        apiResponse.data = jsonDecode(response.body)['finish'];
-        print(apiResponse.data);
-        break;
-      case 422:
-        final errors = jsonDecode(response.body)['message'];
-        apiResponse.error = errors;
-        break;
-      case 403:
-        apiResponse.error = jsonDecode(response.body)['message'];
-        break;
-      default:
-        apiResponse.error = jsonDecode(response.body)['message'];
-        break;
-
-    }
-
-  } catch(e){
-    apiResponse.error = '$e';
-  }
-
-  return apiResponse;
-}
-
-Future<ApiResponse> getFinishedBookingCount(String token) async{
-  ApiResponse apiResponse = ApiResponse();
-
-  try {
-
-    final response = await http.get(
-        Uri.parse('$ipaddress/bookings/finished'),
-        headers: {
-          'Accept': 'application/json',
-          'Authorization': 'Bearer $token'
-        }
-    );
-
-    switch(response.statusCode){
-      case 200:
-        apiResponse.total = jsonDecode(response.body)['finish_count'];
-        print(apiResponse.data);
-        break;
-      case 422:
-        final errors = jsonDecode(response.body)['message'];
-        apiResponse.error = errors;
-        break;
-      case 403:
-        apiResponse.error = jsonDecode(response.body)['message'];
-        break;
-      default:
-        apiResponse.error = jsonDecode(response.body)['message'];
-        break;
-
-    }
-
-  } catch(e){
     apiResponse.error = '$e';
   }
 
@@ -893,7 +597,6 @@ Future<ApiResponse> getShopProfile(String id) async{
     switch(response.statusCode){
       case 200:
         apiResponse.data = jsonDecode(response.body)['shop'];
-        print(apiResponse.data);
         break;
       case 422:
         final errors = jsonDecode(response.body)['message'];
@@ -930,7 +633,6 @@ Future<ApiResponse> getUserProfile(String id) async{
     switch(response.statusCode){
       case 200:
         apiResponse.data = jsonDecode(response.body)['user'];
-        print(apiResponse.data);
         break;
       case 422:
         final errors = jsonDecode(response.body)['message'];
@@ -1438,7 +1140,7 @@ Future<ApiResponse> updateOwnerProfile(String id, String name, String sex, Strin
   return apiResponse;
 }
 
-Future<ApiResponse> addWalkin(String contact, String load, String service, String token) async{
+Future<ApiResponse> addWalkin(String contact, String load, String service, String total, String token) async{
   ApiResponse apiResponse = ApiResponse();
 
   try{
@@ -1452,6 +1154,7 @@ Future<ApiResponse> addWalkin(String contact, String load, String service, Strin
         body: {
           'contact': contact,
           'load':load,
+          'total':total,
           'service': service,
         }
     );
@@ -1459,7 +1162,6 @@ Future<ApiResponse> addWalkin(String contact, String load, String service, Strin
     switch(response.statusCode){
       case 201:
         apiResponse.data = jsonDecode(response.body)['message'];
-        print(apiResponse.data);
         break;
       case 422:
         final errors = jsonDecode(response.body)['message'];
@@ -1467,7 +1169,6 @@ Future<ApiResponse> addWalkin(String contact, String load, String service, Strin
         break;
       case 403:
         apiResponse.error = jsonDecode(response.body)['message'];
-        print(apiResponse.error);
         break;
       default:
         apiResponse.error = jsonDecode(response.body)['message'];
@@ -1518,7 +1219,7 @@ Future<ApiResponse> getWalkin(String token) async{
   return apiResponse;
 }
 
-Future<ApiResponse> getReport(String startDate, String endDate, String status, String type, String token) async{
+Future<ApiResponse> getReport(String startDate, String endDate, String service, String type, String token) async{
   ApiResponse apiResponse = ApiResponse();
 
   try {
@@ -1532,7 +1233,7 @@ Future<ApiResponse> getReport(String startDate, String endDate, String status, S
         body: {
           'start': startDate,
           'end': endDate,
-          'stat': status,
+          'service': service,
           'type': type
         }
     );
@@ -1540,6 +1241,8 @@ Future<ApiResponse> getReport(String startDate, String endDate, String status, S
     switch(response.statusCode){
       case 200:
         apiResponse.data = jsonDecode(response.body)['data'];
+        apiResponse.count = jsonDecode(response.body)['servicecount'];
+        apiResponse.total = jsonDecode(response.body)['loadcount'];
         break;
       case 422:
         final errors = jsonDecode(response.body)['message'];
@@ -1595,7 +1298,7 @@ Future<ApiResponse> getCustomers(String token) async{
   return apiResponse;
 }
 
-Future<ApiResponse> addBookings(String load, String sched, String customerId, String serviceId,String token) async{
+Future<ApiResponse> addBookings(String load, String sched, String customerId, String serviceId, String loadcost,String token) async{
   ApiResponse apiResponse = ApiResponse();
 
   try{
@@ -1610,7 +1313,8 @@ Future<ApiResponse> addBookings(String load, String sched, String customerId, St
           'load': load,
           'sched': sched,
           'customerId': customerId,
-          'serviceId': serviceId
+          'serviceId': serviceId,
+          'loadcost': loadcost
         }
     );
 
@@ -1624,7 +1328,6 @@ Future<ApiResponse> addBookings(String load, String sched, String customerId, St
         break;
       case 403:
         apiResponse.error = jsonDecode(response.body)['message'];
-        print(apiResponse.error);
         break;
       default:
         apiResponse.error = jsonDecode(response.body)['message'];
@@ -1663,7 +1366,6 @@ Future<ApiResponse> updateWalkin(String stat, String token, String id) async{
         break;
       case 403:
         apiResponse.error = jsonDecode(response.body)['message'];
-        print(apiResponse.error);
         break;
       default:
         apiResponse.error = jsonDecode(response.body)['message'];
@@ -1701,7 +1403,6 @@ Future<ApiResponse> updateBooking(String stat, String token, String id) async{
         break;
       case 403:
         apiResponse.error = jsonDecode(response.body)['message'];
-        print(apiResponse.error);
         break;
       default:
         apiResponse.error = jsonDecode(response.body)['message'];
@@ -2027,7 +1728,6 @@ Future<ApiResponse> addRequestShops(String code, String token) async {
         break;
       case 403:
         apiResponse.error = jsonDecode(response.body)['message'];
-        print(apiResponse.error);
         break;
       default:
         apiResponse.error = jsonDecode(response.body)['message'];
@@ -2086,7 +1786,6 @@ Future<ApiResponse> getRequestShopInfo(String shopId, String token) async{
 
 Future<ApiResponse> getLaundry(String nav,String token) async{
   ApiResponse apiResponse = ApiResponse();
-  bool isNav = true;
   try{
     final response = await http.post(
         Uri.parse('$ipaddress/laundry/status/display'),

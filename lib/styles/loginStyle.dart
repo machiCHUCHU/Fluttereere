@@ -29,34 +29,68 @@ class LoginStyle {
     fontWeight: FontWeight.bold
   );
 
-  static InputDecoration emailForm = InputDecoration(
+  static InputDecoration emailForm = const InputDecoration(
       filled: true,
       fillColor: Colors.white,
       errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(5),
-          borderSide: const BorderSide(
+          borderRadius: BorderRadius.vertical(bottom: Radius.circular(5)),
+          borderSide: BorderSide(
               color: Colors.red,
-              width: 2
+              width: 1
           )
       ),
       enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(5),
-          borderSide: const BorderSide(
+          borderRadius: BorderRadius.vertical(bottom: Radius.circular(5)),
+          borderSide: BorderSide(
               color: Colors.black,
-              width: 2
+              width: 1
           )
       ),
-      focusedBorder: const OutlineInputBorder(
+      focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.vertical(bottom: Radius.circular(5)),
           borderSide: BorderSide(
               color: Colors.grey,
-              width: 2
+              width: 1
           )
       ),
     focusedErrorBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(5),
-        borderSide: const BorderSide(
+        borderRadius: BorderRadius.vertical(bottom: Radius.circular(5)),
+        borderSide: BorderSide(
             color: Colors.red,
-            width: 2
+            width: 1
+        )
+    ),
+  );
+
+  static InputDecoration addRegCustomer = const InputDecoration(
+    filled: true,
+    fillColor: Colors.white,
+    errorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.vertical(bottom: Radius.circular(5)),
+        borderSide: BorderSide(
+            color: Colors.red,
+            width: 1
+        )
+    ),
+    enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.vertical(bottom: Radius.circular(5)),
+        borderSide: BorderSide(
+            color: Colors.black,
+            width: 1
+        )
+    ),
+    focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.vertical(bottom: Radius.circular(5)),
+        borderSide: BorderSide(
+            color: Colors.grey,
+            width: 1
+        )
+    ),
+    focusedErrorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.vertical(bottom: Radius.circular(5)),
+        borderSide: BorderSide(
+            color: Colors.red,
+            width: 1
         )
     ),
   );
@@ -73,31 +107,32 @@ class LoginStyle {
         ),
         filled: true,
         fillColor: Colors.white,
-        errorBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(5),
-            borderSide: const BorderSide(
+        errorBorder: const OutlineInputBorder(
+            borderRadius: BorderRadius.vertical(bottom: Radius.circular(5)),
+            borderSide: BorderSide(
                 color: Colors.red,
-                width: 2
+                width: 1
             )
         ),
-        enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(5),
-            borderSide: const BorderSide(
+        enabledBorder: const OutlineInputBorder(
+            borderRadius: BorderRadius.vertical(bottom: Radius.circular(5)),
+            borderSide: BorderSide(
                 color: Colors.black,
-                width: 2
+                width: 1
             )
         ),
         focusedBorder: const OutlineInputBorder(
+            borderRadius: BorderRadius.vertical(bottom: Radius.circular(5)),
             borderSide: BorderSide(
                 color: Colors.grey,
-                width: 2
+                width: 1
             )
         ),
-      focusedErrorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(5),
-          borderSide: const BorderSide(
+      focusedErrorBorder: const OutlineInputBorder(
+          borderRadius: BorderRadius.vertical(bottom: Radius.circular(5)),
+          borderSide: BorderSide(
               color: Colors.red,
-              width: 2
+              width: 1
           )
       ),
     );

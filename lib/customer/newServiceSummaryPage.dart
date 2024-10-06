@@ -1,4 +1,3 @@
-import 'dart:ui';
 
 import 'package:capstone/api_response.dart';
 import 'package:capstone/services/services.dart';
@@ -6,7 +5,6 @@ import 'package:capstone/styles/mainColorStyle.dart';
 import 'package:easy_stepper/easy_stepper.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/painting.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:row_item/row_item.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -35,7 +33,6 @@ class _NewServiceSummaryScreenState extends State<NewServiceSummaryScreen> {
         isLoading = false;
       });
     }else{
-      print(response.error);
     }
   }
 
@@ -62,7 +59,13 @@ class _NewServiceSummaryScreenState extends State<NewServiceSummaryScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Summary'),
-        titleTextStyle: TextStyle(color: Colors.white,fontSize: 18,fontWeight: FontWeight.bold),
+        titleTextStyle: const TextStyle(color: Colors.white,fontSize: 18,fontWeight: FontWeight.bold),
+        leading: IconButton(
+          onPressed: (){
+            Navigator.pop(context);
+          },
+          icon: const Icon(CupertinoIcons.chevron_left,color: Colors.white,),
+        ),
       ),
       body: isLoading
           ? loading()
@@ -127,7 +130,6 @@ class _NewServiceSummaryScreenState extends State<NewServiceSummaryScreen> {
                   setState(() {
                     index = int.parse('${summ['Status']}');
                     activeStep = index;
-                    print(activeStep);
                   });
                 },
               ),
@@ -148,7 +150,7 @@ class _NewServiceSummaryScreenState extends State<NewServiceSummaryScreen> {
                     Container(
                       width: double.infinity,
                       padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
+                      decoration: const BoxDecoration(
                           color: ColorStyle.tertiary,
                           borderRadius: BorderRadius.vertical(top: Radius.circular(5))
                       ),
@@ -166,55 +168,55 @@ class _NewServiceSummaryScreenState extends State<NewServiceSummaryScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           const Text('Laundry Shop Owner',style: TextStyle(fontSize: 10)),
-                          Text('${summ['OwnerName']}',style: TextStyle(fontSize: 16,fontWeight: FontWeight.bold),),
+                          Text('${summ['OwnerName']}',style: const TextStyle(fontSize: 16,fontWeight: FontWeight.bold),),
 
                           const SizedBox(height: 5,),
                           const Text('Address',style: TextStyle(fontSize: 10)),
-                          Text('${summ['OwnerAddress']}',style: TextStyle(fontSize: 16,fontWeight: FontWeight.bold),),
+                          Text('${summ['OwnerAddress']}',style: const TextStyle(fontSize: 16,fontWeight: FontWeight.bold),),
 
                           const SizedBox(height: 5,),
                           const Text('Shop Name',style: TextStyle(fontSize: 10)),
-                          Text('${summ['ShopName']}',style: TextStyle(fontSize: 16,fontWeight: FontWeight.bold),),
+                          Text('${summ['ShopName']}',style: const TextStyle(fontSize: 16,fontWeight: FontWeight.bold),),
 
                           const SizedBox(height: 5,),
                           const Text('Shop Address',style: TextStyle(fontSize: 10)),
-                          Text('${summ['ShopAddress']}',style: TextStyle(fontSize: 16,fontWeight: FontWeight.bold),),
+                          Text('${summ['ShopAddress']}',style: const TextStyle(fontSize: 16,fontWeight: FontWeight.bold),),
 
 
                           const Divider(),
                           const Text('Customer Name',style: TextStyle(fontSize: 10)),
-                          Text('${summ['CustomerName']}',style: TextStyle(fontSize: 16,fontWeight: FontWeight.bold),),
+                          Text('${summ['CustomerName']}',style: const TextStyle(fontSize: 16,fontWeight: FontWeight.bold),),
 
                           const SizedBox(height: 5,),
                           const Text('Customer Address',style: TextStyle(fontSize: 10)),
-                          Text('${summ['CustomerAddress']}',style: TextStyle(fontSize: 16,fontWeight: FontWeight.bold),),
+                          Text('${summ['CustomerAddress']}',style: const TextStyle(fontSize: 16,fontWeight: FontWeight.bold),),
 
                           const SizedBox(height: 5,),
                           const Text('Customer Contact',style: TextStyle(fontSize: 10)),
-                          Text('${summ['CustomerContactNumber']}',style: TextStyle(fontSize: 16,fontWeight: FontWeight.bold),),
+                          Text('${summ['CustomerContactNumber']}',style: const TextStyle(fontSize: 16,fontWeight: FontWeight.bold),),
                           const Divider(height: 30,),
 
                           const Text('Laundry Details', style: TextStyle(fontWeight: FontWeight.bold,fontSize: 20),),
                           RowItem(
                               title: const Text('Service Availed'),
-                              description: Text('${summ['ServiceName']}', style: TextStyle(fontWeight: FontWeight.bold),)
+                              description: Text('${summ['ServiceName']}', style: const TextStyle(fontWeight: FontWeight.bold),)
                           ),
                           RowItem(
                               title: const Text('Laundry Load'),
-                              description: Text('${summ['CustomerLoad']} kg/s', style: TextStyle(fontWeight: FontWeight.bold),)
+                              description: Text('${summ['CustomerLoad']} kg/s', style: const TextStyle(fontWeight: FontWeight.bold),)
                           ),
                           RowItem(
                               title: const Text('Payment Status'),
-                              description: Text('${summ['PaymentStatus']}', style: TextStyle(fontWeight: FontWeight.bold),)
+                              description: Text('${summ['PaymentStatus']}', style: const TextStyle(fontWeight: FontWeight.bold),)
                           ),
                           RowItem(
                               title: const Text('Date'),
-                              description: Text('${summ['Schedule']}', style: TextStyle(fontWeight: FontWeight.bold),)
+                              description: Text('${summ['Schedule']}', style: const TextStyle(fontWeight: FontWeight.bold),)
                           ),
                           const Divider(),
                           RowItem(
                               title: const Text('Service Fee', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),),
-                              description: Text('₱${summ['LoadCost']}.00', style: TextStyle(fontWeight: FontWeight.bold,fontSize: 16),)
+                              description: Text('₱${summ['LoadCost']}.00', style: const TextStyle(fontWeight: FontWeight.bold,fontSize: 16),)
                           )
                         ],
                       ),
@@ -223,22 +225,6 @@ class _NewServiceSummaryScreenState extends State<NewServiceSummaryScreen> {
                 ),
               ),
               const SizedBox(height: 5,),
-              '${summ['Status']}' == '0' ? ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.red,
-                    fixedSize: Size(MediaQuery.of(context).size.width, 20),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(5)
-                    )
-                  ),
-                  onPressed: (){},
-                  child: const Text(
-                      'Cancel Service',
-                    style: TextStyle(
-                      color: Colors.white
-                    ),
-                  )
-              ) : const SizedBox.shrink(),
             ],
           ),
         )

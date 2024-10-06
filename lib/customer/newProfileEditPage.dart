@@ -1,22 +1,20 @@
 import 'dart:convert';
-import 'dart:ui';
 
 import 'package:capstone/api_response.dart';
 import 'package:capstone/brandnew/dialogs.dart';
-import 'package:capstone/brandnew/newLoginPage.dart';
 import 'package:capstone/connect/laravel.dart';
 import 'package:capstone/services/services.dart';
 import 'package:capstone/styles/mainColorStyle.dart';
 import 'package:capstone/styles/signupStyle.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/painting.dart';
 import 'package:flutter_timer_countdown/flutter_timer_countdown.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:pinput/pinput.dart';
 import 'package:row_item/row_item.dart';
 import 'dart:typed_data';
+
 
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -63,7 +61,7 @@ class _NewProfileEditScreenState extends State<NewProfileEditScreen> {
               onPressed: (){
                 Navigator.pop(context, ImageSource.camera);
               },
-              icon: Icon(Icons.camera_alt),
+              icon: const Icon(Icons.camera_alt),
               iconSize: 75,
               color: Colors.blueAccent,
               splashColor: Colors.transparent,
@@ -73,7 +71,7 @@ class _NewProfileEditScreenState extends State<NewProfileEditScreen> {
               onPressed: (){
                 Navigator.pop(context, ImageSource.gallery);
               },
-              icon: Icon(Icons.folder),
+              icon: const Icon(Icons.folder),
               iconSize: 75,
               color: Colors.blueAccent,
               splashColor: Colors.transparent,
@@ -96,12 +94,12 @@ class _NewProfileEditScreenState extends State<NewProfileEditScreen> {
 
         setState(() {
           _pickedImageBytes = byteData;
+          _image = base64Encode(_pickedImageBytes!);
         });
 
 
       } else {
 
-        print('Image picking canceled');
       }
     }
   }
@@ -137,13 +135,15 @@ class _NewProfileEditScreenState extends State<NewProfileEditScreen> {
     String hasPickedImage;
     if(_pickedImageBytes != null){
       hasPickedImage = base64Encode(_pickedImageBytes!);
+
     }else{
-      hasPickedImage = _image!;
+      hasPickedImage = _image;
     }
 
     ApiResponse response = await updateCustomerProfile(
         widget.id, _name, _sex, _address, _contact, hasPickedImage, '${prefs.getString('token')}');
 
+    if(!mounted) return;
     Navigator.pop(context);
 
     if (response.error == null) {
@@ -160,6 +160,14 @@ class _NewProfileEditScreenState extends State<NewProfileEditScreen> {
     }
   }
 
+  bool isEditable(){
+    if(widget.name != _name || widget.sex != _sex || widget.address != _address || widget.contact != _contact || widget.image != _image){
+      return true;
+    }else{
+      return false;
+    }
+  }
+
   void sexDialog(){
     showDialog(
 
@@ -171,7 +179,7 @@ class _NewProfileEditScreenState extends State<NewProfileEditScreen> {
             ),
             contentPadding: const EdgeInsets.symmetric(horizontal: 8),
             title: const Text('Sex',textAlign: TextAlign.center,),
-            titleTextStyle: TextStyle(
+            titleTextStyle: const TextStyle(
               color: Colors.black,
               fontSize: 18,
               fontWeight: FontWeight.bold
@@ -217,18 +225,25 @@ class _NewProfileEditScreenState extends State<NewProfileEditScreen> {
 
   @override
   Widget build(BuildContext context) {
-    print(widget.contact);
-    print(_contact);
+    print(_image);
     return Scaffold(
       appBar: AppBar(
         title: const Text('Edit Information'),
         titleTextStyle: const TextStyle(fontSize: 18,fontWeight: FontWeight.bold),
+        leading: IconButton(
+          onPressed: (){
+            isEditable() 
+                ? confirmationDialog(context, 'Discard Changes?', 'Your current changes will be lost.')
+                : Navigator.pop(context);
+          },
+          icon: const Icon(CupertinoIcons.chevron_left,color: Colors.white,),
+        ),
         actions: [
           IconButton(
-              onPressed: (){
+              onPressed: isEditable() ? (){
                 updateProfile();
-              },
-              icon: Icon(Icons.check_sharp,color: Colors.white,),
+              } : null,
+              icon: Icon(Icons.check_sharp, color: isEditable() ? Colors.white : Colors.white70,),
           )
         ],
       ),
@@ -253,9 +268,9 @@ class _NewProfileEditScreenState extends State<NewProfileEditScreen> {
                           ),
                           child: CircleAvatar(
                             backgroundColor: Colors.white,
-                            backgroundImage: _image!.isNotEmpty
+                            backgroundImage: _image.isNotEmpty
                                 ? NetworkImage('$picaddress/$_image')
-                                : AssetImage('assets/pepe.png') as ImageProvider,
+                                : const AssetImage('assets/pepe.png') as ImageProvider,
                             radius: 50,
                           ),
                         ),
@@ -356,7 +371,7 @@ class _NewProfileEditScreenState extends State<NewProfileEditScreen> {
                       description: Row(
                         mainAxisAlignment: MainAxisAlignment.end,
                         children: [
-                          Text(_name, overflow: TextOverflow.ellipsis,textAlign: TextAlign.end,),
+                          Flexible(child: Text(_name, overflow: TextOverflow.ellipsis,),),
                           const Icon(CupertinoIcons.chevron_forward,size: 18,color: Colors.grey,)
                         ],
                       )
@@ -413,7 +428,7 @@ class _NewProfileEditScreenState extends State<NewProfileEditScreen> {
                       description: Row(
                         mainAxisAlignment: MainAxisAlignment.end,
                         children: [
-                          Text(_address, overflow: TextOverflow.ellipsis,textAlign: TextAlign.end,),
+                          Flexible(child: Text(_address, overflow: TextOverflow.ellipsis,textAlign: TextAlign.end,)),
                           const Icon(CupertinoIcons.chevron_forward,size: 18,color: Colors.grey,)
                         ],
                       )
@@ -474,12 +489,22 @@ class _InputNumberScreenState extends State<InputNumberScreen> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   String? numInput = '';
 
+  Future<void> otpDisplay() async{/*widget.contact*/
+    await otpVerification(_number.text);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Change Phone Number'),
-        titleTextStyle: TextStyle(color: Colors.white,fontSize: 18,fontWeight: FontWeight.bold),
+        titleTextStyle: const TextStyle(color: Colors.white,fontSize: 18,fontWeight: FontWeight.bold),
+        leading: IconButton(
+          onPressed: (){
+            Navigator.pop(context);
+          },
+          icon: const Icon(CupertinoIcons.chevron_left,color: Colors.white,),
+        ),
       ),
       body: Padding(
         padding: const EdgeInsets.all(8),
@@ -503,13 +528,14 @@ class _InputNumberScreenState extends State<InputNumberScreen> {
                 validator: (newValue){
                   numInput = newValue;
                   if(newValue == widget.number){
-                    warningDialog(context, 'You have entered your current number. Please enter your new phone numebr to proceed.');
+                    warningTextDialog(context, 'Invalid Number', 'You have entered your current number. Please input a new number.');
                     return 'Invalid Number';
                   }else if(newValue == null || newValue.isEmpty){
                     return 'Input a value';
                   }else if(newValue.length < 10){
                     return 'Invalid Number';
                   }else{
+                    otpDisplay();
                     return null;
                   }
                 },
@@ -524,6 +550,7 @@ class _InputNumberScreenState extends State<InputNumberScreen> {
                   ),
                   onPressed: () async{
                     if(_formKey.currentState!.validate()){
+
                       final response = await Navigator.push(context, MaterialPageRoute(builder: (context) => OTPScreen(contact: numInput!)));
 
                       Navigator.pop(context, response);
@@ -567,9 +594,15 @@ class _InputAddressScreenState extends State<InputAddressScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Change Address'),
-        titleTextStyle: TextStyle(
+        titleTextStyle: const TextStyle(
           color: Colors.white,
           fontSize: 18
+        ),
+        leading: IconButton(
+          onPressed: (){
+            Navigator.pop(context);
+          },
+          icon: const Icon(CupertinoIcons.chevron_left,color: Colors.white,),
         ),
       ),
       body: Padding(
@@ -645,9 +678,15 @@ class _InputNameScreenState extends State<InputNameScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Change Name'),
-        titleTextStyle: TextStyle(
+        titleTextStyle: const TextStyle(
             color: Colors.white,
             fontSize: 18
+        ),
+        leading: IconButton(
+          onPressed: (){
+            Navigator.pop(context);
+          },
+          icon: const Icon(CupertinoIcons.chevron_left,color: Colors.white,),
         ),
       ),
       body: Padding(
@@ -725,16 +764,18 @@ class _OTPScreenState extends State<OTPScreen> {
   bool showTimer = true;
   bool? isVerified;
 
-  String? code;
+  String otp = '';
   Future<void> otpDisplay() async{/*widget.contact*/
-    ApiResponse response = await otpVerification(widget.contact);
+    await otpVerification(widget.contact);
+  }
+
+  Future<void> inputCodeCheck() async{
+    ApiResponse response = await otpCheck(otp);
 
     if(response.error == null){
-      setState(() {
-        code = response.data.toString();
-      });
-    } else {
-
+      Navigator.pop(context, widget.contact);
+    }else{
+      warningTextDialog(context, 'Invalid OTP', '${response.error}');
     }
   }
 
@@ -742,15 +783,13 @@ class _OTPScreenState extends State<OTPScreen> {
   void initState(){
     super.initState();
     widget.contact;
-    otpDisplay();
   }
   @override
   Widget build(BuildContext context) {
-    print(code);
     return Scaffold(
       appBar: AppBar(
         title: const Text('Enter Verification Code'),
-        titleTextStyle: TextStyle(
+        titleTextStyle: const TextStyle(
           color: Colors.white,
           fontSize: 18,
           fontWeight: FontWeight.bold
@@ -785,13 +824,7 @@ class _OTPScreenState extends State<OTPScreen> {
                   children: [
                     Pinput(
                       validator: (value){
-                        if(value == code){
-                          isVerified = true;
-                          return null;
-                        }else{
-                          isVerified = false;
-                          return null;
-                        }
+                        otp = value!;
                       },
                       length: 4,
                       defaultPinTheme: defaultPinTheme,
@@ -814,7 +847,7 @@ class _OTPScreenState extends State<OTPScreen> {
                           timeTextStyle: const TextStyle(
                               fontSize: 15
                           ),
-                          endTime: DateTime.now().add(const Duration(minutes: 1)),
+                          endTime: DateTime.now().add(const Duration(minutes: 5)),
                           onEnd: () {
                             setState(() {
                               showTimer = false;
@@ -844,12 +877,8 @@ class _OTPScreenState extends State<OTPScreen> {
                 const SizedBox(height: 20,),
                 ElevatedButton(
                     style: SignupStyle.signButton(),
-                    onPressed: (){
-                      if(isVerified == true){
-                        Navigator.pop(context,widget.contact);
-                      }else{
-                        warningDialog(context, 'Invalid Code');
-                      }
+                    onPressed: ()async{
+                      await inputCodeCheck();
                     },
                     child: const Text(
                       'Submit',

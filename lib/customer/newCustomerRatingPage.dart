@@ -2,6 +2,7 @@ import 'package:capstone/api_response.dart';
 import 'package:capstone/brandnew/dialogs.dart';
 import 'package:capstone/connect/laravel.dart';
 import 'package:capstone/services/services.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
@@ -36,15 +37,31 @@ class _NewCustomerRatingScreenState extends State<NewCustomerRatingScreen> {
     }
   }
 
+  bool emptyRate(){
+    if(star == 0){
+      return true;
+    }else{
+      return false;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Rate Service'),
-        titleTextStyle: TextStyle(color: Colors.white,fontSize: 18,fontWeight: FontWeight.bold),
+        titleTextStyle: const TextStyle(color: Colors.white,fontSize: 18,fontWeight: FontWeight.bold),
+        leading: IconButton(
+          onPressed: (){
+            Navigator.pop(context);
+          },
+          icon: const Icon(CupertinoIcons.chevron_left,color: Colors.white,),
+        ),
         actions: [
           TextButton(
-              onPressed: (){
+              onPressed: emptyRate()
+                  ? null
+                  : (){
                 ratingSubmission();
               },
               child: const Text(
@@ -108,7 +125,7 @@ class _NewCustomerRatingScreenState extends State<NewCustomerRatingScreen> {
                           });
                         },
                       ),
-                      Text(scale,style: TextStyle(fontSize: 18),)
+                      Text(scale,style: const TextStyle(fontSize: 18),)
                     ],
                   )
                 )
@@ -186,7 +203,13 @@ class _ViewRatingScreenState extends State<ViewRatingScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Service Rating'),
-        titleTextStyle: TextStyle(color: Colors.white,fontSize: 18,fontWeight: FontWeight.bold),
+        titleTextStyle: const TextStyle(color: Colors.white,fontSize: 18,fontWeight: FontWeight.bold),
+        leading: IconButton(
+          onPressed: (){
+            Navigator.pop(context);
+          },
+          icon: const Icon(CupertinoIcons.chevron_left,color: Colors.white,),
+        ),
       ),
       body: Padding(
         padding: const EdgeInsets.all(8.0),
@@ -207,19 +230,19 @@ class _ViewRatingScreenState extends State<ViewRatingScreen> {
                 leading: CircleAvatar(
                   backgroundImage: hasImage
                       ? NetworkImage('$picaddress/${review['CustomerImage']}')
-                      : AssetImage('assets/user.png') as ImageProvider,
+                      : const AssetImage('assets/user.png') as ImageProvider,
                   radius: 20,
                 ),
                 title: Text('${review['CustomerName']}'),
-                titleTextStyle: TextStyle(
+                titleTextStyle: const TextStyle(
                     fontSize: 14,
                     color: Colors.black
                 ),
                 subtitle: RatingBar(
                     ratingWidget: RatingWidget(
-                      full: Icon(Icons.star, color: Colors.amber),
-                      half: SizedBox.shrink(),
-                      empty: Icon(Icons.star_border, color: Colors.grey),
+                      full: const Icon(Icons.star, color: Colors.amber),
+                      half: const SizedBox.shrink(),
+                      empty: const Icon(Icons.star_border, color: Colors.grey),
                     ),
                     itemSize: 14,
                     initialRating: double.parse('${review['Rate']}'),

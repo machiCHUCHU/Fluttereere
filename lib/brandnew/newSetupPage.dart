@@ -467,11 +467,11 @@ class _SetupInformationScreenState extends State<SetupInformationScreen> {
                           const SizedBox(height: 5,),
                           OutlinedButton(
                               style: OutlinedButton.styleFrom(
-                                  fixedSize: Size(MediaQuery.of(context).size.width, MediaQuery.of(context).size.height *.075),
+                                  fixedSize: Size(MediaQuery.of(context).size.width, 55),
                                   shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(5),
+                                    borderRadius: BorderRadius.vertical(bottom: Radius.circular(5)),
                                   ),
-                                  side: BorderSide(style: BorderStyle.solid, width: 2),
+                                  side: BorderSide(style: BorderStyle.solid, width: 1),
                                   padding: EdgeInsets.symmetric(horizontal: 8),
                                   backgroundColor: Colors.white
                               ),

@@ -5,19 +5,14 @@ import 'dart:async';
 import 'package:capstone/api_response.dart';
 import 'package:capstone/brandnew/newHomePage.dart';
 import 'package:capstone/brandnew/newLoginPage.dart';
-import 'package:capstone/connect/laravel.dart';
+import 'package:capstone/brandnew/newSetupPage.dart';
 import 'package:capstone/customer/newCustomerHomePage.dart';
-import 'package:capstone/drawer/ownerDrawer.dart';
 import 'package:capstone/services/services.dart';
 import 'package:flutter/material.dart';
-import 'package:animated_splash_screen/animated_splash_screen.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
-import 'package:page_transition/page_transition.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'styles/mainColorStyle.dart';
-import 'package:http/http.dart' as http;
 
 void main() {
   WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
@@ -51,12 +46,12 @@ class _MyAppState extends State<MyApp> {
       debugShowMaterialGrid: false,
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        appBarTheme: AppBarTheme(
+        appBarTheme: const AppBarTheme(
           color: ColorStyle.tertiary
         ),
         scaffoldBackgroundColor: Colors.grey.shade200
       ),
-      home: RedirectScreen()
+      home: const RedirectScreen()
     );
   }
 }
@@ -75,6 +70,7 @@ class _RedirectScreenState extends State<RedirectScreen> {
   String userType = '';
   bool isLoading = true;
 
+
   Future<void> availToken() async{
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     ApiResponse response = await rememberToken('${prefs.getString('token')}');
@@ -90,17 +86,23 @@ class _RedirectScreenState extends State<RedirectScreen> {
   }
 
   Future<void> redirectScreen() async{
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    ApiResponse apiResponse = await matchShop('${prefs.getString('token')}');
     await availToken();
     bool isLoggedIn = hasToken;
 
     if(isLoggedIn){
       if(userType == 'customer'){
-        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => NewCustomerHomeScreen()));
+        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const NewCustomerHomeScreen()));
       }else{
-        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => NewHomeScreen()));
+        if(apiResponse.data == 'empty'){
+          Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const NewSetupScreen()));
+        }else{
+          Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const NewHomeScreen()));
+        }
       }
     }else{
-      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => NewLoginScreen()));
+      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const NewLoginScreen()));
     }
   }
 

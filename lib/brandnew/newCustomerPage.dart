@@ -3,7 +3,6 @@ import 'dart:ui';
 
 import 'package:capstone/api_response.dart';
 import 'package:capstone/brandnew/dialogs.dart';
-import 'package:capstone/brandnew/setWidget/appbar.dart';
 import 'package:capstone/connect/laravel.dart';
 import 'package:capstone/services/services.dart';
 import 'package:capstone/styles/mainColorStyle.dart';
@@ -11,7 +10,9 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/painting.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
+import 'package:flutter_profile_picture/flutter_profile_picture.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 import 'package:row_item/row_item.dart';
@@ -29,83 +30,147 @@ class _NewCustomerScreenState extends State<NewCustomerScreen> {
   String? token;
   bool isLoading = true;
 
-  void _bottomModal(String name, String address, String contact, String image, bool hasPicture) {
+  void _bottomModal(String name, String address, String contact, String image,
+      bool hasPicture, String date, String valued, String id) {
     showMaterialModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(25))),
-      builder: (context) => Stack(
-        clipBehavior: Clip.none,
-        children: [
-          Container(
-            height: MediaQuery.of(context).size.height * .4,
-            padding: const EdgeInsets.all(16),
-            decoration: const BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(20),
-                topRight: Radius.circular(20),
-              )
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                const SizedBox(height: 20,),
-                RowItem(
-                    title: const Row(
-                      children: [
-                        Icon(Icons.person, color: ColorStyle.tertiary,),
-                        Text('Name:')
-                      ],
-                    ),
-                    description: Text(name, style: TextStyle(fontWeight: FontWeight.bold),)
-                ),
-                RowItem(
-                    title: const Row(
-                      children: [
-                        Icon(Icons.call,color: ColorStyle.tertiary,),
-                        Text('Contact Number:')
-                      ],
-                    ),
-                    description: Text(contact, style: TextStyle(fontWeight: FontWeight.bold),)
-                ),
-                RowItem(
-                    title: const Row(
-                      children: [
-                        Icon(Icons.location_on,color: ColorStyle.tertiary,),
-                        Text('Address:')
-                      ],
-                    ),
-                    description: Text(address, style: TextStyle(fontWeight: FontWeight.bold),)
-                )
-              ],
-            ),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(10)),
+      ),
+      builder: (context) => Container(
+        height: MediaQuery.of(context).size.height * .5,
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(20),
+            topRight: Radius.circular(20),
           ),
-
-          Positioned(
-            top: -50,
-            left: MediaQuery.of(context).size.width / 2 - 50,
-            child: Container(
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: Colors.white, // Border color
-                  width: 4.0, // Border width
+        ),
+        child: Column(
+          children: [
+            Expanded(
+              child: SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+                      child: Row(
+                        children: [
+                          Icon(
+                            CupertinoIcons.person_circle,
+                            size: 32,
+                            color: ColorStyle.tertiary,
+                          ),
+                          const Text(
+                            ' Customer Information',
+                            style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const Divider(height: 0),
+                    ListTile(
+                      leading: ProfilePicture(
+                        name: name,
+                        fontsize: 16,
+                        radius: 18,
+                        img: hasPicture ? '$picaddress/$image' : null,
+                      ),
+                      title: Text(name),
+                    ),
+                    const Divider(height: 0),
+                    Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Address',
+                            style: TextStyle(color: Colors.grey),
+                          ),
+                          Text(
+                            address,
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          const SizedBox(height: 5),
+                          RowItem(
+                              title: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Contact Information',
+                                    style: TextStyle(color: Colors.grey),
+                                  ),
+                                  Text(
+                                    contact,
+                                    style: TextStyle(fontWeight: FontWeight.bold),
+                                  ),
+                                ],
+                              ),
+                              description: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Date Requested',
+                                    style: TextStyle(color: Colors.grey),
+                                  ),
+                                  Text(
+                                    date,
+                                    style: TextStyle(fontWeight: FontWeight.bold),
+                                  ),
+                                ],
+                              )
+                          )
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              child: CircleAvatar(
-                backgroundImage: hasPicture
-                    ? NetworkImage('$picaddress/$image')
-                    : AssetImage('assets/pepe.png') as ImageProvider,
-                radius: 50,
-              ),
             ),
-          ),
-        ],
+            valued == '0' ? Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  OutlinedButton(
+                    style: OutlinedButton.styleFrom(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(5),
+                      ),
+                      foregroundColor: ColorStyle.tertiary,
+                      side: BorderSide(color: ColorStyle.tertiary),
+                      fixedSize: Size(MediaQuery.of(context).size.width * .42, 30),
+                    ),
+                    onPressed: () {
+                      addedShopStat(id, '2');
+                    },
+                    child: const Text('Decline'),
+                  ),
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(5),
+                      ),
+                      backgroundColor: ColorStyle.tertiary,
+                      foregroundColor: Colors.white,
+                      fixedSize: Size(MediaQuery.of(context).size.width * .42, 30),
+                    ),
+                    onPressed: () {
+                      addedShopStat(id, '1');
+                    },
+                    child: const Text('Mark Valued'),
+                  ),
+                ],
+              ),
+            ) : const SizedBox.shrink(),
+          ],
+        ),
       ),
     );
   }
+
 
   List<dynamic> addedshop = [];
 
@@ -141,8 +206,10 @@ class _NewCustomerScreenState extends State<NewCustomerScreen> {
      if(stat == '1'){
        print(apiResponse.data);
        await successDialog(context, 'Customer mark valued.');
+       Navigator.pop(context);
      }else{
-       await errorDialog(context, 'Request rejected.');
+       await warningDialog(context, 'Request rejected.');
+       Navigator.pop(context);
      }
         addedShopDisplay();
     }else{
@@ -181,8 +248,15 @@ class _NewCustomerScreenState extends State<NewCustomerScreen> {
   Widget build(BuildContext context) {
     if(isLoading){
       return Scaffold(
-          appBar: const ForAppBar(
-            title: Text('Customers'),
+          appBar: AppBar(
+            title: const Text('Valued Customers'),
+            titleTextStyle: const TextStyle(fontSize: 18,fontWeight: FontWeight.bold),
+            leading: IconButton(
+              onPressed: (){
+                Navigator.pop(context);
+              },
+              icon: const Icon(CupertinoIcons.chevron_left,color: Colors.white,),
+            ),
           ),
           body: Center(
             child: LoadingAnimationWidget.staggeredDotsWave(
@@ -194,11 +268,18 @@ class _NewCustomerScreenState extends State<NewCustomerScreen> {
     }
 
     if(hasData == false){
-      return const Scaffold(
-          appBar: ForAppBar(
-            title: Text('Customers'),
+      return Scaffold(
+          appBar: AppBar(
+            title: const Text('Valued Customers'),
+            titleTextStyle: const TextStyle(fontSize: 18,fontWeight: FontWeight.bold),
+            leading: IconButton(
+              onPressed: (){
+                Navigator.pop(context);
+              },
+              icon: const Icon(CupertinoIcons.chevron_left,color: Colors.white,),
+            ),
           ),
-          body: Center(
+          body: const Center(
               child: Text(
                   'No list yet. Invite your first customer.'
               )
@@ -207,8 +288,15 @@ class _NewCustomerScreenState extends State<NewCustomerScreen> {
     }
 
     return Scaffold(
-      appBar: const ForAppBar(
-        title: Text('Customers'),
+      appBar: AppBar(
+        title: const Text('Valued Customers'),
+        titleTextStyle: const TextStyle(fontSize: 18,fontWeight: FontWeight.bold),
+        leading: IconButton(
+          onPressed: (){
+            Navigator.pop(context);
+          },
+          icon: const Icon(CupertinoIcons.chevron_left,color: Colors.white,),
+        ),
       ),
       body: SingleChildScrollView(
           child: Form(
@@ -216,100 +304,75 @@ class _NewCustomerScreenState extends State<NewCustomerScreen> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Container(
-                  child: ListView.builder(
+                ListView.builder(
                       shrinkWrap: true,
                       itemCount: addedshop.length,
                       itemBuilder: (context, index){
                         Map addshop = addedshop[index] as Map;
 
-                        bool hasPicture = addshop['CustomerImage'].isNotEmpty;
-                        bool isAccepted = addshop['IsValued'] == '1';
-                        print(hasPicture);
+                        bool hasPicture = addshop['CustomerImage'] != null;
+                        String status = '';
+                        Color statusColor;
+                        switch(addshop['IsValued']){
+                          case '0':
+                            status = 'Pending';
+                            statusColor = Colors.yellow.shade400;
+                            break;
+                          case '1':
+                            status = 'Valued';
+                            statusColor = Colors.greenAccent;
+                            break;
+                          default:
+                            status = 'Rejected';
+                            statusColor = Colors.redAccent;
+                            break;
+                        }
                         return Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 8.0),
-                          child: InkWell(
-                            onTap: (){
-                              _bottomModal('${addshop['CustomerName']}', '${addshop['CustomerAddress']}',
-                                  '${addshop['CustomerContactNumber']}', '${addshop['CustomerImage']}', hasPicture);
-                            },
-                            child: Ink(
+                          padding: const EdgeInsets.all(4.0),
+                          child: Container(
+                            decoration: BoxDecoration(
                               color: Colors.white,
-                              child: Container(
-                                padding: EdgeInsets.all(8),
-                                child: Row(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    CircleAvatar(
-                                      backgroundImage: hasPicture
-                                          ? NetworkImage('$picaddress/${addshop['CustomerImage']}')
-                                          : AssetImage('assets/pepe.png') as ImageProvider,
-                                      radius: 40,
-                                    ),
-                                    Padding(
-                                      padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                                      child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          Text('${addshop['CustomerName']}', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),overflow: TextOverflow.ellipsis,),
-                                          isAccepted ? Text(
-                                            'Marked as Valued Customer',
-                                            style: TextStyle(
-                                                fontSize: 14,
-                                                color: Colors.green
-                                            ),
-                                          ) : Row(
-                                            children: [
-                                              ElevatedButton(
-                                                style: ElevatedButton.styleFrom(
-                                                    backgroundColor: ColorStyle.tertiary,
-                                                    shape: RoundedRectangleBorder(
-                                                        borderRadius: BorderRadius.circular(5)
-                                                    )
-                                                ),
-                                                onPressed: (){
-                                                  confirmDialog(context, 'Accept request?', (){addedShopStat('${addshop['AddedShopID']}', '1');});
-                                                },
-                                                child: const Text(
-                                                    'Mark   ',
-                                                    style: TextStyle(
-                                                        color: Colors.white
-                                                    ),
-                                                    textAlign: TextAlign.center
-                                                ),
-                                              ),
-                                              const SizedBox(width: 5,),
-                                              ElevatedButton(
-                                                  style: ElevatedButton.styleFrom(
-                                                      backgroundColor: Colors.white,
-                                                      shape: RoundedRectangleBorder(
-                                                          borderRadius: BorderRadius.circular(5)
-                                                      )
-                                                  ),
-                                                  onPressed: (){
-                                                    confirmDialog(context, 'Reject request?', (){addedShopStat('${addshop['AddedShopID']}', '2');});
-                                                  },
-                                                  child: const Text(
-                                                    'Reject ',
-                                                    textAlign: TextAlign.center,
-                                                    style: TextStyle(
-                                                        color: Colors.black
-                                                    ),
-                                                  )
-                                              )
-                                            ],)
-                                        ],
-                                      ),
-                                    )
-                                  ],
-                                ),
+                              borderRadius: BorderRadius.circular(5),
+                              boxShadow: [
+                                BoxShadow(
+                                  blurRadius: 1,
+                                  color: Colors.grey.shade400,
+                                  offset: Offset(0, 2)
+                                )
+                              ]
+                            ),
+                            child: ListTile(
+                              onTap: (){
+                                _bottomModal('${addshop['CustomerName']}', '${addshop['CustomerAddress']}',
+                                    '${addshop['CustomerContactNumber']}', '${addshop['CustomerImage']}',
+                                    hasPicture, '${addshop['Date']}', '${addshop['IsValued']}', '${addshop['AddedShopID']}');
+                              },
+                              contentPadding: EdgeInsets.all(8),
+                              leading: ProfilePicture(
+                                name: '${addshop['CustomerName']}',
+                                radius: 28,
+                                fontsize: 18,
+                                img: hasPicture ? '$picaddress/${addshop['CustomerImage']}' : null,
                               ),
-                            )
+                              title: Text('${addshop['CustomerName']}'),
+                              titleTextStyle: TextStyle(
+                                color: Colors.black,
+                                fontWeight: FontWeight.bold
+                              ),
+                              subtitle: Text('${addshop['CustomerAddress']}',style: TextStyle(fontSize: 10),),
+                              trailing: Container(
+                                decoration: BoxDecoration(
+                                  color: statusColor,
+                                  borderRadius: BorderRadius.circular(50)
+                                ),
+                                padding: const EdgeInsets.symmetric(vertical: 4,horizontal: 8),
+                                child: Text(status,style: TextStyle(color: Colors.white,fontSize: 14),textAlign: TextAlign.center,),
+                              ),
+                            ),
                           ),
                         );
                       }
                   ),
-                )
               ],
             ),
           )

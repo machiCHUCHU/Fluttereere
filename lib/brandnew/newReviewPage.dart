@@ -1,22 +1,15 @@
-import 'dart:convert';
 
-import 'dart:ui';
 
 import 'package:capstone/api_response.dart';
 import 'package:capstone/brandnew/newLoginPage.dart';
-import 'package:capstone/brandnew/setWidget/appbar.dart';
 import 'package:capstone/connect/laravel.dart';
-import 'package:capstone/drawer/ownerDrawer.dart';
 import 'package:capstone/services/services.dart';
-import 'package:capstone/styles/mainColorStyle.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/painting.dart';
-import 'package:flutter/rendering.dart';
+import 'package:flutter_profile_picture/flutter_profile_picture.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:percent_indicator/linear_percent_indicator.dart';
-import 'package:row_item/row_item.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class NewReviewPage extends StatefulWidget {
@@ -37,10 +30,6 @@ class _NewReviewPageState extends State<NewReviewPage> {
   int totalReviews = 0;
   int overallRating = 0;
   Map ratings = {};
-
-  double calculateTotalRate() {
-    return review.fold(0, (sum, item) => sum + (int.parse(item['Rate'])));
-  }
 
 
 
@@ -75,32 +64,6 @@ class _NewReviewPageState extends State<NewReviewPage> {
   }
 
 
-  void showLogoutDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Logout'),
-          content: const Text('Are you sure you want to logout?'),
-          actions: [
-            TextButton(
-              onPressed: () {
-                logoutState();
-              },
-              child: const Text('OK'),
-            ),
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop(); // Close the dialog
-              },
-              child: const Text('Cancel'),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
 
   Future<void> logoutState() async{
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -125,13 +88,20 @@ class _NewReviewPageState extends State<NewReviewPage> {
 
   @override
   Widget build(BuildContext context) {
-    double rate = calculateTotalRate();
-    double totalRate = rate / totalReviews;
-    print(ratings);
+
     if(isLoading == true){
       return Scaffold(
-          appBar: const ForAppBar(
-            title: Text('Reviews'),
+          appBar: AppBar(
+            title: const Text('Service Rating'),
+            titleTextStyle: const TextStyle(
+                fontSize: 18, fontWeight: FontWeight.bold
+            ),
+            leading: IconButton(
+              onPressed: (){
+                Navigator.pop(context);
+              },
+              icon: const Icon(CupertinoIcons.chevron_left,color: Colors.white,),
+            ),
           ),
           body: Center(
             child: LoadingAnimationWidget.staggeredDotsWave(
@@ -143,249 +113,307 @@ class _NewReviewPageState extends State<NewReviewPage> {
     }
 
     if(hasData == false){
-      return const Scaffold(
-          appBar: ForAppBar(
-            title: Text('Reviews'),
+      return Scaffold(
+          appBar: AppBar(
+            title: const Text('Service Rating'),
+            titleTextStyle: const TextStyle(
+                fontSize: 18, fontWeight: FontWeight.bold
+            ),
+            leading: IconButton(
+              onPressed: (){
+                Navigator.pop(context);
+              },
+              icon: const Icon(CupertinoIcons.chevron_left,color: Colors.white,),
+            ),
           ),
-          body: Center(
-            child: Text(
-              'There are no reviews yet.'
+          body: SingleChildScrollView(
+            child: Column(
+              children: [
+                Container(
+                  decoration: const BoxDecoration(
+                      color: Colors.white
+                  ),
+                  padding: const EdgeInsets.all(12),
+                  child: Row(
+                    children: [
+                      Column(
+                        children: [
+                          const Text('0',style: TextStyle(fontSize: 24,fontWeight: FontWeight.bold),selectionColor: Colors.red,),
+                          RatingBar.builder(
+                            initialRating: 0,
+                            direction: Axis.horizontal,
+                            allowHalfRating: true,
+                            itemCount: 5,
+                            itemSize: 14,
+                            ignoreGestures: true,
+                            itemBuilder: (context, _) => Icon(
+                              Icons.star,
+                              color: Colors.orange.shade300,
+                            ),
+                            onRatingUpdate: (rating) {},
+                          ),
+                        ],
+                      ),
+                      const SizedBox(width: 15,),
+                      Expanded(
+                          child: Column(
+                            children: [
+                              Row(
+                                children: [
+                                  const Text('5 star(0)'),
+                                  Expanded(child: LinearPercentIndicator(
+                                    animation: true,
+                                    lineHeight: 12.0,
+                                    animationDuration: 100,
+                                    percent: 0,
+                                    barRadius: const Radius.circular(20),
+                                    progressColor: Colors.orange.shade300,
+                                  ))
+                                ],),
+                              Row(
+                                children: [
+                                  const Text('4 star(0)'),
+                                  Expanded(child: LinearPercentIndicator(
+                                    animation: true,
+                                    lineHeight: 12.0,
+                                    animationDuration: 100,
+                                    percent: 0,
+                                    barRadius: const Radius.circular(20),
+                                    progressColor: Colors.orange.shade300,
+                                  ))
+                                ],),
+                              Row(
+                                children: [
+                                  const Text('3 star(0)'),
+                                  Expanded(child: LinearPercentIndicator(
+                                    animation: true,
+                                    lineHeight: 12.0,
+                                    animationDuration: 100,
+                                    percent: 0,
+                                    barRadius: const Radius.circular(20),
+                                    progressColor: Colors.orange.shade300,
+                                  ))
+                                ],),
+                              Row(
+                                children: [
+                                  const Text('2 star(0)'),
+                                  Expanded(child: LinearPercentIndicator(
+                                    animation: true,
+                                    lineHeight: 12.0,
+                                    animationDuration: 100,
+                                    percent: 0,
+                                    barRadius: const Radius.circular(20),
+                                    progressColor: Colors.orange.shade300,
+                                  ))
+                                ],),
+                              Row(
+                                children: [
+                                  const Text('1 star(0)'),
+                                  Expanded(child: LinearPercentIndicator(
+                                    animation: true,
+                                    lineHeight: 12.0,
+                                    animationDuration: 100,
+                                    percent: 0,
+                                    barRadius: const Radius.circular(20),
+                                    progressColor: Colors.orange.shade300,
+                                  ))
+                                ],),
+                            ],
+                          ))
+                    ],
+                  ),
+                ),
+                const Center(
+                  child: Text('No Reviews Yet'),
+                )
+              ],
             ),
           )
       );
     }
 
     return Scaffold(
-      appBar: const ForAppBar(
-        title: Text('Reviews'),
+      appBar: AppBar(
+        title: const Text('Service Rating'),
+        titleTextStyle: const TextStyle(
+          fontSize: 18, fontWeight: FontWeight.bold
+        ),
+        leading: IconButton(
+          onPressed: (){
+            Navigator.pop(context);
+          },
+          icon: const Icon(CupertinoIcons.chevron_left,color: Colors.white,),
+        ),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: SingleChildScrollView(
-          child: Column(
-            children: [
-              Container(
-                color: Colors.white,
-                child: SingleChildScrollView(
-                    child: Column(
-                      children: [
-                        Text('Overall Rating', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),),
-                        Text('$totalRate', style: TextStyle(fontSize: 60, fontWeight: FontWeight.bold),),
-                        RatingBar.builder(
-                          initialRating: totalRate,
-                          direction: Axis.horizontal,
-                          allowHalfRating: true,
-                          itemCount: 5,
-                          itemSize: 30,
-                          ignoreGestures: true,
-                          itemPadding: EdgeInsets.symmetric(horizontal: 4.0),
-                          itemBuilder: (context, _) => Icon(
-                            Icons.star,
-                            color: Colors.yellow,
-                          ),
-                          onRatingUpdate: (rating) {},
-                        ),
-                        Text('Based on $totalReviews reviews', style: TextStyle(color: ColorStyle.secondary, fontSize: 18)),
-                        Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 8),
-                            child: Column(
-                              children: [
-                                Row(
-                                  children: [
-                                    const Expanded(
-                                        child: Text(
-                                          'Excellent',
-                                          style: TextStyle(
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        )
-                                    ),
-                                    Expanded(
-                                      flex: 3,
-                                      child: LinearPercentIndicator(
-                                        animation: true,
-                                        lineHeight: 12.0,
-                                        animationDuration: 100,
-                                        percent: ratings['five_star'] / totalRate,
-                                        barRadius: Radius.circular(20),
-                                        progressColor: ColorStyle.tertiary,
-                                      ),)
-                                  ],
-                                ),
-                                Row(
-                                  children: [
-                                    const Expanded(
-                                        child: Text(
-                                          'Good',
-                                          style: TextStyle(
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        )
-                                    ),
-                                    Expanded(
-                                      flex: 3,
-                                      child: LinearPercentIndicator(
-                                        animation: true,
-                                        lineHeight: 12.0,
-                                        animationDuration: 100,
-                                        percent: ratings['four_star'] / totalRate,
-                                        barRadius: Radius.circular(20),
-                                        progressColor: ColorStyle.tertiary,
-                                      ),)
-                                  ],
-                                ),
-                                Row(
-                                  children: [
-                                    const Expanded(
-                                        child: Text(
-                                          'Average',
-                                          style: TextStyle(
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        )
-                                    ),
-                                    Expanded(
-                                      flex: 3,
-                                      child: LinearPercentIndicator(
-                                        animation: true,
-                                        lineHeight: 12.0,
-                                        animationDuration: 100,
-                                        percent: ratings['three_star'] / totalRate,
-                                        barRadius: Radius.circular(20),
-                                        progressColor: ColorStyle.tertiary,
-                                      ),)
-                                  ],
-                                ),
-                                Row(
-                                  children: [
-                                    const Expanded(
-                                        child: Text(
-                                          'Poor',
-                                          style: TextStyle(
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        )
-                                    ),
-                                    Expanded(
-                                      flex: 3,
-                                      child: LinearPercentIndicator(
-                                        animation: true,
-                                        lineHeight: 12.0,
-                                        animationDuration: 100,
-                                        percent: ratings['two_star'] / totalRate,
-                                        barRadius: Radius.circular(20),
-                                        progressColor: ColorStyle.tertiary,
-                                      ),)
-                                  ],
-                                ),
-                                Row(
-                                  children: [
-                                    const Expanded(
-                                        child: Text(
-                                          'Very Poor',
-                                          style: TextStyle(
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        )
-                                    ),
-                                    Expanded(
-                                      flex: 3,
-                                      child: LinearPercentIndicator(
-                                        animation: true,
-                                        lineHeight: 12.0,
-                                        animationDuration: 100,
-                                        percent: ratings['one_star'] / totalRate,
-                                        barRadius: Radius.circular(20),
-                                        progressColor: ColorStyle.tertiary,
-                                      ),)
-                                  ],
-                                ),
-                              ],
-                            )
-                        ),
-
-
-                      ],
-                    ),
-                  ),
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            Container(
+              decoration: const BoxDecoration(
+                  color: Colors.white
               ),
-              const SizedBox(height: 10,),
-              Container(
-                color: Colors.white,
-                child: ListView.builder(
-                    shrinkWrap: true,
-                    physics: NeverScrollableScrollPhysics(),
-                    itemCount: review.length,
-                    itemBuilder: (context, index){
-                      Map rev = review[index] as Map;
-                      bool hasImage = rev['Image'] != null;
-                      print(rev);
-                      return Container(
-                        padding: const EdgeInsets.all(8),
-                        child: Column(
+              padding: const EdgeInsets.all(12),
+              child: Row(
+                children: [
+                  Column(
+                    children: [
+                      Text('${(ratings['rate_sum']/ratings['rater']).toStringAsFixed(1)}',style: const TextStyle(fontSize: 24,fontWeight: FontWeight.bold),selectionColor: Colors.red,),
+                      RatingBar.builder(
+                        initialRating: ratings['rate_sum']/ratings['rater'],
+                        direction: Axis.horizontal,
+                        allowHalfRating: true,
+                        itemCount: 5,
+                        itemSize: 14,
+                        ignoreGestures: true,
+                        itemBuilder: (context, _) => Icon(
+                          Icons.star,
+                          color: Colors.orange.shade300,
+                        ),
+                        onRatingUpdate: (rating) {},
+                      ),
+                    ],
+                  ),
+                  const SizedBox(width: 15,),
+                  Expanded(
+                      child: Column(
+                    children: [
+                      Row(
+                        children: [
+                        Text('5 star(${ratings['five_star']})'),
+                        Expanded(child: LinearPercentIndicator(
+                          animation: true,
+                          lineHeight: 12.0,
+                          animationDuration: 100,
+                          percent: ratings['five_star'] / ratings['rater'],
+                          barRadius: const Radius.circular(20),
+                          progressColor: Colors.orange.shade300,
+                        ))
+                      ],),
+                      Row(
+                        children: [
+                          Text('4 star(${ratings['four_star']})'),
+                          Expanded(child: LinearPercentIndicator(
+                            animation: true,
+                            lineHeight: 12.0,
+                            animationDuration: 100,
+                            percent: ratings['four_star'] / ratings['rater'],
+                            barRadius: const Radius.circular(20),
+                            progressColor: Colors.orange.shade300,
+                          ))
+                        ],),
+                      Row(
+                        children: [
+                          Text('3 star(${ratings['three_star']})'),
+                          Expanded(child: LinearPercentIndicator(
+                            animation: true,
+                            lineHeight: 12.0,
+                            animationDuration: 100,
+                            percent: ratings['three_star'] / ratings['rater'],
+                            barRadius: const Radius.circular(20),
+                            progressColor: Colors.orange.shade300,
+                          ))
+                        ],),
+                      Row(
+                        children: [
+                          Text('2 star(${ratings['two_star']})'),
+                          Expanded(child: LinearPercentIndicator(
+                            animation: true,
+                            lineHeight: 12.0,
+                            animationDuration: 100,
+                            percent: ratings['two_star'] / ratings['rater'],
+                            barRadius: const Radius.circular(20),
+                            progressColor: Colors.orange.shade300,
+                          ))
+                        ],),
+                      Row(
+                        children: [
+                          Text('1 star(${ratings['one_star']})'),
+                          Expanded(child: LinearPercentIndicator(
+                            animation: true,
+                            lineHeight: 12.0,
+                            animationDuration: 100,
+                            percent: ratings['one_star'] / ratings['rater'],
+                            barRadius: const Radius.circular(20),
+                            progressColor: Colors.orange.shade300,
+                          ))
+                        ],),
+                    ],
+                  ))
+                ],
+              ),
+            ),
+            ListView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: review.length,
+                itemBuilder: (context, index){
+                  Map rev = review[index] as Map;
+                  bool hasImage = rev['Image'] != null;
+                  print(rev);
+                  return Container(
+                    height: MediaQuery.of(context).size.height *.2,
+                    decoration: const BoxDecoration(
+                        color: Colors.white
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        const Divider(height: 0,),
+                        const SizedBox(height: 5,),
+                        Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisAlignment: MainAxisAlignment.start,
                           children: [
-                            Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                CircleAvatar(
-                                  backgroundImage: hasImage
-                                      ? NetworkImage('$picaddress/${rev['Image']}')
-                                      : AssetImage('assets/user.png') as ImageProvider,
-                                  backgroundColor: Colors.white,
-                                  radius: 30,
-                                ),
-                                Expanded(child: Padding(
-                                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                            const SizedBox(width: 5),
+                            ProfilePicture(
+                                name: '${rev['CustomerName']}',
+                                radius: 16,
+                                fontsize: 14,
+                                img: hasImage ? '$picaddress/${rev['CustomerImage']}' : null,
+                            ),
+                            Expanded(child: Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                     children: [
-                                      Row(
-                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          Text('${rev['CustomerName']}', style: TextStyle(fontWeight: FontWeight.bold),),
-                                          Text('${rev['DateIssued']}', textDirection: TextDirection.rtl,)
-                                        ],
-                                      ),
-                                      RatingBar.builder(
-                                        initialRating: double.tryParse('${rev['Rate']}')!.toDouble(),
-                                        direction: Axis.horizontal,
-                                        allowHalfRating: true,
-                                        itemCount: 5,
-                                        itemSize: 15,
-                                        ignoreGestures: true,
-                                        itemBuilder: (context, _) => Icon(
-                                          Icons.star,
-                                          color: Colors.yellow,
-                                        ),
-                                        onRatingUpdate: (rating) {},
-                                      ),
-                                      const SizedBox(height: 5,),
-                                      rev['Comment'] == null
-                                          ? const SizedBox()
-                                          : Text('${rev['Comment']}',),
+                                      Text('${rev['CustomerName']}', style: const TextStyle(fontWeight: FontWeight.bold),),
+                                      Text('${rev['DateIssued']}', textDirection: TextDirection.rtl,)
                                     ],
                                   ),
-                                ),)
-                              ],
-                            ),
+                                  RatingBar.builder(
+                                    initialRating: double.tryParse('${rev['Rate']}')!.toDouble(),
+                                    direction: Axis.horizontal,
+                                    allowHalfRating: true,
+                                    itemCount: 5,
+                                    itemSize: 15,
+                                    ignoreGestures: true,
+                                    itemBuilder: (context, _) => Icon(
+                                      Icons.star,
+                                      color: Colors.orange.shade300,
+                                    ),
+                                    onRatingUpdate: (rating) {},
+                                  ),
+                                  const SizedBox(height: 5,),
+                                  rev['Comment'] == null
+                                      ? const SizedBox()
+                                      : Text('${rev['Comment']}',),
+                                ],
+                              ),
+                            ),)
                           ],
                         ),
-                      );
+                      ],
+                    ),
+                  );
 
-                    }
-                ),
-              )
-            ],
-          ),
+                }
+            ),
+          ],
         ),
-        ),
+      )
     );
   }
 }

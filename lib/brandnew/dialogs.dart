@@ -1,11 +1,7 @@
 import 'package:awesome_dialog/awesome_dialog.dart';
-import 'package:capstone/api_response.dart';
 import 'package:capstone/brandnew/newLoginPage.dart';
-import 'package:capstone/services/services.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'setWidget/appbar.dart';
 
 Future<void> successDialog(BuildContext context, String title) async {
   await AwesomeDialog(
@@ -55,6 +51,22 @@ void confirmDialog(BuildContext context, String title, Function callback) async{
       btnCancelOnPress: (){},
       btnOkOnPress: (){callback();},
     title: title
+  ).show();
+}
+
+void confirmationDialog(BuildContext context, String title, String text) async{
+  await AwesomeDialog(
+    context: context,
+    animType: AnimType.topSlide,
+    dismissOnBackKeyPress: false,
+    dismissOnTouchOutside: false,
+    dialogType: DialogType.question,
+    btnCancelOnPress: (){},
+    btnOkOnPress: (){
+      Navigator.pop(context);
+    },
+    title: title,
+    desc: text
   ).show();
 }
 
@@ -117,6 +129,19 @@ Future<void> warningDialog(BuildContext context, String title) async {
     dialogType: DialogType.warning,
     autoHide: const Duration(seconds: 2),
     title: title,
+  ).show();
+}
+
+Future<void> warningTextDialog(BuildContext context, String title, String desc) async {
+  await AwesomeDialog(
+    context: context,
+    animType: AnimType.topSlide,
+    dismissOnBackKeyPress: false,
+    dismissOnTouchOutside: false,
+    dialogType: DialogType.warning,
+    autoHide: const Duration(seconds: 3),
+    title: title,
+    desc: desc
   ).show();
 }
 

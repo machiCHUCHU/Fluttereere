@@ -1,8 +1,10 @@
+
 import 'package:capstone/api_response.dart';
 import 'package:capstone/brandnew/dialogs.dart';
 import 'package:capstone/services/services.dart';
 import 'package:capstone/styles/mainColorStyle.dart';
 import 'package:date_picker_plus/date_picker_plus.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
@@ -67,7 +69,7 @@ class _NewServiceBookingScreenState extends State<NewServiceBookingScreen> {
       await successDialog(context, '${response.data}');
       Navigator.popUntil(context, (route) => route.isFirst);
     }else{
-      await errorDialog(context, '${response.error}');
+      await warningTextDialog(context, 'Service Unavailable', '${response.error}');
     }
   }
 
@@ -91,7 +93,13 @@ class _NewServiceBookingScreenState extends State<NewServiceBookingScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Avail Service'),
-        titleTextStyle: TextStyle(color: Colors.white,fontSize: 18,fontWeight: FontWeight.bold),
+        titleTextStyle: const TextStyle(color: Colors.white,fontSize: 18,fontWeight: FontWeight.bold),
+        leading: IconButton(
+          onPressed: (){
+            Navigator.pop(context);
+          },
+          icon: const Icon(CupertinoIcons.chevron_left,color: Colors.white,),
+        ),
       ),
       body: isLoading
           ? loading()
@@ -104,11 +112,11 @@ class _NewServiceBookingScreenState extends State<NewServiceBookingScreen> {
               Container(
                   width: double.infinity,
                   padding: const EdgeInsets.all(4),
-                  decoration: BoxDecoration(
+                  decoration: const BoxDecoration(
                       color: ColorStyle.tertiary,
                       borderRadius: BorderRadius.vertical(top: Radius.circular(5))
                   ),
-                  child: Text('Select Laundry Service',style: TextStyle(color: Colors.white,fontWeight: FontWeight.bold),)
+                  child: const Text('Select Laundry Service',style: TextStyle(color: Colors.white,fontWeight: FontWeight.bold),)
               ),
               ListView.builder(
                   itemCount: services.length,
@@ -136,7 +144,6 @@ class _NewServiceBookingScreenState extends State<NewServiceBookingScreen> {
                                 onTap: (){
                                   setState(() {
                                     serviceId = serve['ServiceID'];
-                                    print(serviceId);
                                     total = serve['LoadPrice'];
                                     shopid = '${serve['ShopID']}';
                                     load = '${serve['LoadWeight']}';
@@ -144,9 +151,9 @@ class _NewServiceBookingScreenState extends State<NewServiceBookingScreen> {
                                 },
                                 leading: Image.asset(icon[index],color: ColorStyle.tertiary,),
                                 title: Text('${serve['ServiceName']}'),
-                                titleTextStyle: TextStyle(fontSize: 14,color: Colors.black),
+                                titleTextStyle: const TextStyle(fontSize: 14,color: Colors.black),
                                 subtitle: Text('₱${serve['LoadPrice']}.00/${serve['LoadWeight']} kg.'),
-                                subtitleTextStyle: TextStyle(color: ColorStyle.tertiary),
+                                subtitleTextStyle: const TextStyle(color: ColorStyle.tertiary),
                                 trailing: Radio(
                                   value: serve['ServiceID'],
                                   activeColor: ColorStyle.tertiary,
@@ -154,7 +161,6 @@ class _NewServiceBookingScreenState extends State<NewServiceBookingScreen> {
                                   onChanged: (value) {
                                     setState(() {
                                       serviceId = value;
-                                      print(serviceId);
                                       total = serve['LoadPrice'];
                                       shopid = '${serve['ShopID']}';
                                       load = '${serve['LoadWeight']}';
@@ -197,7 +203,7 @@ class _NewServiceBookingScreenState extends State<NewServiceBookingScreen> {
                           shape: const RoundedRectangleBorder(
                             borderRadius: BorderRadius.vertical(bottom: Radius.circular(5)),
                           ),
-                          side: BorderSide(color: ColorStyle.tertiary),
+                          side: const BorderSide(color: ColorStyle.tertiary),
                           backgroundColor: Colors.white,
                           padding: const EdgeInsets.all(8)
                       ),
@@ -207,13 +213,13 @@ class _NewServiceBookingScreenState extends State<NewServiceBookingScreen> {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(
+                          const Icon(
                             Icons.calendar_month,
                             color: ColorStyle.tertiary,
                           ),
                           pickedDate == ''
                               ? const SizedBox.shrink()
-                              : Text(pickedDate,style: TextStyle(color: Colors.black),)
+                              : Text(pickedDate,style: const TextStyle(color: Colors.black),)
                         ],
                       ),
                     ),
@@ -226,7 +232,7 @@ class _NewServiceBookingScreenState extends State<NewServiceBookingScreen> {
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(5),
-                  boxShadow: [
+                  boxShadow: const [
                     BoxShadow(
                       offset: Offset(0,2),
                       blurRadius: 2,
@@ -235,9 +241,18 @@ class _NewServiceBookingScreenState extends State<NewServiceBookingScreen> {
                   ]
                 ),
                 child: RowItem(
-                    title: const Text('Estimated Total:', style: TextStyle(fontSize: 18),),
-                    description: Text('₱$total.00', style: TextStyle(color: ColorStyle.tertiary,fontSize: 22,fontWeight: FontWeight.bold),)
+                    title: const Text('Estimated Cost:', style: TextStyle(fontSize: 18),),
+                    description: Text('₱$total.00', style: const TextStyle(color: ColorStyle.tertiary,fontSize: 22,fontWeight: FontWeight.bold),)
                 ),
+              ),
+              const SizedBox(height: 15,),
+              const Text(
+                  'Note: Cost of the service is based on the weight of the laundry loads. The total amount to be paid will be determined upon dropping off your laundry at the shop.',
+                style: TextStyle(
+                  fontStyle: FontStyle.italic,
+                  color: Colors.blue
+                ),
+                textAlign: TextAlign.justify,
               )
             ],
           ),
@@ -256,6 +271,8 @@ class _NewServiceBookingScreenState extends State<NewServiceBookingScreen> {
           onPressed: (){
             if(serviceId == null || total == 0 || pickedDate == ''){
               warningDialog(context, 'Please fill up the form');
+            }else if(dateSelected!.isBefore(DateTime.now().subtract(const Duration(days: 1)))){
+              warningTextDialog(context, 'Invalid Date', 'The date you\'ve selected is in the past. Please select another date.');
             }else{
               serviceAvail();
             }

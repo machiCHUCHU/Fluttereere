@@ -1,18 +1,12 @@
 
-import 'dart:ui';
 import 'package:capstone/api_response.dart';
 import 'package:capstone/brandnew/dialogs.dart';
-import 'package:capstone/brandnew/newLoginPage.dart';
-import 'package:capstone/brandnew/setWidget/appbar.dart';
 import 'package:capstone/services/services.dart';
 import 'package:capstone/styles/invStyle.dart';
 import 'package:capstone/styles/mainColorStyle.dart';
 import 'package:capstone/styles/signupStyle.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/painting.dart';
-import 'package:flutter/rendering.dart';
-import 'package:flutter/widgets.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 import 'package:row_item/row_item.dart';
@@ -107,7 +101,9 @@ class _NewInventoryScreenState extends State<NewInventoryScreen> {
 
   }
 
-  void _bottomModal(String itemName, String itemQty, String itemId, String itemVol, String volUse, String remVol){
+  void _bottomModal(String itemName, String itemQty, String itemId,
+      String itemVol, String volUse, String remVol, String category, bool setuse){
+    print(category);
     showMaterialModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(
@@ -120,6 +116,7 @@ class _NewInventoryScreenState extends State<NewInventoryScreen> {
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8),
             child: Column(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 Padding(
                   padding: const EdgeInsets.only(top: 8),
@@ -131,8 +128,17 @@ class _NewInventoryScreenState extends State<NewInventoryScreen> {
                 const Divider(),
                 Expanded(
                     child: Column(
-                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [
+                          RowItem(
+                            title: const Row(
+                              children: [
+                                Icon(Icons.category, color: Colors.blue,),
+                                Text('Category', style: InvStyle.modalSubTitle)
+                              ],
+                            ),
+                            description: Text(category,style: const TextStyle(fontWeight: FontWeight.bold)),
+                          ),
                           RowItem(
                             title: const Row(
                               children: [
@@ -172,16 +178,14 @@ class _NewInventoryScreenState extends State<NewInventoryScreen> {
                         ],
                       ),
                     ),
-
-                Expanded(
-                    child: Align(
+                Align(
                       alignment: Alignment.bottomCenter,
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [
                           ElevatedButton(
                               style: ElevatedButton.styleFrom(
-                                  backgroundColor: ColorStyle.tertiary,
+                                  backgroundColor: Colors.green,
                                   fixedSize: const Size(150, 20),
                                   shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(5)
@@ -190,13 +194,11 @@ class _NewInventoryScreenState extends State<NewInventoryScreen> {
                               onPressed: () async{
                                 final result = await Navigator.push(context, MaterialPageRoute(builder: (context) => InventoryEditScreen(
                                     itemname: itemName, itemqty: itemQty, itemvolume: itemVol,
-                                    id: itemId, volumeuse: volUse, onUpdate: () {
-                                      Navigator.of(context).pop();
-                                      inventoryDisplay();
-                                },)));
+                                    id: itemId, volumeuse: volUse, setuse: setuse, category: category, )));
 
                                 if(result == true){
-                                  await inventoryDisplay();
+                                  Navigator.pop(context);
+                                  inventoryDisplay();
                                 }
                               },
                               child: const Text(
@@ -208,7 +210,7 @@ class _NewInventoryScreenState extends State<NewInventoryScreen> {
                           ),
                           ElevatedButton(
                               style: ElevatedButton.styleFrom(
-                                  backgroundColor: ColorStyle.tertiary,
+                                  backgroundColor: Colors.redAccent,
                                   fixedSize: const Size(150, 20),
                                   shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(5)
@@ -229,7 +231,6 @@ class _NewInventoryScreenState extends State<NewInventoryScreen> {
                         ],
                       ),
                     )
-                )
               ],
             ),
           )
@@ -249,11 +250,17 @@ class _NewInventoryScreenState extends State<NewInventoryScreen> {
 
   @override
   Widget build(BuildContext context) {
-    print(out);
     if(isLoading){
       return Scaffold(
-          appBar: const ForAppBar(
-            title: Text('Inventory'),
+          appBar: AppBar(
+            title: const Text('Inventory'),
+            titleTextStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            leading: IconButton(
+              onPressed: (){
+                Navigator.pop(context);
+              },
+              icon: const Icon(CupertinoIcons.chevron_left,color: Colors.white,),
+            ),
           ),
           body: Center(
             child: LoadingAnimationWidget.staggeredDotsWave(
@@ -266,8 +273,15 @@ class _NewInventoryScreenState extends State<NewInventoryScreen> {
 
     if(hasData == false){
       return Scaffold(
-        appBar: const ForAppBar(
-          title: Text('Inventory'),
+        appBar: AppBar(
+          title: const Text('Inventory'),
+          titleTextStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          leading: IconButton(
+            onPressed: (){
+              Navigator.pop(context);
+            },
+            icon: const Icon(CupertinoIcons.chevron_left,color: Colors.white,),
+          ),
         ),
         body: Padding(
           padding: const EdgeInsets.all(8),
@@ -276,7 +290,6 @@ class _NewInventoryScreenState extends State<NewInventoryScreen> {
                 children: [
                   Container(
                       width: MediaQuery.of(context).size.width,
-                      height: MediaQuery.of(context).size.height * .12,
                       decoration: BoxDecoration(
                           color: Colors.white,
                           borderRadius: BorderRadius.circular(10),
@@ -284,51 +297,19 @@ class _NewInventoryScreenState extends State<NewInventoryScreen> {
                       ),
                       child: Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 40),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Text(
-                                  '$total',
-                                  style: const TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 24
-                                  ),
-                                ),
-                                const Text(
-                                  'total item',
-                                  style: const TextStyle(
-                                      fontSize: 14,
-                                      color: ColorStyle.secondary,
-                                      fontWeight: FontWeight.w400
-                                  ),
-                                ),
-                              ],
-                            ),
-                            Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Text(
-                                  '$out',
-                                  style: const TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 24
-                                  ),
-                                ),
-                                const Text(
-                                  'out of stock',
-                                  style: const TextStyle(
-                                      fontSize: 14,
-                                      color: ColorStyle.secondary,
-                                      fontWeight: FontWeight.w400
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
+                        child: RowItem(
+                          title: Column(
+                            children: [
+                              Text('$total', style: const TextStyle(fontWeight: FontWeight.bold,fontSize: 24,color: ColorStyle.tertiary),),
+                              const Text('Total Item',style: TextStyle(fontSize: 12),)
+                            ],
+                          ),
+                          description: Column(
+                            children: [
+                              Text('$out',style: const TextStyle(fontWeight: FontWeight.bold,fontSize: 24,color: ColorStyle.tertiary),),
+                              const Text('Empty Stock',style: TextStyle(fontSize: 12))
+                            ],
+                          ),
                         ),
                       )
                   ),
@@ -336,7 +317,7 @@ class _NewInventoryScreenState extends State<NewInventoryScreen> {
                       child: Align(
                         alignment: Alignment.center,
                         child: Text(
-                            'No detergents are stored. Pleae add.'
+                            'No detergents are stored. Please add.'
                         ),
                       )
                   ),
@@ -351,18 +332,25 @@ class _NewInventoryScreenState extends State<NewInventoryScreen> {
             final result = await Navigator.push(context, MaterialPageRoute(builder: (context) => const InventoryAddScreen()));
 
             if (result == true) {
-              await inventoryDisplay();  // Refresh the inventory list
+              await inventoryDisplay();
             }
-            print(result);
+
           },
-          child: const Icon(Icons.add, size: 50), // Set icon size here
+          child: const Icon(Icons.add, size: 50),
         ),
       );
     }
 
     return Scaffold(
-      appBar: const ForAppBar(
-        title: Text('Inventory'),
+      appBar: AppBar(
+        title: const Text('Inventory'),
+        titleTextStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        leading: IconButton(
+          onPressed: (){
+            Navigator.pop(context);
+          },
+          icon: const Icon(CupertinoIcons.chevron_left,color: Colors.white,),
+        ),
       ),
       body: SingleChildScrollView(
           child: Padding(
@@ -371,62 +359,33 @@ class _NewInventoryScreenState extends State<NewInventoryScreen> {
               children: [
                 Container(
                     width: MediaQuery.of(context).size.width,
-                    height: MediaQuery.of(context).size.height * .12,
+                    padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
                         color: Colors.white,
-                        borderRadius: BorderRadius.circular(10),
-                        border: Border.all(color: Colors.black12)
+                        borderRadius: BorderRadius.circular(5),
+                        boxShadow: [
+                          const BoxShadow(
+                            color: Colors.grey,
+                            offset: Offset(0, 2),
+                            blurRadius: 1
+                          )
+                        ]
                     ),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 40),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(
-                                '$total',
-                                style: const TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 24
-                                ),
-                              ),
-                              const Text(
-                                'total item',
-                                style: TextStyle(
-                                    fontSize: 14,
-                                    color: ColorStyle.secondary,
-                                    fontWeight: FontWeight.w400
-                                ),
-                              ),
-                            ],
-                          ),
-                          Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(
-                                '$out',
-                                style: const TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 24
-                                ),
-                              ),
-                              const Text(
-                                'out of stock',
-                                style: TextStyle(
-                                    fontSize: 14,
-                                    color: ColorStyle.secondary,
-                                    fontWeight: FontWeight.w400
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
+                    child: RowItem(
+                        title: Column(
+                          children: [
+                            Text('$total',style: const TextStyle(fontWeight: FontWeight.bold,fontSize: 24,color: ColorStyle.tertiary),),
+                            const Text('Total Item',style: TextStyle(fontSize: 12),)
+                          ],
+                        ),
+                        description: Column(
+                          children: [
+                            Text('$out',style: const TextStyle(fontWeight: FontWeight.bold,fontSize: 24,color: ColorStyle.tertiary)),
+                            const Text('Empty Stock',style: TextStyle(fontSize: 12))
+                          ],
+                        ),
                       ),
-                    )
-                ),
+                    ),
                 const SizedBox(height: 25,),
                 ListView.builder(
                     physics: const NeverScrollableScrollPhysics(),
@@ -435,96 +394,65 @@ class _NewInventoryScreenState extends State<NewInventoryScreen> {
                     itemBuilder: (context, index){
                       Map inv = inventory[index] as Map;
 
+                      bool setuse = inv['IsUse'] == '1';
+
+
 
                       return Padding(
                         padding: const EdgeInsets.symmetric(vertical: 4),
-                        child: Container(
-                          height: MediaQuery.of(context).size.height * .10,
-                          width: MediaQuery.of(context).size.width,
-                          decoration: BoxDecoration(
-                              color: ColorStyle.tertiary,
-                              borderRadius: BorderRadius.circular(5),
-                              boxShadow: const [
-                                BoxShadow(
-                                    offset: Offset.zero,
-                                    color: Colors.black12,
-                                    spreadRadius: .5,
-                                    blurRadius: 5
-                                )
-                              ]
-                          ),
-                          child: Row(
-                            children: [
-                              Stack(
+                        child: IntrinsicHeight(
+                          child: Container(
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(6),
+                                border: Border.all(color: Colors.grey.shade300),
+                              ),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
                                   Container(
-                                    height: double.maxFinite,
-                                    decoration: BoxDecoration(
-                                        color: Colors.white,
-                                        borderRadius: BorderRadius.circular(5)
+                                    width: MediaQuery.of(context).size.width * .25,
+                                    decoration: const BoxDecoration(
+                                        color: ColorStyle.tertiary,
+                                        borderRadius: BorderRadius.horizontal(left: Radius.circular(5))
                                     ),
-                                    child: Container(
-                                        width: MediaQuery.of(context).size.width * .25,
-                                        padding: const EdgeInsets.all(8.0),
-                                        child: Align(
-                                            alignment: Alignment.center,
-                                            child: Column(
-                                              children: [
-                                                Text(
-                                                  '${inv['ItemQty']}',
-                                                  style: const TextStyle(
-                                                      fontWeight: FontWeight.bold,
-                                                      fontSize: 24
-                                                  ),
-                                                  overflow: TextOverflow.ellipsis,
-                                                ),
-                                                const Text(
-                                                  'qty',
-                                                  style: TextStyle(
-                                                      fontSize: 12,
-                                                      color: ColorStyle.secondary
-                                                  ),
-                                                )
-                                              ],
-                                            )
-                                        )
+                                    padding: const EdgeInsets.all(8),
+                                    child: Column(
+                                      children: [
+                                        Text('${inv['ItemQty']}',
+                                          style: const TextStyle(color: Colors.white,fontWeight: FontWeight.bold, fontSize: 20),
+                                        ),
+                                        const Text('Qty',style: TextStyle(color: Colors.white),)
+                                      ],
                                     ),
+                                  ),
+                                  const SizedBox(width: 4,),
+                                  Expanded(
+                                      child: RowItem(
+                                          title: Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              Text('${inv['ItemName']}',style: const TextStyle(fontSize: 16),),
+                                              Text('${inv['Category']}',style: const TextStyle(color: ColorStyle.tertiary,fontSize: 12),)
+                                            ],
+                                          ),
+                                          description: IconButton(
+                                            onPressed: (){
+                                              _bottomModal(
+                                                  '${inv['ItemName']}', '${inv['ItemQty']}',
+                                                  '${inv['InventoryID']}', '${inv['ItemVolume']}',
+                                                  '${inv['VolumeUse']}', '${inv['RemainingVolume']}',
+                                                  '${inv['Category']}',setuse
+                                              );
+                                            },
+                                            icon: const Icon(Icons.more_vert),
+                                          )
+                                      )
                                   )
                                 ],
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.all(8),
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Text(
-                                      '${inv['ItemName']}',
-                                      style: const TextStyle(
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.w600,
-                                          color: Colors.white
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              Expanded(
-                                  child: Align(
-                                alignment: Alignment.centerRight,
-                                child: IconButton(
-                                  onPressed: (){
-                                    _bottomModal(
-                                        '${inv['ItemName']}', '${inv['ItemQty']}',
-                                        '${inv['InventoryID']}', '${inv['ItemVolume']}', '${inv['VolumeUse']}',
-                                        '${inv['RemainingVolume']}'
-                                    );
-                                  },
-                                  icon: const Icon(Icons.more_vert_rounded, color: Colors.white,),
-                                ),
-                              ))
-                            ],
+                              )
                           ),
-                        ),
+                        )
                       );
                     }
                 ),
@@ -606,9 +534,20 @@ class _InventoryAddScreenState extends State<InventoryAddScreen> {
         }
     );
 
+    if(setUse == true){
+      setState(() {
+        isDefault = '1';
+      });
+    }else{
+      setState(() {
+        isDefault = '0';
+      });
+    }
+
     ApiResponse apiResponse = await addInventory(
         _itemname.text, _itemqty.text,
         _itemvolume.text, _itemuse.text,
+        categoryName!, isDefault,
         token.toString()
     );
 
@@ -629,7 +568,16 @@ class _InventoryAddScreenState extends State<InventoryAddScreen> {
   Widget build(BuildContext context) {
 
     return Scaffold(
-      appBar: const ForAppBar(),
+      appBar: AppBar(
+        title: const Text('Add Item'),
+        titleTextStyle: const TextStyle(fontSize: 18,fontWeight: FontWeight.bold),
+        leading: IconButton(
+          onPressed: (){
+            Navigator.pop(context);
+          },
+          icon: const Icon(CupertinoIcons.chevron_left,color: Colors.white,),
+        ),
+      ),
       body: Padding(
         padding: const EdgeInsets.all(8),
         child: SingleChildScrollView(
@@ -641,7 +589,7 @@ class _InventoryAddScreenState extends State<InventoryAddScreen> {
                   Container(
                     width: double.infinity,
                     padding: const EdgeInsets.all(4),
-                    decoration: BoxDecoration(
+                    decoration: const BoxDecoration(
                       color: ColorStyle.tertiary,
                       borderRadius: BorderRadius.vertical(top: Radius.circular(5))
                     ),
@@ -666,7 +614,7 @@ class _InventoryAddScreenState extends State<InventoryAddScreen> {
                   Container(
                     width: double.infinity,
                     padding: const EdgeInsets.all(4),
-                    decoration: BoxDecoration(
+                    decoration: const BoxDecoration(
                         color: ColorStyle.tertiary,
                         borderRadius: BorderRadius.vertical(top: Radius.circular(5))
                     ),
@@ -692,7 +640,7 @@ class _InventoryAddScreenState extends State<InventoryAddScreen> {
                   Container(
                     width: double.infinity,
                     padding: const EdgeInsets.all(4),
-                    decoration: BoxDecoration(
+                    decoration: const BoxDecoration(
                         color: ColorStyle.tertiary,
                         borderRadius: BorderRadius.vertical(top: Radius.circular(5))
                     ),
@@ -713,7 +661,7 @@ class _InventoryAddScreenState extends State<InventoryAddScreen> {
                     onChanged: (newValue) {
                       setState(() {
                         categoryName = newValue;
-                        print(categoryName);
+
                       });
                     },
                     validator: (String? value) {
@@ -728,7 +676,7 @@ class _InventoryAddScreenState extends State<InventoryAddScreen> {
                   Container(
                     width: double.infinity,
                     padding: const EdgeInsets.all(4),
-                    decoration: BoxDecoration(
+                    decoration: const BoxDecoration(
                         color: ColorStyle.tertiary,
                         borderRadius: BorderRadius.vertical(top: Radius.circular(5))
                     ),
@@ -754,7 +702,7 @@ class _InventoryAddScreenState extends State<InventoryAddScreen> {
                   Container(
                     width: double.infinity,
                     padding: const EdgeInsets.all(4),
-                    decoration: BoxDecoration(
+                    decoration: const BoxDecoration(
                         color: ColorStyle.tertiary,
                         borderRadius: BorderRadius.vertical(top: Radius.circular(5))
                     ),
@@ -775,7 +723,7 @@ class _InventoryAddScreenState extends State<InventoryAddScreen> {
                       return null;
                     },
                   ),
-                  const SizedBox(height: 15,),
+                  const SizedBox(height: 10,),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -791,13 +739,15 @@ class _InventoryAddScreenState extends State<InventoryAddScreen> {
                       const Text('Set as default')
                     ],
                   ),
-                  const Text(
-                    'Note: Setting this as default will update the status of this item accordingly per laundry service made.',
-                    style: TextStyle(
-                      fontStyle: FontStyle.italic,
-                      color: Colors.blue,
+                  const Center(
+                    child: Text(
+                      'Note: Setting this as default will update the status of this item accordingly per laundry service made.',
+                      style: TextStyle(
+                        fontStyle: FontStyle.italic,
+                        color: Colors.blue,
+                      ),
+                      textAlign: TextAlign.justify,
                     ),
-                    textAlign: TextAlign.justify,
                   )
                 ],
               ),
@@ -840,45 +790,15 @@ class InventoryEditScreen extends StatefulWidget {
   final String itemvolume;
   final String volumeuse;
   final String id;
-  final VoidCallback onUpdate;
-  const InventoryEditScreen({super.key, required this.itemname, required this.itemqty, required this.itemvolume, required this.id, required this.volumeuse, required this.onUpdate});
+  final bool setuse;
+  final String category;
+  const InventoryEditScreen({super.key, required this.itemname, required this.itemqty, required this.itemvolume, required this.id, required this.volumeuse, required this.setuse, required this.category});
 
   @override
   State<InventoryEditScreen> createState() => _InventoryEditScreenState();
 }
 
 class _InventoryEditScreenState extends State<InventoryEditScreen> {
-
-  Future<void> updateInv() async{
-    showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (context){
-          return Center(
-            child: LoadingAnimationWidget.staggeredDotsWave(
-              color: Colors.black,
-              size: 50,
-            ),
-          );
-        }
-    );
-
-    ApiResponse apiResponse = await updateInventory(
-        widget.id, _itemname.text,
-        _itemqty.text, _itemvolume.text,
-        _itemuse.text
-    );
-
-    Navigator.pop(context);
-
-    if(apiResponse.error == null){
-      await successDialog(context, 'Item has been updated.');
-      widget.onUpdate();
-      Navigator.pop(context,true);
-    }else{
-      errorDialog(context, '${apiResponse.error}');
-    }
-  }
 
 
   String? id;
@@ -906,6 +826,8 @@ class _InventoryEditScreenState extends State<InventoryEditScreen> {
     _itemqty.text = widget.itemqty;
     _itemvolume.text = widget.itemvolume;
     _itemuse.text = widget.volumeuse;
+    categoryName = widget.category;
+    setUse = widget.setuse;
     widget.id;
     super.initState();
   }
@@ -914,26 +836,93 @@ class _InventoryEditScreenState extends State<InventoryEditScreen> {
   final TextEditingController _itemqty = TextEditingController();
   final TextEditingController _itemvolume = TextEditingController();
   final TextEditingController _itemuse = TextEditingController();
+  String? categoryName;
+  String isDefault = '';
+  bool setUse = false;
 
+  List<String> category = [
+    'Detergent',
+    'Fabric Conditioner',
+    'Bleach',
+    'Fabric Freshener Spray'
+  ];
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+
+  Future<void> updateInv() async{
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context){
+          return Center(
+            child: LoadingAnimationWidget.staggeredDotsWave(
+              color: Colors.black,
+              size: 50,
+            ),
+          );
+        }
+    );
+
+    if(setUse == true){
+      setState(() {
+        isDefault = '1';
+      });
+    }else{
+      setState(() {
+        isDefault = '0';
+      });
+    }
+
+    ApiResponse apiResponse = await updateInventory(
+        widget.id, _itemname.text,
+        _itemqty.text, _itemvolume.text,
+        _itemuse.text, '${prefs.getString('token')}', '$categoryName',isDefault
+    );
+
+    Navigator.pop(context);
+
+
+    if(apiResponse.error == null){
+      await successDialog(context, 'Item has been updated.');
+      Navigator.pop(context,true);
+    }else{
+      errorDialog(context, '${apiResponse.error}');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: const ForAppBar(),
+      appBar: AppBar(
+        title: const Text('Edit Item'),
+        titleTextStyle: const TextStyle(fontWeight: FontWeight.bold,fontSize: 18),
+        leading: IconButton(
+          onPressed: (){
+            Navigator.pop(context);
+          },
+          icon: const Icon(CupertinoIcons.chevron_left,color: Colors.white,),
+        ),
+      ),
         body: Padding(
-          padding: const EdgeInsets.all(8.0),
+          padding: const EdgeInsets.all(8),
           child: SingleChildScrollView(
               child: Form(
                 key: _formKey,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      'Detergent Name',
-                      style: InvStyle.formTitle,
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(4),
+                      decoration: const BoxDecoration(
+                          color: ColorStyle.tertiary,
+                          borderRadius: BorderRadius.vertical(top: Radius.circular(5))
+                      ),
+                      child: const Text(
+                        'Item Name',
+                        style: InvStyle.formTitle,
+                      ),
                     ),
-                    const SizedBox(height: 5,),
                     TextFormField(
                       controller: _itemname,
                       decoration: InvStyle.emailForm,
@@ -947,11 +936,18 @@ class _InventoryEditScreenState extends State<InventoryEditScreen> {
                     ),
                     const SizedBox(height: 15,),
 
-                    const Text(
-                      'Detergent Quantity',
-                      style: InvStyle.formTitle,
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(4),
+                      decoration: const BoxDecoration(
+                          color: ColorStyle.tertiary,
+                          borderRadius: BorderRadius.vertical(top: Radius.circular(5))
+                      ),
+                      child: const Text(
+                        'Item Quantity',
+                        style: InvStyle.formTitle,
+                      ),
                     ),
-                    const SizedBox(height: 5,),
                     TextFormField(
                       controller: _itemqty,
                       keyboardType: TextInputType.number,
@@ -966,43 +962,118 @@ class _InventoryEditScreenState extends State<InventoryEditScreen> {
                     ),
                     const SizedBox(height: 15,),
 
-                    const Text(
-                      'Detergent Volume',
-                      style: InvStyle.formTitle,
+                    Container(
+                      width: double.infinity,
+
+                      padding: const EdgeInsets.all(4),
+                      decoration: const BoxDecoration(
+                          color: ColorStyle.tertiary,
+                          borderRadius: BorderRadius.vertical(top: Radius.circular(5))
+                      ),
+                      child: const Text(
+                        'Item Type',
+                        style: InvStyle.formTitle,
+                      ),
                     ),
-                    const SizedBox(height: 5,),
-                    TextFormField(
-                      keyboardType: TextInputType.number,
-                      controller: _itemvolume,
-                      decoration: InvStyle.emailForm,
-                      autovalidateMode: AutovalidateMode.onUserInteraction,
-                      validator: (value) {
+                    DropdownButtonFormField<String>(
+                      decoration: SignupStyle.allForm,
+                      value: categoryName,
+                      items: category.map<DropdownMenuItem<String>>((dynamic category){
+                        return DropdownMenuItem<String>(
+                            value: category,
+                            child: Text(category)
+                        );
+                      }).toList(),
+                      onChanged: (newValue) {
+                        setState(() {
+                          categoryName = newValue;
+                        });
+                      },
+                      validator: (String? value) {
                         if (value == null || value.isEmpty) {
-                        return 'Field is required';
+                          return 'This field is required.';
                         }
                         return null;
                       },
                     ),
                     const SizedBox(height: 15,),
 
-                    const Text(
-                      'Volume Usage per Load',
-                      style: InvStyle.formTitle,
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(4),
+                      decoration: const BoxDecoration(
+                          color: ColorStyle.tertiary,
+                          borderRadius: BorderRadius.vertical(top: Radius.circular(5))
+                      ),
+                      child: const Text(
+                        'Item Volume (ml)',
+                        style: InvStyle.formTitle,
+                      ),
                     ),
-                    const SizedBox(height: 5,),
                     TextFormField(
+                      controller: _itemvolume,
                       keyboardType: TextInputType.number,
-                      controller: _itemuse,
                       decoration: InvStyle.emailForm,
                       autovalidateMode: AutovalidateMode.onUserInteraction,
                       validator: (value) {
                         if (value == null || value.isEmpty) {
-                    return 'Field is required';
+                          return 'Field is required';
                         }
                         return null;
                       },
                     ),
-                    const SizedBox(height: 15,)
+                    const SizedBox(height: 15,),
+
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(4),
+                      decoration: const BoxDecoration(
+                          color: ColorStyle.tertiary,
+                          borderRadius: BorderRadius.vertical(top: Radius.circular(5))
+                      ),
+                      child: const Text(
+                        'Item Usage per Load (ml)',
+                        style: InvStyle.formTitle,
+                      ),
+                    ),
+                    TextFormField(
+                      controller: _itemuse,
+                      keyboardType: TextInputType.number,
+                      decoration: InvStyle.emailForm,
+                      autovalidateMode: AutovalidateMode.onUserInteraction,
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Field is required';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 10,),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Checkbox(
+                            value: setUse,
+                            activeColor: ColorStyle.tertiary,
+                            onChanged: (value){
+                              setState(() {
+                                setUse = value!;
+                              });
+                            }
+                        ),
+                        const Text('Set as default')
+                      ],
+                    ),
+                    const Center(
+                      child: Text(
+                        'Note: Setting this as default will update the status of this item accordingly per laundry service made.',
+                        style: TextStyle(
+                          fontStyle: FontStyle.italic,
+                          color: Colors.blue,
+                        ),
+                        textAlign: TextAlign.justify,
+                      ),
+                    )
                   ],
                 ),
               )

@@ -1,4 +1,3 @@
-import 'dart:ui';
 
 import 'package:capstone/api_response.dart';
 import 'package:capstone/brandnew/dialogs.dart';
@@ -6,7 +5,9 @@ import 'package:capstone/connect/laravel.dart';
 import 'package:capstone/customer/NewServiceBookingPage.dart';
 import 'package:capstone/services/services.dart';
 import 'package:capstone/styles/mainColorStyle.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_profile_picture/flutter_profile_picture.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:persistent_bottom_nav_bar_v2/persistent_bottom_nav_bar_v2.dart';
@@ -33,6 +34,10 @@ class _NewShopInfoScreenState extends State<NewShopInfoScreen> {
   Color? status;
   Color? btnColor;
   String message = '';
+  String isValued = '';
+  String shopStat = '';
+  String warningDesc = '';
+
   Future<void> displayShopInfo() async{
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     ApiResponse response = await getRequestShopInfo(widget.shopId, '${prefs.getString('token')}');
@@ -45,17 +50,20 @@ class _NewShopInfoScreenState extends State<NewShopInfoScreen> {
         ratings = response.data2 as List<dynamic>;
         overallRate = response.total ?? 0;
         count = response.count ?? 0;
-        message = response.message!;
+        message = response.message ?? '';
         isLoading = false;
         hasRating = ratings.isNotEmpty;
       });
     }else{
-      print(response.error);
     }
   }
 
   Future<void> statusRequest() async{
-    await warningDialog(context, message);
+    await warningTextDialog(context, isValued,warningDesc);
+  }
+
+  Future<void> shopStatus() async{
+    await warningTextDialog(context, isValued, warningDesc);
   }
 
   @override
@@ -71,28 +79,44 @@ class _NewShopInfoScreenState extends State<NewShopInfoScreen> {
         break;
       case 'full':
         status = Colors.orange;
+        shopStat = 'Laundry Shop is currently full';
         break;
-      default:
+      case 'closed':
         status = Colors.red;
+        shopStat = 'Laundry Shop is closed';
         break;
     }
 
-    switch(info['IsValued']){
+    switch(message){
       case '0':
         btnColor = Colors.orange;
+        isValued = 'Pending';
+        warningDesc = 'Your request is still pending';
         break;
       case '1':
-        btnColor = ColorStyle.tertiary;
+        btnColor = Colors.greenAccent;
+        break;
+      case '2':
+        btnColor = Colors.red;
         break;
       default:
-        btnColor = Colors.red;
+        btnColor = ColorStyle.tertiary;
+        isValued = 'Code Verification';
+        warningDesc = 'Service booking requires the shop\'s code before availing. Visit the laudry shop for more info.';
         break;
     }
 
     if(isLoading){
       return Scaffold(
           appBar: AppBar(
-            title: Text('...'),
+            title: const Text('Shop Information'),
+            titleTextStyle: const TextStyle(color: Colors.white,fontSize: 18,fontWeight: FontWeight.bold),
+            leading: IconButton(
+              onPressed: (){
+                Navigator.pop(context);
+              },
+              icon: const Icon(CupertinoIcons.chevron_left,color: Colors.white,),
+            ),
           ),
           body: Center(
             child: LoadingAnimationWidget.staggeredDotsWave(
@@ -104,28 +128,32 @@ class _NewShopInfoScreenState extends State<NewShopInfoScreen> {
     }
     return Scaffold(
       appBar: AppBar(
-        title: Text('${info['ShopName']}'),
-        titleTextStyle: TextStyle(color: Colors.white,fontSize: 18,fontWeight: FontWeight.bold),
+        title: const Text('Shop Information'),
+        titleTextStyle: const TextStyle(color: Colors.white,fontSize: 18,fontWeight: FontWeight.bold),
+        leading: IconButton(
+          onPressed: (){
+            Navigator.pop(context);
+          },
+          icon: const Icon(CupertinoIcons.chevron_left,color: Colors.white,),
+        ),
       ),
       body: SingleChildScrollView(
             child: Column(
               children: [
                 const SizedBox(height: 10,),
                 Stack(
-                  alignment: Alignment.topCenter,
+                  alignment: Alignment.center,
                   children: [
-                    CircleAvatar(
+                    const CircleAvatar(
                       backgroundColor: ColorStyle.tertiary,
                       radius: 52,
                     ),
-                    Padding(
-                      padding: const EdgeInsets.all(4.0),
-                      child: CircleAvatar(
-                        backgroundColor: ColorStyle.tertiary,
-                        backgroundImage: NetworkImage('$picaddress/${info['ShopImage']}'),
-                        radius: 48,
-                      ),
-                    ),
+                    ProfilePicture(
+                        name: '${info['ShopName']}',
+                        radius: 46,
+                        fontsize: 24,
+                        img: info['ShopImage'] == '' ? null : '$picaddress/${info['ShopImage']}',
+                    )
                   ],
                 ),
                 Padding(
@@ -136,16 +164,16 @@ class _NewShopInfoScreenState extends State<NewShopInfoScreen> {
                       Container(
                           width: double.infinity,
                           padding: const EdgeInsets.all(4),
-                          decoration: BoxDecoration(
+                          decoration: const BoxDecoration(
                               color: ColorStyle.tertiary,
                               borderRadius: BorderRadius.vertical(top: Radius.circular(5))
                           ),
-                          child: Text('Shop\'s Information',style: TextStyle(color: Colors.white,fontWeight: FontWeight.bold),)
+                          child: const Text('Shop\'s Information',style: TextStyle(color: Colors.white,fontWeight: FontWeight.bold),)
                       ),
                       Container(
                           padding: const EdgeInsets.all(8),
                           height: 140,
-                          decoration: BoxDecoration(
+                          decoration: const BoxDecoration(
                               color: Colors.white,
                               borderRadius: BorderRadius.vertical(bottom: Radius.circular(5)),
                               boxShadow: [
@@ -163,19 +191,10 @@ class _NewShopInfoScreenState extends State<NewShopInfoScreen> {
                                   title: const Row(
                                     children: [
                                       Icon(Icons.key,color: ColorStyle.tertiary,),
-                                      Text(' Shop Code')
+                                      Text(' Shop Name')
                                     ],
                                   ),
-                                  description: Text('${info['ShopCode']}',style: TextStyle(fontWeight: FontWeight.bold),textAlign: TextAlign.end,)
-                              ),
-                              RowItem(
-                                  title: const Row(
-                                    children: [
-                                      Icon(Icons.circle, color: ColorStyle.tertiary,),
-                                      Text(' Status')
-                                    ],
-                                  ),
-                                  description: Text('${info['ShopStatus']}',style: TextStyle(fontWeight: FontWeight.bold),textAlign: TextAlign.end,)
+                                  description: Text('${info['ShopName']}',style: const TextStyle(fontWeight: FontWeight.bold),textAlign: TextAlign.end,)
                               ),
                               RowItem(
                                   title: const Row(
@@ -184,7 +203,16 @@ class _NewShopInfoScreenState extends State<NewShopInfoScreen> {
                                       Text(' Address')
                                     ],
                                   ),
-                                  description: Text('${info['ShopAddress']}',style: TextStyle(fontWeight: FontWeight.bold),textAlign: TextAlign.end,)
+                                  description: Text('${info['ShopAddress']}',style: const TextStyle(fontWeight: FontWeight.bold),textAlign: TextAlign.end,)
+                              ),
+                              RowItem(
+                                  title: const Row(
+                                    children: [
+                                      Icon(Icons.circle, color: ColorStyle.tertiary,),
+                                      Text(' Status')
+                                    ],
+                                  ),
+                                  description: Text('${info['ShopStatus']}',style: const TextStyle(fontWeight: FontWeight.bold),textAlign: TextAlign.end,)
                               ),
                               RowItem(
                                   title: const Row(
@@ -193,25 +221,25 @@ class _NewShopInfoScreenState extends State<NewShopInfoScreen> {
                                       Text(' Max Load')
                                     ],
                                   ),
-                                  description: Text('${info['MaxLoad']}',style: TextStyle(fontWeight: FontWeight.bold),textAlign: TextAlign.end,)
+                                  description: Text('${info['MaxLoad']}',style: const TextStyle(fontWeight: FontWeight.bold),textAlign: TextAlign.end,)
                               )
                             ],
                           )
                       ),
-                      SizedBox(height: 10,),
+                      const SizedBox(height: 10,),
                       Container(
                           width: double.infinity,
                           padding: const EdgeInsets.all(4),
-                          decoration: BoxDecoration(
+                          decoration: const BoxDecoration(
                               color: ColorStyle.tertiary,
                               borderRadius: BorderRadius.vertical(top: Radius.circular(5))
                           ),
-                          child: Text('Laundry Services Offered',style: TextStyle(color: Colors.white,fontWeight: FontWeight.bold),)
+                          child: const Text('Laundry Services',style: TextStyle(color: Colors.white,fontWeight: FontWeight.bold),)
                       ),
                       Container(
                           padding: const EdgeInsets.all(8),
                           height: 140,
-                          decoration: BoxDecoration(
+                          decoration: const BoxDecoration(
                               color: Colors.white,
                               borderRadius: BorderRadius.vertical(bottom: Radius.circular(5)),
                               boxShadow: [
@@ -242,13 +270,13 @@ class _NewShopInfoScreenState extends State<NewShopInfoScreen> {
                                           Text('${serve['ServiceName']}')
                                         ],
                                       ),
-                                      description: Text('₱ ${serve['LoadPrice']}.00',style: TextStyle(fontWeight: FontWeight.bold),)
+                                      description: Text('₱ ${serve['LoadPrice']}.00',style: const TextStyle(fontWeight: FontWeight.bold),)
                                   ),
                                 );
                               }
                           )
                       ),
-                      SizedBox(height: 10,),
+                      const SizedBox(height: 10,),
                       Center(
                         child: ElevatedButton(
                           style: ElevatedButton.styleFrom(
@@ -257,10 +285,10 @@ class _NewShopInfoScreenState extends State<NewShopInfoScreen> {
                                   borderRadius: BorderRadius.circular(5)
                               )
                           ),
-                          onPressed: info['RemainingLoad'] == 0 || info['ShopStatus'] == 'closed'
+                          onPressed: info['RemainingLoad'] == 0 || info['ShopStatus'] == 'closed' || info['ShopStatus'] == 'full'
                               ? null
                               : (){
-                            switch(info['IsValued']){
+                            switch(message){
                               case '0':
                                 statusRequest();
                                 break;
@@ -268,9 +296,11 @@ class _NewShopInfoScreenState extends State<NewShopInfoScreen> {
                                 pushWithoutNavBar(context, MaterialPageRoute(builder: (context) =>
                                 NewServiceBookingScreen(shopId: '${info['ShopID']}')));
                                 break;
-                              default:
+                              case '2':
                                 statusRequest();
                                 break;
+                              default:
+                                statusRequest();
                             }
                           },
                           child: const Text(
@@ -292,14 +322,14 @@ class _NewShopInfoScreenState extends State<NewShopInfoScreen> {
                           padding: const EdgeInsets.all(8.0),
                           child: Row(
                             children: [
-                              Text( count == 0 ? '0': (overallRate/count).toStringAsFixed(1), style: TextStyle(
+                              Text( count == 0 ? '0': (overallRate/count).toStringAsFixed(1), style: const TextStyle(
                                   fontSize: 22,
                                   fontWeight: FontWeight.bold
                               ),),
                               Icon(Icons.star,color: Colors.orange.shade300,size: 22,),
                               Text(
                                 'Reviews ($count)',
-                                style: TextStyle(
+                                style: const TextStyle(
                                     fontSize: 14
                                 ),
                               )
@@ -336,7 +366,7 @@ class _NewShopInfoScreenState extends State<NewShopInfoScreen> {
                                                       backgroundColor: Colors.grey.shade300,
                                                       radius: 15,
                                                     ),
-                                                    Text(' ${rate['CustomerName']}'),
+                                                    Expanded(child: Text(' ${rate['CustomerName']}'),)
                                                   ],
                                                 ),
                                                 description: Text('${rate['DateIssued']}')

@@ -1,6 +1,7 @@
 import 'package:capstone/api_response.dart';
 import 'package:capstone/services/services.dart';
 import 'package:capstone/styles/mainColorStyle.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:row_item/row_item.dart';
@@ -31,7 +32,6 @@ class _NewNotificationInfoScreenState extends State<NewNotificationInfoScreen> {
         isLoading = false;
       });
     }else{
-      print(response.error);
     }
   }
 
@@ -55,7 +55,14 @@ class _NewNotificationInfoScreenState extends State<NewNotificationInfoScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Laundry Details'),
-        titleTextStyle: TextStyle(color: Colors.white,fontSize: 18,fontWeight: FontWeight.bold),
+        titleTextStyle: const TextStyle(color: Colors.white,fontSize: 18,fontWeight: FontWeight.bold),
+        leading: IconButton(
+          onPressed: (){
+            Navigator.pop(context);
+          },
+          icon: const Icon(CupertinoIcons.chevron_left,color: Colors.white,),
+        ),
+
       ),
       body: Padding(
           padding: const EdgeInsets.all(8),
@@ -68,13 +75,13 @@ class _NewNotificationInfoScreenState extends State<NewNotificationInfoScreen> {
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
+                decoration: const BoxDecoration(
                     color: ColorStyle.tertiary,
                     borderRadius: BorderRadius.vertical(top: Radius.circular(5))
                 ),
                 child: Text(
-                  '${widget.title}',
-                  style: TextStyle(
+                  widget.title,
+                  style: const TextStyle(
                       color: Colors.white,
                       fontWeight: FontWeight.bold
                   ),
@@ -82,7 +89,7 @@ class _NewNotificationInfoScreenState extends State<NewNotificationInfoScreen> {
               ),
               Container(
                 padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
+                decoration: const BoxDecoration(
                     color: Colors.white,
                     boxShadow: [
                       BoxShadow(
@@ -96,55 +103,55 @@ class _NewNotificationInfoScreenState extends State<NewNotificationInfoScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Text('Laundry Shop Owner',style: TextStyle(fontSize: 10)),
-                    Text('${summ['OwnerName']}',style: TextStyle(fontSize: 16,fontWeight: FontWeight.bold),),
+                    Text('${summ['OwnerName']}',style: const TextStyle(fontSize: 16,fontWeight: FontWeight.bold),),
 
                     const SizedBox(height: 5,),
                     const Text('Address',style: TextStyle(fontSize: 10)),
-                    Text('${summ['OwnerAddress']}',style: TextStyle(fontSize: 16,fontWeight: FontWeight.bold),),
+                    Text('${summ['OwnerAddress']}',style: const TextStyle(fontSize: 16,fontWeight: FontWeight.bold),),
 
                     const SizedBox(height: 5,),
                     const Text('Shop Name',style: TextStyle(fontSize: 10)),
-                    Text('${summ['ShopName']}',style: TextStyle(fontSize: 16,fontWeight: FontWeight.bold),),
+                    Text('${summ['ShopName']}',style: const TextStyle(fontSize: 16,fontWeight: FontWeight.bold),),
 
                     const SizedBox(height: 5,),
                     const Text('Shop Address',style: TextStyle(fontSize: 10)),
-                    Text('${summ['ShopAddress']}',style: TextStyle(fontSize: 16,fontWeight: FontWeight.bold),),
+                    Text('${summ['ShopAddress']}',style: const TextStyle(fontSize: 16,fontWeight: FontWeight.bold),),
 
 
                     const Divider(),
                     const Text('Customer Name',style: TextStyle(fontSize: 10)),
-                    Text('${summ['CustomerName']}',style: TextStyle(fontSize: 16,fontWeight: FontWeight.bold),),
+                    Text('${summ['CustomerName']}',style: const TextStyle(fontSize: 16,fontWeight: FontWeight.bold),),
 
                     const SizedBox(height: 5,),
                     const Text('Customer Address',style: TextStyle(fontSize: 10)),
-                    Text('${summ['CustomerAddress']}',style: TextStyle(fontSize: 16,fontWeight: FontWeight.bold),),
+                    Text('${summ['CustomerAddress']}',style: const TextStyle(fontSize: 16,fontWeight: FontWeight.bold),),
 
                     const SizedBox(height: 5,),
                     const Text('Customer Contact',style: TextStyle(fontSize: 10)),
-                    Text('${summ['CustomerContactNumber']}',style: TextStyle(fontSize: 16,fontWeight: FontWeight.bold),),
+                    Text('${summ['CustomerContactNumber']}',style: const TextStyle(fontSize: 16,fontWeight: FontWeight.bold),),
                     const Divider(height: 30,),
 
                     const Text('Laundry Details', style: TextStyle(fontWeight: FontWeight.bold,fontSize: 20),),
                     RowItem(
                         title: const Text('Service Availed'),
-                        description: Text('${summ['ServiceName']}', style: TextStyle(fontWeight: FontWeight.bold),)
+                        description: Text('${summ['ServiceName']}', style: const TextStyle(fontWeight: FontWeight.bold),)
                     ),
                     RowItem(
                         title: const Text('Laundry Load'),
-                        description: Text('${summ['CustomerLoad']} kg/s', style: TextStyle(fontWeight: FontWeight.bold),)
+                        description: Text('${summ['CustomerLoad']} kg/s', style: const TextStyle(fontWeight: FontWeight.bold),)
                     ),
                     RowItem(
                         title: const Text('Payment Status'),
-                        description: Text('${summ['PaymentStatus']}', style: TextStyle(fontWeight: FontWeight.bold),)
+                        description: Text('${summ['PaymentStatus']}', style: const TextStyle(fontWeight: FontWeight.bold),)
                     ),
                     RowItem(
                         title: const Text('Date'),
-                        description: Text('${summ['Schedule']}', style: TextStyle(fontWeight: FontWeight.bold),)
+                        description: Text('${summ['Schedule']}', style: const TextStyle(fontWeight: FontWeight.bold),)
                     ),
                     const Divider(),
                     RowItem(
                         title: const Text('Service Fee', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),),
-                        description: Text('₱${summ['LoadCost']}.00', style: TextStyle(fontWeight: FontWeight.bold,fontSize: 16),)
+                        description: Text('₱${summ['LoadCost']}.00', style: const TextStyle(fontWeight: FontWeight.bold,fontSize: 16),)
                     )
                   ],
                 ),

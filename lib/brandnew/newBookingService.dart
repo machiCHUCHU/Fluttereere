@@ -1,21 +1,15 @@
-import 'dart:ui';
 
 import 'package:calendar_date_picker2/calendar_date_picker2.dart';
 import 'package:capstone/api_response.dart';
 import 'package:capstone/brandnew/dialogs.dart';
-import 'package:capstone/brandnew/setWidget/appbar.dart';
 import 'package:capstone/connect/laravel.dart';
 import 'package:capstone/services/services.dart';
-import 'package:capstone/styles/invStyle.dart';
 import 'package:capstone/styles/loginStyle.dart';
 import 'package:capstone/styles/mainColorStyle.dart';
-import 'package:capstone/styles/signupStyle.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/painting.dart';
-import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
-import 'package:input_quantity/input_quantity.dart';
+import 'package:flutter_profile_picture/flutter_profile_picture.dart';
 import 'package:intl/intl.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
@@ -32,7 +26,7 @@ class ForRegisteredScreen extends StatefulWidget {
 class _ForRegisteredScreenState extends State<ForRegisteredScreen> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final TextEditingController _load = TextEditingController();
-  List<dynamic> customer = []; String? customerName;
+  List<dynamic> customer = []; String? customerId; String? customerName; String customerImage ='';
   List<dynamic> service = []; String? serviceName;
   List<dynamic> inventory = []; String? detergent;
 
@@ -43,6 +37,12 @@ class _ForRegisteredScreenState extends State<ForRegisteredScreen> {
   List<DateTime?> date = [];
   String chosenDate = '';
   String schedule = '';
+  bool isloading = true;
+  int multiplier = 0;
+  double weight = 0;
+  int shopweight = 0;
+  int shopprice = 0;
+  int total = 0;
 
 
 
@@ -68,7 +68,9 @@ class _ForRegisteredScreenState extends State<ForRegisteredScreen> {
     ApiResponse response = await getCustomers('${prefs.get('token')}');
 
     if(response.error == null){
-      customer = response.data as List<dynamic>;
+      setState(() {
+        customer = response.data as List<dynamic>;
+      });
     }else{
       errorDialog(context, '${response.error}');
     }
@@ -90,37 +92,125 @@ class _ForRegisteredScreenState extends State<ForRegisteredScreen> {
 
   TimeOfDay selectedTime = TimeOfDay.now();
 
-  String _timeOfDayTo24HourString(BuildContext context, TimeOfDay time) {
-    final MaterialLocalizations localizations = MaterialLocalizations.of(context);
-    return localizations.formatTimeOfDay(time, alwaysUse24HourFormat: true);
-  }
-
-  Future<void> _selectTime(BuildContext context) async {
-    final TimeOfDay? pickedTime = await showTimePicker(
-      context: context,
-      initialTime: selectedTime,
-    );
-
-    if (pickedTime != null && pickedTime != selectedTime) {
-      setState(() {
-        selectedTime = pickedTime;
-      });
-    }
-  }
-
   Future<void> registeredAdd() async{
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     ApiResponse response = await addBookings(
         _load.text, schedule,
-        customerName.toString(), serviceName.toString(),
+        customerId.toString(), serviceName.toString(),
+        total.toString(),
         '${prefs.getString('token')}');
 
     if(response.error == null){
-      successDialog(context, '${response.data}');
+      await successDialog(context, '${response.data}');
+      Navigator.popUntil(context, (route) => route.isFirst);
     }else{
       errorDialog(context, '${response.error}');
     }
   }
+
+
+  Center loading(){
+    return Center(
+      child: LoadingAnimationWidget.staggeredDotsWave(
+        color: Colors.black,
+        size: 50,
+      ),
+    );
+  }
+
+  void _bottomModalCustomer() {
+    showMaterialModalBottomSheet(
+      context: context,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(25))
+      ),
+      builder: (BuildContext context) {
+
+        return StatefulBuilder(
+          builder: (BuildContext context, StateSetter modalSetState) {
+            return Container(
+              height: MediaQuery.of(context).size.height * .5,
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(10),
+                  topRight: Radius.circular(10),
+                ),
+              ),
+              child: Column(
+                children: [
+                  const Padding(
+                    padding: EdgeInsets.all(8.0),
+                    child: Text(
+                        'Select Customers',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 18
+                      ),
+                    ),
+                  ),
+                  const Divider(height: 0,),
+                  Flexible(
+                      child: ListView.builder(
+                        shrinkWrap: true,
+                        padding: const EdgeInsets.all(0),
+                        itemCount: customer.length,
+                        itemBuilder: (context, index) {
+                          Map reg = customer[index] as Map;
+
+                          bool hasImage = reg['CustomerImage'] != null;
+
+                          return InkWell(
+                            onTap: () {
+                              modalSetState(() {
+                                customerId = '${reg['CustomerID']}';
+                              });
+                              setState(() {
+                                customerName = '${reg['CustomerName']}';
+                                customerImage = '${reg['CustomerImage']}';
+                              });
+                              print(customerImage);
+                            },
+                            child: Material(
+                              color: customerId == '${reg['CustomerID']}' ? ColorStyle.tertiary : Colors.white,
+                              child: ListTile(
+                                leading: ProfilePicture(
+                                  name: '${reg['CustomerName']}',
+                                  radius: 18,
+                                  fontsize: 14,
+                                  img: hasImage ? '$picaddress/${reg['CustomerImage']}' : null,
+                                ),
+                                title: Text(
+                                  '${reg['CustomerName']}',
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(
+                                      color: customerId == '${reg['CustomerID']}' ? Colors.white : ColorStyle.tertiary,
+                                      fontWeight: FontWeight.bold
+                                  ),
+                                ),
+                                subtitle: Text(
+                                  '${reg['CustomerAddress']}',
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(
+                                    color: customerId == '${reg['CustomerID']}' ? Colors.white : ColorStyle.tertiary,
+                                    fontSize: 10,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          );
+                        },
+                      )
+                  )
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
 
   @override
   void initState(){
@@ -130,159 +220,253 @@ class _ForRegisteredScreenState extends State<ForRegisteredScreen> {
   }
   @override
   Widget build(BuildContext context) {
+    print(customerImage == 'null');
     return Scaffold(
-      appBar: const ForAppBar(
-        title: Text('Book Service'),
+      appBar: AppBar(
+        title: const Text('Set a Service'),
+        titleTextStyle: const TextStyle(
+          fontWeight: FontWeight.bold,
+          fontSize: 18
+        ),
+        leading: IconButton(
+          onPressed: (){
+            Navigator.pop(context);
+          },
+          icon: const Icon(CupertinoIcons.chevron_left,color: Colors.white,),
+        ),
       ),
-      body: Padding(
+      body: isLoading ? loading() : Padding(
         padding: const EdgeInsets.all(8),
         child: SingleChildScrollView(
           child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'Customer',
-                  style: SignupStyle.formTitle,
-                ),
-                const SizedBox(height: 5,),
-                DropdownButtonFormField<String>(
-                  decoration: SignupStyle.allForm,
-                  hint: const Text('Choose Customer'),
-                  value: customerName,
-                  items: customer.map<DropdownMenuItem<String>>((dynamic customer){
-                    return DropdownMenuItem<String>(
-                        value: customer['CustomerID'].toString(),
-                        child: Row(
-                          children: [
-                            CircleAvatar(
-                              backgroundImage: NetworkImage('$picaddress/${customer['Image']}'),
-                            ),
-                            Text('${customer['Name']}')
-                          ],
-                        )
-                    );
-                  }).toList(),
-                  onChanged: (newValue) {
-                    setState(() {
-                      customerName = newValue;
-                      print(customerName);
-                    });
-                  },
-                  validator: (String? value) {
-                    if (value == null || value.isEmpty) {
-                      return 'This field is required.';
-                    }
-                    return null;
-                  },
-                ),
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
 
-                const Text(
-                  'Laundry Load',
-                  style: LoginStyle.formTitle,
-                ),
-                const SizedBox(height: 5,),
-                TextFormField(
-                  keyboardType: TextInputType.number,
-                  controller: _load,
-                  decoration: LoginStyle.emailForm,
-                  autovalidateMode: AutovalidateMode.onUserInteraction,
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Field is required';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 15,),
+              Container(
+                width: double.infinity,
+                decoration: const BoxDecoration(
+                  color: ColorStyle.tertiary,
 
-                const Text(
-                  'Schedule',
-                  style: LoginStyle.formTitle,
                 ),
-                const SizedBox(height: 5,),
-                OutlinedButton(
-                    style: OutlinedButton.styleFrom(
+                padding: const EdgeInsets.all(4),
+                child: const Text(
+                    'Select Registered Customer',
+                    style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white
+                    )
+                ),
+              ),
+              OutlinedButton(
+                  style: OutlinedButton.styleFrom(
                       fixedSize: Size(MediaQuery.of(context).size.width, MediaQuery.of(context).size.height *.075),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(5),
+                      shape: const RoundedRectangleBorder(
+                        borderRadius: BorderRadius.vertical(bottom: Radius.circular(5)),
                       ),
-                      side: BorderSide(style: BorderStyle.solid, width: 2),
-                      padding: EdgeInsets.symmetric(horizontal: 8),
+                      side: const BorderSide(style: BorderStyle.solid, width: 1),
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
                       backgroundColor: Colors.white
-                    ),
-                    onPressed: ()async{
-                      await datepick1();
-                      _selectTime(context);
-                      setState(() {
-                        schedule = '$chosenDate ${_timeOfDayTo24HourString(context, selectedTime)}';
-                      });
-                    },
-                    child: Align(alignment: Alignment.centerLeft,
-                      child: Text(schedule.isEmpty ? 'Select Schedule' : schedule, style: TextStyle(fontSize: 16, color: Colors.black54),),)
-                ),
+                  ),
+                  onPressed: (){
+                   _bottomModalCustomer();
+                  },
+                  child: Align(alignment: Alignment.centerLeft,
+                    child: Row(
+                      children: [
+                        customerName == null ? const SizedBox.shrink() : ProfilePicture(
+                          name: '$customerName',
+                          radius: 18,
+                          fontsize: 14,
+                          img: customerImage != 'null' ? '$picaddress/$customerImage' : null,
+                        ),
+                        const SizedBox(width: 5,),
+                        Text(customerName == null ? 'Select Customer' : customerName.toString(),
+                          style: const TextStyle(fontSize: 16, color: ColorStyle.tertiary),),
+                      ],
+                    )
+                  )
+              ),
+              const SizedBox(height: 15,),
+              Container(
+                width: double.infinity,
+                decoration: const BoxDecoration(
+                  color: ColorStyle.tertiary,
 
-                const SizedBox(height: 15,),
-                const Text(
-                  'Service',
-                  style: SignupStyle.formTitle,
                 ),
-                const SizedBox(height: 5,),
-                DropdownButtonFormField<String>(
-                  decoration: SignupStyle.allForm,
-                  hint: const Text('Choose Service'),
-                  value: serviceName,
-                  items: service.map<DropdownMenuItem<String>>((dynamic service){
-                    return DropdownMenuItem<String>(
-                        value: service['ServiceID'].toString(),
-                        child: Text('${service['ServiceName']}')
-                    );
-                  }).toList(),
-                  onChanged: (newValue) {
+                padding: const EdgeInsets.all(4),
+                child: const Text(
+                    'Laundry Load (kg)',
+                    style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white
+                    )
+                ),
+              ),
+              TextFormField(
+                keyboardType: TextInputType.number,
+                controller: _load,
+                decoration: LoginStyle.addRegCustomer,
+                autovalidateMode: AutovalidateMode.onUserInteraction,
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Field is required';
+                  }
+                  try {
+                    weight = double.parse(value);
+                  } catch (e) {
+                    return 'Invalid number';
+                  }
+                  return null;
+                },
+                onChanged: (value) {
+                  setState(() {
+                    if (value.isNotEmpty) {
+                      weight = double.parse(value);
+                      multiplier = (weight / shopweight).ceil();
+                      total = multiplier * shopprice;
+                    }
+                  });
+                },
+              ),
+
+              const SizedBox(height: 15,),
+
+              Container(
+                width: double.infinity,
+                decoration: const BoxDecoration(
+                  color: ColorStyle.tertiary,
+
+                ),
+                padding: const EdgeInsets.all(4),
+                child: const Text(
+                    'Select Date',
+                    style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white
+                    )
+                ),
+              ),
+              OutlinedButton(
+                  style: OutlinedButton.styleFrom(
+                      fixedSize: Size(MediaQuery.of(context).size.width, MediaQuery.of(context).size.height *.075),
+                      shape: const RoundedRectangleBorder(
+                        borderRadius: BorderRadius.vertical(bottom: Radius.circular(5)),
+                      ),
+                      side: const BorderSide(style: BorderStyle.solid, width: 1),
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      backgroundColor: Colors.white
+                  ),
+                  onPressed: ()async{
+                    await datepick1();
                     setState(() {
-                      serviceName = newValue;
-                      print(serviceName);
+                      schedule = '$chosenDate';
                     });
                   },
-                  validator: (String? value) {
-                    if (value == null || value.isEmpty) {
-                      return 'This field is required.';
-                    }
-                    return null;
-                  },
-                ),
+                  child: Align(alignment: Alignment.centerLeft,
+                    child: Text(schedule.isEmpty ? 'Select Schedule' : schedule, style: const TextStyle(fontSize: 16, color: ColorStyle.tertiary),),)
+              ),
 
-                const SizedBox(height: 15,),
-                const Text(
-                  'Detergent',
-                  style: SignupStyle.formTitle,
+              const SizedBox(height: 15,),
+              Container(
+                width: double.infinity,
+                decoration: const BoxDecoration(
+                  color: ColorStyle.tertiary,
+
                 ),
-                const SizedBox(height: 5,),
-                DropdownButtonFormField<String>(
-                  decoration: SignupStyle.allForm,
-                  hint: const Text('Choose Detergent'),
-                  value: detergent,
-                  items: inventory.map<DropdownMenuItem<String>>((dynamic inventory){
-                    return DropdownMenuItem<String>(
-                        value: inventory['InventoryID'].toString(),
-                        child: Text('${inventory['ItemName']}'),
+                padding: const EdgeInsets.all(4),
+                child: const Text(
+                    'Select Laundry Service',
+                    style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white
+                    )
+                ),
+              ),
+              ListView.builder(
+                  itemCount: service.length,
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemBuilder: (context,index){
+                    Map serve = service[index] as Map;
+                    List icon = [
+                      'assets/sport-wear.png',
+                      'assets/jacket.png',
+                      'assets/bed-sheets.png'
+                    ];
+                    return Padding(
+                      padding: const EdgeInsets.all(0),
+                      child: Container(
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(5),
+                          ),
+                          child: Column(
+                            children: [
+                              const Divider(height: 0,),
+                              ListTile(
+                                contentPadding: const EdgeInsets.all(8),
+                                onTap: (){
+                                  setState(() {
+                                    serviceName = '${serve['ServiceID']}';
+                                    shopweight = serve['LoadWeight'];
+                                    shopprice = serve['LoadPrice'];
+                                    multiplier = (weight / shopweight).ceil();
+
+
+                                    total = multiplier * shopprice;
+                                  });
+                                },
+                                leading: Image.asset(icon[index],color: ColorStyle.tertiary,),
+                                title: Text('${serve['ServiceName']}'),
+                                titleTextStyle: const TextStyle(fontSize: 14,color: Colors.black),
+                                subtitle: Text('₱${serve['LoadPrice']}.00/${serve['LoadWeight']} kg.'),
+                                subtitleTextStyle: const TextStyle(color: ColorStyle.tertiary),
+                                trailing: Radio(
+                                  value: '${serve['ServiceID']}',
+                                  activeColor: ColorStyle.tertiary,
+                                  groupValue: serviceName,
+                                  onChanged: (value) {
+                                    setState(() {
+                                      serviceName = value;
+                                      shopweight = serve['LoadWeight'];
+                                      shopprice = serve['LoadPrice'];
+                                      multiplier = (weight / shopweight).ceil();
+
+
+                                      total = multiplier * shopprice;
+                                    });
+                                  },
+                                ),
+                              ),
+                            ],
+                          )
+                      ),
                     );
-                  }).toList(),
-                  onChanged: (newValue) {
-                    setState(() {
-                      detergent = newValue;
-                      print(detergent);
-                    });
-                  },
-                  validator: (String? value) {
-                    if (value == null || value.isEmpty) {
-                      return 'This field is required.';
-                    }
-                    return null;
-                  },
+                  }
+              ),
+              const SizedBox(height: 15,),
+              
+              Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(5),
+                  boxShadow: const [
+                    BoxShadow(
+                      blurRadius: 2,
+                      color: Colors.grey,
+                      offset: Offset(0, 22)
+                    )
+                  ]
                 ),
-              ],
-            ),
+                padding: const EdgeInsets.all(12),
+                child: RowItem(
+                    title: const Text('Total Cost',style: TextStyle(fontSize: 14),),
+                    description: Text('₱$total.00',style: const TextStyle(fontSize: 22,color: ColorStyle.tertiary),)
+                ),
+              )
+            ],
           ),
+        ),
       ),
       bottomNavigationBar: Padding(
         padding: const EdgeInsets.all(8.0),
@@ -295,7 +479,15 @@ class _ForRegisteredScreenState extends State<ForRegisteredScreen> {
             backgroundColor: ColorStyle.tertiary
           ),
           onPressed: (){
-            registeredAdd();
+            if(_load.text.isEmpty || customerName == null || schedule.isEmpty || serviceName == null){
+              warningDialog(context, 'Please fill up the form');
+            }else{
+              if(DateTime.parse(chosenDate).isBefore(DateTime.now().subtract(const Duration(days: 1)))){
+                warningTextDialog(context, 'Invalid Date', 'The date you\'ve selected is in the past. Please choose another date');
+              }else{
+                registeredAdd();
+              }
+            }
           },
           child: const Text('Submit', style: TextStyle(color: Colors.white),),
         ),
@@ -314,22 +506,25 @@ class ForWalkinScreen extends StatefulWidget {
 class _ForWalkinScreenState extends State<ForWalkinScreen> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final TextEditingController _contact = TextEditingController();
+  final TextEditingController _load = TextEditingController();
   String serviceType = '';
-  String serviceName = '';
+  String? serviceName;
   String serviceCost = '';
   String detergent = '';
-  int _load = 0;
   bool hasData = false;
   bool isLoading = true;
-  int multiply = 0;
-  int loadPrice = 0;
+  int multiplier = 0;
+  double weight = 0;
+  int shopweight = 0;
+  int shopprice = 0;
+  int total = 0;
 
   List<dynamic> service = [];
   List<dynamic> inventory = [];
 
   Future<void> walkinAdd() async{
 
-    showDialog(
+    /*showDialog(
         context: context,
         barrierDismissible: false,
         builder: (context){
@@ -340,24 +535,22 @@ class _ForWalkinScreenState extends State<ForWalkinScreen> {
             ),
           );
         }
-    );
+    );*/
     final SharedPreferences pref = await SharedPreferences.getInstance();
 
     ApiResponse apiResponse = await addWalkin(
-        _contact.text, _load.toString(),
-        serviceType,'${pref.getString('token')}'
+        _contact.text, _load.text
+        ,
+        serviceName.toString(),total.toString(),'${pref.getString('token')}'
     );
 
-    Navigator.pop(context);
 
     if(apiResponse.error == null){
       await successDialog(context, '${apiResponse.data}');
 
       Navigator.popUntil(context, (route) => route.isFirst);
     } else {
-      Navigator.pop(context);
       errorDialog(context, '${apiResponse.error}');
-      print(apiResponse.error);
     }
   }
 
@@ -402,7 +595,7 @@ class _ForWalkinScreenState extends State<ForWalkinScreen> {
   }
 
 
-  void _bottomModalConfirmation(){
+  /*void _bottomModalConfirmation(){
     showMaterialModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(
@@ -429,11 +622,11 @@ class _ForWalkinScreenState extends State<ForWalkinScreen> {
                       RowItem(title: Text('Contact Number', style: InvStyle.modalSubTitle,),
                           description: Text(_contact.text,style: const TextStyle(fontWeight: FontWeight.bold))),
                       RowItem(title: Text('Laundry Load', style: InvStyle.modalSubTitle),
-                          description: Text('$_load', style: const TextStyle(fontWeight: FontWeight.bold))),
+                          description: Text(_load.text, style: const TextStyle(fontWeight: FontWeight.bold))),
                       RowItem(title: Text('Laundry Service', style: InvStyle.modalSubTitle),
-                          description: Text(serviceName, style: const TextStyle(fontWeight: FontWeight.bold))),
+                          description: Text(serviceName!, style: const TextStyle(fontWeight: FontWeight.bold))),
                       RowItem(title: Text('Total Cost', style: InvStyle.modalSubTitle),
-                          description: Text(serviceCost, style: const TextStyle(fontWeight: FontWeight.bold))),
+                          description: Text('₱$total.00', style: const TextStyle(fontWeight: FontWeight.bold))),
                     ],
                   )
               ),
@@ -476,14 +669,21 @@ class _ForWalkinScreenState extends State<ForWalkinScreen> {
         ),
       ),
     );
-  }
+  }*/
 
   @override
   Widget build(BuildContext context) {
     if(isLoading){
       return Scaffold(
-          appBar: const ForAppBar(
-            title: Text('Book Service'),
+          appBar: AppBar(
+            title: const Text('Book Service'),
+            titleTextStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            leading: IconButton(
+              onPressed: (){
+                Navigator.pop(context);
+              },
+              icon: const Icon(CupertinoIcons.chevron_left,color: Colors.white,),
+            ),
           ),
           body: Center(
             child: LoadingAnimationWidget.staggeredDotsWave(
@@ -494,22 +694,36 @@ class _ForWalkinScreenState extends State<ForWalkinScreen> {
       );
     }
     return Scaffold(
-      appBar: const ForAppBar(
-        title: Text('Book Service'),
+      appBar: AppBar(
+        title: const Text('Book Service'),
+        titleTextStyle: const TextStyle(fontWeight: FontWeight.bold,fontSize: 18),
+        leading: IconButton(
+          onPressed: (){
+            Navigator.pop(context);
+          },
+          icon: const Icon(CupertinoIcons.chevron_left,color: Colors.white,),
+        ),
       ),
       body: SingleChildScrollView(
-        child: Form(
-            key: _formKey,
-            child: Padding(
+        child: Padding(
               padding: const EdgeInsets.all(8.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    'Contact Number',
-                    style: LoginStyle.formTitle,
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(2),
+                    decoration: const BoxDecoration(
+                      color: ColorStyle.tertiary,
+                    ),
+                    child: const Text(
+                      'Contact Number',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold
+                      )
+                    ),
                   ),
-                  const SizedBox(height: 5,),
                   TextFormField(
                     keyboardType: TextInputType.number,
                     controller: _contact,
@@ -526,109 +740,152 @@ class _ForWalkinScreenState extends State<ForWalkinScreen> {
                   ),
                   const SizedBox(height: 15,),
 
-                  const Text(
-                    'Select Laundry Service',
-                    style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold
+                  Container(
+                    width: double.infinity,
+                    decoration: const BoxDecoration(
+                      color: ColorStyle.tertiary,
+
+                    ),
+                    padding: const EdgeInsets.all(4),
+                    child: const Text(
+                        'Laundry Load (kg)',
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white
+                        )
                     ),
                   ),
-                      SizedBox(
-                        height: 100,
-                        child: ListView.builder(
-                            shrinkWrap: true,
-                            itemCount: service.length,
-                            scrollDirection: Axis.horizontal,
-                            itemBuilder: (context, index){
-                              Map serve = service[index] as Map;
-                              List image = [
-                                'assets/sport-wear.png',
-                                'assets/jacket.png',
-                                'assets/bed-sheets.png'
-                              ];
-                              bool costing = _load > serve['LoadWeight'];
-                              multiply = (_load/serve['LoadWeight']).floor();
-                              if(multiply < 2 && _load !=0){
-                                multiply = 1;
-                              }
+                  TextFormField(
+                    keyboardType: TextInputType.number,
+                    controller: _load,
+                    decoration: LoginStyle.addRegCustomer,
+                    autovalidateMode: AutovalidateMode.onUserInteraction,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Field is required';
+                      }
+                      try {
+                        weight = double.parse(value);
+                      } catch (e) {
+                        return 'Invalid number';
+                      }
+                      return null;
+                    },
+                    onChanged: (value) {
+                      setState(() {
+                        if (value.isNotEmpty) {
+                          weight = double.parse(value);
+                          multiplier = (weight / shopweight).ceil();
+                          total = multiplier * shopprice;
+                        }
+                      });
+                    },
+                  ),
 
-                              return Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: OutlinedButton(
-                                    style: OutlinedButton.styleFrom(
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(5)
-                                      ),
-                                      backgroundColor: Colors.white,
-                                      side: BorderSide(
-                                              color: serviceType == '${serve['ServiceID']}' ? ColorStyle.tertiary
-                                                  : Colors.white
-                                      )
-                                    ),
-                                    onPressed: ()async{
+                  const SizedBox(height: 15,),
+                  Container(
+                    width: double.infinity,
+                    decoration: const BoxDecoration(
+                      color: ColorStyle.tertiary,
+
+                    ),
+                    padding: const EdgeInsets.all(4),
+                    child: const Text(
+                        'Select Laundry Service',
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white
+                        )
+                    ),
+                  ),
+                  ListView.builder(
+                      itemCount: service.length,
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemBuilder: (context,index){
+                        Map serve = service[index] as Map;
+                        List icon = [
+                          'assets/sport-wear.png',
+                          'assets/jacket.png',
+                          'assets/bed-sheets.png'
+                        ];
+                        return Padding(
+                          padding: const EdgeInsets.all(0),
+                          child: Container(
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(5),
+                              ),
+                              child: Column(
+                                children: [
+                                  const Divider(height: 0,),
+                                  ListTile(
+                                    contentPadding: const EdgeInsets.all(8),
+                                    onTap: (){
                                       setState(() {
-                                        serviceType = '${serve['ServiceID']}';
-                                        serviceName = '${serve['ServiceName']}';
-                                        serviceCost = '${serve['LoadPrice'] * multiply}';
-                                        multiply;
+                                        serviceName = '${serve['ServiceID']}';
+                                        shopweight = serve['LoadWeight'];
+                                        shopprice = serve['LoadPrice'];
+                                        multiplier = (weight / shopweight).ceil();
+
+
+                                        total = multiplier * shopprice;
                                       });
                                     },
-                                    child: Column(
-                                      mainAxisAlignment: MainAxisAlignment.center,
-                                      children: [
-                                        Image.asset(
-                                            image[index],
-                                            width: 32,
-                                            height: 32,
-                                            color: serviceType == '${serve['ServiceID']}'
-                                                    ? ColorStyle.tertiary
-                                                    : Colors.black,
-                                        ),
-                                        const SizedBox(height: 10,),
-                                        Text(
-                                          '${serve['ServiceName']}',
-                                          style: TextStyle(
-                                            color: serviceType == '${serve['ServiceID']}'
-                                                ? ColorStyle.tertiary
-                                                : Colors.black
-                                          ),
-                                          overflow: TextOverflow.clip,
-                                        )
-                                      ],
-                                    )
-                                ),
-                              );
-                            }
-                        ),
-                      ),
-                  const SizedBox(height: 15,),
-                  RowItem(
-                    title: const Text('Laundry Load (kg)',style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),),
-                    description: InputQty.int(
-                      maxVal: 100,
-                      initVal: 0,
-                      minVal: 0,
-                      steps: 1,
-                      onQtyChanged: (val) {
+                                    leading: Image.asset(icon[index],color: ColorStyle.tertiary,),
+                                    title: Text('${serve['ServiceName']}'),
+                                    titleTextStyle: const TextStyle(fontSize: 14,color: Colors.black),
+                                    subtitle: Text('₱${serve['LoadPrice']}.00/${serve['LoadWeight']} kg.'),
+                                    subtitleTextStyle: const TextStyle(color: ColorStyle.tertiary),
+                                    trailing: Radio(
+                                      value: '${serve['ServiceID']}',
+                                      activeColor: ColorStyle.tertiary,
+                                      groupValue: serviceName,
+                                      onChanged: (value) {
+                                        setState(() {
+                                          serviceName = value;
+                                          shopweight = serve['LoadWeight'];
+                                          shopprice = serve['LoadPrice'];
+                                          multiplier = (weight / shopweight).ceil();
 
-                        setState(() {
-                          _load = val;
-                          multiply;
-                          serviceCost;
-                          print('multiply $multiply');
-                        });
-                      },
-                    ),
+
+                                          total = multiplier * shopprice;
+                                        });
+                                      },
+                                    ),
+                                  ),
+                                ],
+                              )
+                          ),
+                        );
+                      }
                   ),
                   const SizedBox(height: 15,),
-                  const Divider(),
+
+                  Container(
+                    decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(5),
+                        boxShadow: const [
+                          BoxShadow(
+                              blurRadius: 2,
+                              color: Colors.grey,
+                              offset: Offset(0, 2)
+                          )
+                        ]
+                    ),
+                    padding: const EdgeInsets.all(12),
+                    child: RowItem(
+                        title: const Text('Total Cost',style: TextStyle(fontSize: 14),),
+                        description: Text('₱$total.00',style: const TextStyle(fontSize: 22,color: ColorStyle.tertiary),)
+                    ),
+                  )
 
 
                 ],
               ),
             )
         ),
-      ),
       bottomNavigationBar: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 8),
         child: ElevatedButton(
@@ -639,11 +896,10 @@ class _ForWalkinScreenState extends State<ForWalkinScreen> {
               )
           ),
           onPressed: (){
-            print('load: $serviceType');
-            if(_contact.text.isEmpty || _load == 0 || serviceType == ''){
-               errorDialog(context, 'Please provide value in all fields');
+            if(_contact.text.isEmpty || _load.text.isEmpty || serviceName == null){
+               warningDialog(context, 'Please fill up the form');
             }else{
-              _bottomModalConfirmation();
+              walkinAdd();
             }
           },
           child: const Text(
@@ -658,3 +914,9 @@ class _ForWalkinScreenState extends State<ForWalkinScreen> {
   }
 }
 
+class Customer {
+  final String name;
+  final String address;
+
+  Customer({required this.name, required this.address});
+}

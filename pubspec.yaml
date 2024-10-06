@@ -41,9 +41,7 @@ dependencies:
   flutter_timer_countdown: ^1.0.7
   image_picker: ^1.0.8
   http: ^1.2.0
-  top_snackbar_flutter: ^3.1.0
   shared_preferences: ^2.2.3
-  introduction_screen: ^3.1.14
   day_picker: ^2.2.0
   loading_animation_widget: ^1.2.1
   google_fonts: 6.1.0
@@ -53,7 +51,6 @@ dependencies:
   printing: ^5.11.0
   fl_chart: ^0.68.0
   double_tap_to_exit: ^1.0.1
-  open_file: ^3.3.2
   intl: ^0.19.0
   permission_handler: ^11.3.1
   flutter_rating_bar: ^4.0.1
@@ -70,11 +67,17 @@ dependencies:
   data_table_2: ^2.5.15
   syncfusion_flutter_charts: ^26.2.12
   intl_phone_field: ^3.1.0
-  input_quantity: ^2.4.1
   persistent_bottom_nav_bar: ^6.2.1
   persistent_bottom_nav_bar_v2: ^5.3.0
   easy_stepper: ^0.8.5+1
   date_picker_plus: ^4.1.0
+  rename_app: ^1.6.1
+  flutter_launcher_icons: ^0.14.0
+  web_socket_channel: ^3.0.1
+  flutter_osm_plugin: ^1.2.0
+  geocoding: ^3.0.0
+  map_location_picker: ^1.2.7
+  flutter_profile_picture: ^2.0.0
 
 dev_dependencies:
   flutter_test:
@@ -108,6 +111,12 @@ flutter_native_splash:
     color: "#34abed"
     image: assets/LMateLogo.png
     icon_background_color: "#ffffff"
+
+flutter_launcher_icons:
+  android: "launcher_icon"
+  ios: true
+  image_path: "assets/LMateLogo.png"
+  min_sdk_android: 21 # android min sdk min:16, default 21
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware

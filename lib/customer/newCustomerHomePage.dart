@@ -11,12 +11,8 @@ import 'package:capstone/customer/newServiceSummaryPage.dart';
 import 'package:capstone/customer/newShopInfoPage.dart';
 import 'package:capstone/services/services.dart';
 import 'package:capstone/styles/mainColorStyle.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/painting.dart';
-import 'package:flutter/widgets.dart';
-import 'package:flutter/widgets.dart';
-import 'package:flutter/widgets.dart';
+import 'package:flutter_profile_picture/flutter_profile_picture.dart';
 import 'package:intl/intl.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:persistent_bottom_nav_bar_v2/persistent_bottom_nav_bar_v2.dart';
@@ -36,7 +32,7 @@ class _NewCustomerHomeScreenState extends State<NewCustomerHomeScreen> {
   final GlobalKey<_NotificationScreenState> _notifScreenKey = GlobalKey<_NotificationScreenState>();
   final GlobalKey<_AccountScreenState> _accountScreenKey = GlobalKey<_AccountScreenState>();
   List<dynamic> shops = [];
-  String? token; Timer? _timer;
+  String? token; //Timer? _timer;
   void getToken() async{
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     token = prefs.getString('token');
@@ -57,21 +53,26 @@ class _NewCustomerHomeScreenState extends State<NewCustomerHomeScreen> {
 
   @override
   void initState() {
+    /*_timer = Timer.periodic(const Duration(seconds: 5), (_){
+      _homeScreenKey.currentState!.shopreqDisplay();
+      _trackScreenKey.currentState!.laundryDisplay();
+    });*/
     super.initState();
   }
 
   @override
   void dispose() {
-    _timer?.cancel();
+    // _timer?.cancel();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    print(token);
     return Scaffold(
       appBar: AppBar(
         title: const Text('Laundry Mate',),
-        titleTextStyle: TextStyle(color: Colors.white,fontSize: 18,fontWeight: FontWeight.bold),
+        titleTextStyle: const TextStyle(color: Colors.white,fontSize: 18,fontWeight: FontWeight.bold),
       ),
       body: PersistentTabView(
         tabs: [
@@ -155,7 +156,6 @@ class _HomeScreenState extends State<HomeScreen> {
       setState(() {
         shops = response.data as List<dynamic>;
         isloading = false;
-        print('${prefs.get('token')}');
       });
     } else {
       throw ('${response.error}');
@@ -176,20 +176,10 @@ class _HomeScreenState extends State<HomeScreen> {
       setState(() {
         isloading = false;
       });
-      await errorDialog(context, '${response.error}');
+      await warningDialog(context, '${response.error}');
     }
   }
 
-  Future<void> shopUnffolow(String addshopid) async{
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    ApiResponse response = await unfollowShop(addshopid, '${prefs.get('token')}');
-
-    if(response.error == null){
-      await successDialog(context, '${response.data}');
-    }else{
-      await errorDialog(context, '${response.error}');
-    }
-  }
 
   @override
   void initState(){
@@ -207,6 +197,7 @@ class _HomeScreenState extends State<HomeScreen> {
           itemBuilder: (context,index){
             Map req = shops[index] as Map;
             Color status;
+            String shopStat;
             switch(req['ShopStatus']){
               case 'open':
                 status = Colors.green;
@@ -215,11 +206,9 @@ class _HomeScreenState extends State<HomeScreen> {
                 status = Colors.orange;
                 break;
               default:
-                status = Colors.red;
+                status = Colors.redAccent.shade200;
                 break;
             }
-
-            bool isEmptySlot = req['RemainingLoad'] == 0;
 
             return Padding(
               padding: const EdgeInsets.only(bottom: 4),
@@ -233,69 +222,53 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: Ink(
                     color: Colors.white,
                     child: ListTile(
-                      contentPadding: const EdgeInsets.all(0),
+                      contentPadding: const EdgeInsets.symmetric(vertical: 2,horizontal: 6),
                       minTileHeight: 80,
-                      leadingAndTrailingTextStyle: TextStyle(
+                      leadingAndTrailingTextStyle: const TextStyle(
                         overflow: TextOverflow.ellipsis
                       ),
                       leading: Stack(
-                      children: [
-                        CircleAvatar(
-                          backgroundColor: ColorStyle.tertiary,
-                          radius: 42,
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.all(2.0),
-                          child: CircleAvatar(
-                            backgroundImage: NetworkImage('$picaddress/${req['ShopImage']}'),
-                            radius: 40,
+                        alignment: Alignment.center,
+                        children: [
+                          CircleAvatar(
+                            backgroundColor: ColorStyle.tertiary,
+                            radius: 36,
                           ),
-                        ),
-
-                      ],
-                    ),
+                          ProfilePicture(
+                            name: '${req['ShopName']}',
+                            radius: 25,
+                            fontsize: 16,
+                            img: req['ShopImage'] == '' ? null : '$picaddress/${req['ShopImage']}',
+                          )
+                        ],
+                      ),
                       title: Row(
                         children: [
                           Text('${req['ShopName']} ',
-                            style: TextStyle(fontWeight: FontWeight.bold,color: ColorStyle.tertiary),
+                            style: const TextStyle(fontWeight: FontWeight.bold,color: ColorStyle.tertiary),
                             overflow: TextOverflow.ellipsis,
                           ),
                         ],
                       ),
-                      subtitle: Row(
-                        children: [
-                          Text('Status:' ,style: TextStyle(fontSize: 12)),
-                          Text('${req['ShopStatus']}',style: TextStyle(fontSize: 12,color: status),),
-                        ],
-                      ),
-                      trailing: Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: OutlinedButton(
-                          style: OutlinedButton.styleFrom(
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(0),
-                              ),
-                              padding: const EdgeInsets.all(4),
-                              side: BorderSide(color: req['IsValued'] == '0' ? Colors.grey
-                                  : ColorStyle.tertiary,width: 2),
-                            fixedSize: Size(80, 10)
-                          ),
-                          onPressed: isEmptySlot || req['ShopStatus'] == 'full' || req['ShopStatus'] == 'closed'
-                              ? null : (){
-                            confirmDialog(context, 'Unfollow Shop?', (){
-                              shopUnffolow('${req['AddedShopID']}');
-                            });
-                          },
-                          child: Text(
-                              req['IsValued'] == '0' ? 'Pending  ' : 'Following',
-                            style: TextStyle(
-                              color: req['IsValued'] == '0' ? Colors.grey
-                                  : ColorStyle.tertiary
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
+                      subtitle: Text('${req['ShopAddress']}',style: const TextStyle(fontSize: 10),),
+                      trailing: Container(
+                        width: 60,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(2),
+                          border: Border.all(color: status),
+                          color: status
                         ),
-                      ),
+                        padding: const EdgeInsets.all(8),
+
+                        child: Text(
+                            '${req['ShopStatus']}',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      )
                     ),
                   )
 
@@ -327,6 +300,7 @@ class _TrackScreenState extends State<TrackScreen> {
   List<dynamic> laundry = [];
   int nav = 0;
   bool isLoading = true;
+  bool hasdata = false;
 
   Future<void> laundryDisplay() async{
     final SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -467,7 +441,7 @@ class _TrackScreenState extends State<TrackScreen> {
                               color: Colors.white,
                               child: Container(
                                 padding: const EdgeInsets.all(8),
-                                decoration: BoxDecoration(
+                                decoration: const BoxDecoration(
 
                                 ),
                                 child: Column(
@@ -476,8 +450,8 @@ class _TrackScreenState extends State<TrackScreen> {
                                     RowItem(
                                         title: Row(
                                           children: [
-                                            Icon(Icons.store,color: ColorStyle.tertiary,),
-                                            Text('${laun['ShopName']}', style: TextStyle(fontWeight: FontWeight.bold),)
+                                            const Icon(Icons.store,color: ColorStyle.tertiary,),
+                                            Text('${laun['ShopName']}', style: const TextStyle(fontWeight: FontWeight.bold),)
                                           ],
                                         ),
                                         description: Text(
@@ -487,9 +461,9 @@ class _TrackScreenState extends State<TrackScreen> {
                                     ),
                                     const Divider(),
                                     const Text('Laundry Information', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),),
-                                    RowItem(title: const Text('Service Availed'), description: Text('${laun['ServiceName']}', style: TextStyle(fontWeight: FontWeight.bold))),
-                                    RowItem(title: const Text('Laundry Load'), description: Text('${laun['CustomerLoad']} kg/s', style: TextStyle(fontWeight: FontWeight.bold))),
-                                    RowItem(title: const Text('Date'), description: Text('${laun['Schedule']}', style: TextStyle(fontWeight: FontWeight.bold),)),
+                                    RowItem(title: const Text('Service Availed'), description: Text('${laun['ServiceName']}', style: const TextStyle(fontWeight: FontWeight.bold))),
+                                    RowItem(title: const Text('Laundry Load'), description: Text('${laun['CustomerLoad']} kg/s', style: const TextStyle(fontWeight: FontWeight.bold))),
+                                    RowItem(title: const Text('Date'), description: Text('${laun['Schedule']}', style: const TextStyle(fontWeight: FontWeight.bold),)),
                                     const SizedBox(height: 10,),
                                     RowItem(
                                         title: const SizedBox.shrink(),
@@ -497,7 +471,7 @@ class _TrackScreenState extends State<TrackScreen> {
                                           mainAxisAlignment: MainAxisAlignment.end,
                                           children: [
                                             const Text('Total Cost: '),
-                                            Text('₱${laun['LoadCost']}.00', style: TextStyle(fontWeight: FontWeight.bold,fontSize: 19),)
+                                            Text('₱${laun['LoadCost']}.00', style: const TextStyle(fontWeight: FontWeight.bold,fontSize: 19),)
                                           ],
                                         )
                                     ),
@@ -624,7 +598,7 @@ class _TrackScreenState extends State<TrackScreen> {
                               color: Colors.white,
                               child: Container(
                                 padding: const EdgeInsets.all(8),
-                                decoration: BoxDecoration(
+                                decoration: const BoxDecoration(
                                 ),
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -632,8 +606,8 @@ class _TrackScreenState extends State<TrackScreen> {
                                     RowItem(
                                         title: Row(
                                           children: [
-                                            Icon(Icons.store,color: ColorStyle.tertiary,),
-                                            Text('${laun['ShopName']}', style: TextStyle(fontWeight: FontWeight.bold),)
+                                            const Icon(Icons.store,color: ColorStyle.tertiary,),
+                                            Text('${laun['ShopName']}', style: const TextStyle(fontWeight: FontWeight.bold),)
                                           ],
                                         ),
                                         description: Text(
@@ -643,9 +617,9 @@ class _TrackScreenState extends State<TrackScreen> {
                                     ),
                                     const Divider(),
                                     const Text('Laundry Information', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),),
-                                    RowItem(title: const Text('Service Availed'), description: Text('${laun['ServiceName']}', style: TextStyle(fontWeight: FontWeight.bold))),
-                                    RowItem(title: const Text('Laundry Load'), description: Text('${laun['CustomerLoad']} kg/s', style: TextStyle(fontWeight: FontWeight.bold))),
-                                    RowItem(title: const Text('Date'), description: Text('${laun['Schedule']}', style: TextStyle(fontWeight: FontWeight.bold),)),
+                                    RowItem(title: const Text('Service Availed'), description: Text('${laun['ServiceName']}', style: const TextStyle(fontWeight: FontWeight.bold))),
+                                    RowItem(title: const Text('Laundry Load'), description: Text('${laun['CustomerLoad']} kg/s', style: const TextStyle(fontWeight: FontWeight.bold))),
+                                    RowItem(title: const Text('Date'), description: Text('${laun['Schedule']}', style: const TextStyle(fontWeight: FontWeight.bold),)),
                                     const SizedBox(height: 10,),
                                     RowItem(
                                         title: const SizedBox.shrink(),
@@ -653,7 +627,7 @@ class _TrackScreenState extends State<TrackScreen> {
                                           mainAxisAlignment: MainAxisAlignment.end,
                                           children: [
                                             const Text('Total Cost: '),
-                                            Text('₱${laun['LoadCost']}.00', style: TextStyle(fontWeight: FontWeight.bold,fontSize: 19),)
+                                            Text('₱${laun['LoadCost']}.00', style: const TextStyle(fontWeight: FontWeight.bold,fontSize: 19),)
                                           ],
                                         )
                                     ),
@@ -735,7 +709,7 @@ class _TrackScreenState extends State<TrackScreen> {
                         return Padding(
                           padding: const EdgeInsets.all(4.0),
                           child: InkWell(
-                            onTap: isCancelled ? null : (){
+                            onTap: (){
                               pushWithoutNavBar(context, MaterialPageRoute(builder: (context) =>
                                   NewServiceSummaryScreen(bookId: '${laun['BookingID']}')));
                             },
@@ -743,7 +717,7 @@ class _TrackScreenState extends State<TrackScreen> {
                               color: Colors.white,
                               child: Container(
                                 padding: const EdgeInsets.all(8),
-                                decoration: BoxDecoration(
+                                decoration: const BoxDecoration(
                                 ),
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -751,8 +725,8 @@ class _TrackScreenState extends State<TrackScreen> {
                                     RowItem(
                                         title: Row(
                                           children: [
-                                            Icon(Icons.store,color: ColorStyle.tertiary,),
-                                            Text('${laun['ShopName']}', style: TextStyle(fontWeight: FontWeight.bold),)
+                                            const Icon(Icons.store,color: ColorStyle.tertiary,),
+                                            Text('${laun['ShopName']}', style: const TextStyle(fontWeight: FontWeight.bold),)
                                           ],
                                         ),
                                         description: Text(
@@ -762,9 +736,9 @@ class _TrackScreenState extends State<TrackScreen> {
                                     ),
                                     const Divider(),
                                     const Text('Laundry Information', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),),
-                                    RowItem(title: const Text('Service Availed'), description: Text('${laun['ServiceName']}', style: TextStyle(fontWeight: FontWeight.bold))),
-                                    RowItem(title: const Text('Laundry Load'), description: Text('${laun['CustomerLoad']} kg/s', style: TextStyle(fontWeight: FontWeight.bold))),
-                                    RowItem(title: const Text('Date'), description: Text('${laun['Schedule']}', style: TextStyle(fontWeight: FontWeight.bold),)),
+                                    RowItem(title: const Text('Service Availed'), description: Text('${laun['ServiceName']}', style: const TextStyle(fontWeight: FontWeight.bold))),
+                                    RowItem(title: const Text('Laundry Load'), description: Text('${laun['CustomerLoad']} kg/s', style: const TextStyle(fontWeight: FontWeight.bold))),
+                                    RowItem(title: const Text('Date'), description: Text('${laun['Schedule']}', style: const TextStyle(fontWeight: FontWeight.bold),)),
                                     const SizedBox(height: 10,),
                                     RowItem(
                                         title: const SizedBox.shrink(),
@@ -772,7 +746,7 @@ class _TrackScreenState extends State<TrackScreen> {
                                           mainAxisAlignment: MainAxisAlignment.end,
                                           children: [
                                             const Text('Total Cost: '),
-                                            Text('₱${laun['LoadCost']}.00', style: TextStyle(fontWeight: FontWeight.bold,fontSize: 19),)
+                                            Text('₱${laun['LoadCost']}.00', style: const TextStyle(fontWeight: FontWeight.bold,fontSize: 19),)
                                           ],
                                         )
                                     ),
@@ -867,7 +841,7 @@ class _TrackScreenState extends State<TrackScreen> {
                               color: Colors.white,
                               child: Container(
                                 padding: const EdgeInsets.all(8),
-                                decoration: BoxDecoration(
+                                decoration: const BoxDecoration(
                                 ),
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -875,8 +849,8 @@ class _TrackScreenState extends State<TrackScreen> {
                                     RowItem(
                                         title: Row(
                                           children: [
-                                            Icon(Icons.store,color: ColorStyle.tertiary,),
-                                            Text('${laun['ShopName']}', style: TextStyle(fontWeight: FontWeight.bold),)
+                                            const Icon(Icons.store,color: ColorStyle.tertiary,),
+                                            Text('${laun['ShopName']}', style: const TextStyle(fontWeight: FontWeight.bold),)
                                           ],
                                         ),
                                         description: Text(
@@ -886,9 +860,9 @@ class _TrackScreenState extends State<TrackScreen> {
                                     ),
                                     const Divider(),
                                     const Text('Laundry Information', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),),
-                                    RowItem(title: const Text('Service Availed'), description: Text('${laun['ServiceName']}', style: TextStyle(fontWeight: FontWeight.bold))),
-                                    RowItem(title: const Text('Laundry Load (kg)'), description: Text('${laun['CustomerLoad']}', style: TextStyle(fontWeight: FontWeight.bold))),
-                                    RowItem(title: const Text('Date'), description: Text('${laun['Schedule']}', style: TextStyle(fontWeight: FontWeight.bold),)),
+                                    RowItem(title: const Text('Service Availed'), description: Text('${laun['ServiceName']}', style: const TextStyle(fontWeight: FontWeight.bold))),
+                                    RowItem(title: const Text('Laundry Load (kg)'), description: Text('${laun['CustomerLoad']}', style: const TextStyle(fontWeight: FontWeight.bold))),
+                                    RowItem(title: const Text('Date'), description: Text('${laun['Schedule']}', style: const TextStyle(fontWeight: FontWeight.bold),)),
                                     const SizedBox(height: 10,),
                                     RowItem(
                                         title: const SizedBox.shrink(),
@@ -896,7 +870,7 @@ class _TrackScreenState extends State<TrackScreen> {
                                           mainAxisAlignment: MainAxisAlignment.end,
                                           children: [
                                             const Text('Total Cost: '),
-                                            Text('₱${laun['LoadCost']}', style: TextStyle(fontWeight: FontWeight.bold,fontSize: 19),)
+                                            Text('₱${laun['LoadCost']}', style: const TextStyle(fontWeight: FontWeight.bold,fontSize: 19),)
                                           ],
                                         )
                                     ),
@@ -947,6 +921,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
   bool isLoading = true;
   String notifId = '';
   String isRead = '';
+  bool hasdata = false;
 
   Future<void> laundryNotif() async{
     final SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -956,6 +931,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
       setState(() {
         notification = response.data as List<dynamic>;
         isLoading = false;
+        hasdata = notification.isNotEmpty;
       });
     }else{
 
@@ -985,45 +961,47 @@ class _NotificationScreenState extends State<NotificationScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: ListView.builder(
-            itemCount: notification.length,
-            itemBuilder: (context,index){
-              Map notif = notification[index] as Map;
-              String dateTime = DateFormat('MM/dd/yyyy hh:mm').format(DateTime.parse(notif['updated_at']));
-              notifId = '${notif['NotifID']}';
-              return Column(
-                children: [
-                  InkWell(
-                    onTap: () async {
-                      notifRead();
-                      final response = await pushWithoutNavBar(context, MaterialPageRoute(builder: (context) =>
-                          NewNotificationInfoScreen(bookId: '${notif['BookingID']}', title: notif['Title'])));
+      body: hasdata
+          ? ListView.builder(
+          itemCount: notification.length,
+          itemBuilder: (context,index){
+            Map notif = notification[index] as Map;
+            String dateTime = DateFormat('MM/dd/yyyy hh:mm').format(DateTime.parse(notif['updated_at']));
+            notifId = '${notif['NotifID']}';
+            return Column(
+              children: [
+                InkWell(
+                  onTap: () async {
+                    notifRead();
+                    final response = await pushWithoutNavBar(context, MaterialPageRoute(builder: (context) =>
+                        NewNotificationInfoScreen(bookId: '${notif['BookingID']}', title: notif['Title'])));
 
-                      if(response == true){
-                        setState(() {
-                          laundryNotif();
+                    if(response == true){
+                      setState(() {
+                        laundryNotif();
 
-                        });
-                      }
-                    },
-                    child: ListTile(
-                      tileColor: notif['is_read'] == '0' ? Colors.blue.shade50 : null,
-                      leading: Image.asset('assets/LMateLogo.png',alignment: Alignment.topCenter,),
-                      title: Text('${notif['Title']}',style: TextStyle(fontWeight: FontWeight.bold),),
-                      subtitle: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text('${notif['Message']}'),
-                          Text(dateTime,style: TextStyle(fontSize: 10),)
-                        ],
-                      ),
+                      });
+                    }
+                  },
+                  child: ListTile(
+                    tileColor: notif['is_read'] == '0' ? Colors.blue.shade50 : null,
+                    leading: Image.asset('assets/LMateLogo.png',alignment: Alignment.topCenter,),
+                    title: Text('${notif['Title']}',style: const TextStyle(fontWeight: FontWeight.bold),),
+                    subtitle: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('${notif['Message']}'),
+                        Text(dateTime,style: const TextStyle(fontSize: 10),)
+                      ],
                     ),
                   ),
-                  const Divider(height: 0,)
-                ],
-              );
-            }
-        ),
+                ),
+                const Divider(height: 0,)
+              ],
+            );
+          }
+      )
+          : const Center(child: Text('No Notifications'),),
     );
   }
 }
@@ -1101,13 +1079,15 @@ class _AccountScreenState extends State<AccountScreen> {
                     child: Stack(
                       alignment: Alignment.center,
                       children: [
-                        CircleAvatar(
+                        const CircleAvatar(
                           radius: 60,
                           backgroundColor: ColorStyle.tertiary,
                         ),
-                        CircleAvatar(
-                          backgroundImage: NetworkImage('$picaddress/${prof['CustomerImage']}'),
-                          radius: 55,
+                        ProfilePicture(
+                            name: '${prof['CustomerName']}',
+                            radius: 54,
+                            fontsize: 32,
+                            img: prof['CustomerImage'] == 'null' ? null : '$picaddress/${prof['CustomerImage']}'
                         ),
                       ],
                     )
@@ -1124,7 +1104,7 @@ class _AccountScreenState extends State<AccountScreen> {
                 ),
                 child: RowItem(
                   title: const Text('Name'),
-                  description: Text('${prof['CustomerName']}', overflow: TextOverflow.ellipsis,textAlign: TextAlign.end,),),
+                  description: Text('${prof['CustomerName']}', textAlign: TextAlign.end,),),
               ),
               Container(
                 padding: const EdgeInsets.all(14),
@@ -1148,7 +1128,7 @@ class _AccountScreenState extends State<AccountScreen> {
                 ),
                 child: RowItem(
                   title: const Text('Address'),
-                  description: Text('${prof['CustomerAddress']}', overflow: TextOverflow.ellipsis,textAlign: TextAlign.end,),),
+                  description: Text('${prof['CustomerAddress']}',textAlign: TextAlign.end,),),
               ),
               Container(
                 padding: const EdgeInsets.all(14),

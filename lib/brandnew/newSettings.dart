@@ -1,16 +1,14 @@
 import 'dart:convert';
 import 'dart:core';
-import 'dart:core';
-import 'dart:ui';
 
 import 'package:capstone/api_response.dart';
 import 'package:capstone/brandnew/dialogs.dart';
-import 'package:capstone/brandnew/setWidget/appbar.dart';
 import 'package:capstone/connect/laravel.dart';
 import 'package:capstone/services/services.dart';
 import 'package:capstone/styles/mainColorStyle.dart';
 import 'package:capstone/styles/settingStyle.dart';
 import 'package:capstone/styles/signupStyle.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
@@ -48,7 +46,7 @@ class _NewSettingsScreenState extends State<NewSettingsScreen> {
         service = response.data1 as List<dynamic>;
         hasData = settings.isNotEmpty;
         set = settings[0] as Map;
-        hasImage = set['OwnerImage'].isNotEmpty;
+        hasImage = set['OwnerImage'] != null;
         isLoading = false;
       });
     }
@@ -64,8 +62,15 @@ class _NewSettingsScreenState extends State<NewSettingsScreen> {
   Widget build(BuildContext context) {
     if(isLoading){
       return Scaffold(
-          appBar: const ForAppBar(
-            title: Text('Settings'),
+          appBar: AppBar(
+            title: const Text('Settings'),
+            titleTextStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            leading: IconButton(
+              onPressed: (){
+                Navigator.pop(context,true);
+              },
+              icon: const Icon(CupertinoIcons.chevron_left,color: Colors.white,),
+            ),
           ),
           body: Center(
             child: LoadingAnimationWidget.staggeredDotsWave(
@@ -76,8 +81,15 @@ class _NewSettingsScreenState extends State<NewSettingsScreen> {
       );
     }
     return Scaffold(
-      appBar: const ForAppBar(
-        title: Text('Settings'),
+      appBar: AppBar(
+        title: const Text('Settings'),
+        titleTextStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        leading: IconButton(
+          onPressed: (){
+            Navigator.pop(context,true);
+          },
+          icon: const Icon(CupertinoIcons.chevron_left,color: Colors.white,),
+        ),
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -99,9 +111,10 @@ class _NewSettingsScreenState extends State<NewSettingsScreen> {
                         alignment: Alignment.center,
                         child:
                             CircleAvatar(
+                              backgroundColor: Colors.white,
                               backgroundImage: hasImage
                                   ? NetworkImage('$picaddress/${set['OwnerImage']}')
-                                  : AssetImage('assets/pepe.png') as ImageProvider,
+                                  : const AssetImage('assets/user.png') as ImageProvider,
                               radius: 50,
                             ),
                     ),
@@ -109,37 +122,37 @@ class _NewSettingsScreenState extends State<NewSettingsScreen> {
                     const Text('User Information', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),),
                     const SizedBox(height: 20,),
                     RowItem(
-                        title: Row(children: [
+                        title: const Row(children: [
                           Icon(Icons.person),
                           Text('Name')
                         ],), 
-                        description: Text('${set['OwnerName']}',style: TextStyle(fontWeight: FontWeight.bold))
+                        description: Text('${set['OwnerName']}',style: const TextStyle(fontWeight: FontWeight.bold))
                     ),
-                    Divider(height: 25,),
+                    const Divider(height: 25,),
                     RowItem(
-                        title: Row(children: [
+                        title: const Row(children: [
                           Icon(Icons.fiber_manual_record_sharp),
                           Text('Sex')
                         ],),
-                        description: Text('${set['OwnerSex']}',style: TextStyle(fontWeight: FontWeight.bold))
+                        description: Text('${set['OwnerSex']}',style: const TextStyle(fontWeight: FontWeight.bold))
                     ),
-                    Divider(height: 25,),
+                    const Divider(height: 25,),
                     RowItem(
-                        title: Row(children: [
+                        title: const Row(children: [
                           Icon(Icons.location_on),
                           Text('Address')
                         ],),
-                        description: Text('${set['OwnerAddress']}',style: TextStyle(fontWeight: FontWeight.bold))
+                        description: Text('${set['OwnerAddress']}',style: const TextStyle(fontWeight: FontWeight.bold))
                     ),
-                    Divider(height: 25,),
+                    const Divider(height: 25,),
                     RowItem(
-                        title: Row(children: [
+                        title: const Row(children: [
                           Icon(Icons.call),
                           Text('Contact Number')
                         ],),
-                        description: Text('${set['OwnerContactNumber']}', style: TextStyle(fontWeight: FontWeight.bold),)
+                        description: Text('${set['OwnerContactNumber']}', style: const TextStyle(fontWeight: FontWeight.bold),)
                     ),
-                    Divider(height: 25,),
+                    const Divider(height: 25,),
                     Align(
                       alignment: Alignment.centerRight,
                       child: ElevatedButton(
@@ -149,19 +162,16 @@ class _NewSettingsScreenState extends State<NewSettingsScreen> {
                               borderRadius: BorderRadius.circular(5)
                             )
                           ),
-                          onPressed: (){
-                            Navigator.push(context, MaterialPageRoute(builder: (context) => EditUserScreen(
+                          onPressed: ()async{
+                            final response = await Navigator.push(context, MaterialPageRoute(builder: (context) => EditUserScreen(
                                 id: '${set['OwnerID']}', name: '${set['OwnerName']}', sex: '${set['OwnerSex']}', address: '${set['OwnerAddress']}',
-                                contact: '${set['OwnerContactNumber']}', image: '${set['OwnerImage']}', onUpdate: (){
-                                  settingsDisplay();
+                                contact: '${set['OwnerContactNumber']}', image: '${set['OwnerImage']}')));
 
-                                  setState(() {
-                                    settingsDisplay();
-                                    AppBarData().fetchAppBarData(token.toString());
-                                  });
-                            })));
+                            if(response == true){
+                              settingsDisplay();
+                            }
                           },
-                          child: const Text('Edit Profile', style: const TextStyle(color: Colors.white),)
+                          child: const Text('Edit Profile', style: TextStyle(color: Colors.white),)
                       ),
                     )
                   ],
@@ -180,93 +190,93 @@ class _NewSettingsScreenState extends State<NewSettingsScreen> {
                     const Text('Shop Information', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),),
                     const SizedBox(height: 20,),
                     RowItem(
-                        title: Row(children: [
+                        title: const Row(children: [
                           Icon(Icons.store),
                           Text('Shop Name')
                         ],),
-                        description: Text('${set['ShopName']}',style: TextStyle(fontWeight: FontWeight.bold))
+                        description: Text('${set['ShopName']}',style: const TextStyle(fontWeight: FontWeight.bold))
                     ),
-                    Divider(height: 25,),
+                    const Divider(height: 25,),
                     RowItem(
-                        title: Row(children: [
+                        title: const Row(children: [
                           Icon(Icons.location_on),
                           Text('Shop Address')
                         ],),
-                        description: Text('${set['ShopAddress']}',style: TextStyle(fontWeight: FontWeight.bold))
+                        description: Text('${set['ShopAddress']}',style: const TextStyle(fontWeight: FontWeight.bold),textAlign: TextAlign.right,)
                     ),
-                    Divider(height: 25,),
+                    const Divider(height: 25,),
                     RowItem(
-                        title: Row(children: [
+                        title: const Row(children: [
                           Icon(Icons.line_weight),
                           Text('Max Load Cater')
                         ],),
-                        description: Text('${set['MaxLoad']}',style: TextStyle(fontWeight: FontWeight.bold))
+                        description: Text('${set['MaxLoad']}',style: const TextStyle(fontWeight: FontWeight.bold))
                     ),
-                    Divider(height: 25,),
+                    const Divider(height: 25,),
                     RowItem(
-                        title: Row(children: [
+                        title: const Row(children: [
                           Icon(Icons.calendar_month),
                           Text('Working Days')
                         ],),
-                        description: Text('${set['WorkDay']}',style: TextStyle(fontWeight: FontWeight.bold))
+                        description: Text('${set['WorkDay']}',style: const TextStyle(fontWeight: FontWeight.bold))
                     ),
-                    Divider(height: 25,),
+                    const Divider(height: 25,),
                     RowItem(
-                        title: Row(children: [
+                        title: const Row(children: [
                           Icon(Icons.timelapse),
                           Text('Working Hour')
                         ],),
-                        description: Text('${set['WorkHour']}',style: TextStyle(fontWeight: FontWeight.bold))
+                        description: Text('${set['WorkHour']}',style: const TextStyle(fontWeight: FontWeight.bold))
                     ),
-                    Divider(height: 25,),
+                    const Divider(height: 25,),
                     RowItem(
-                        title: Row(children: [
+                        title: const Row(children: [
                           Icon(Icons.lock),
                           Text('ShopCode')
                         ],),
-                        description: Text('${set['ShopCode']}',style: TextStyle(fontWeight: FontWeight.bold))
+                        description: Text('${set['ShopCode']}',style: const TextStyle(fontWeight: FontWeight.bold))
                     ),
-                    Divider(height: 25,),
+                    const Divider(height: 25,),
                     RowItem(
-                        title: Row(children: [
+                        title: const Row(children: [
                           Icon(Icons.local_laundry_service),
                           Text('Washer Count')
                         ],),
-                        description: Text('${set['WasherQty']}',style: TextStyle(fontWeight: FontWeight.bold))
+                        description: Text('${set['WasherQty']}',style: const TextStyle(fontWeight: FontWeight.bold))
                     ),
-                    Divider(height: 25,),
+                    const Divider(height: 25,),
                     RowItem(
-                        title: Row(children: [
+                        title: const Row(children: [
                           Icon(Icons.local_laundry_service),
                           Text('Dryer Count')
                         ],),
-                        description: Text('${set['DryerQty']}',style: TextStyle(fontWeight: FontWeight.bold))
+                        description: Text('${set['DryerQty']}',style: const TextStyle(fontWeight: FontWeight.bold))
                     ),
-                    Divider(height: 25,),
+                    const Divider(height: 25,),
                     RowItem(
-                        title: Row(children: [
+                        title: const Row(children: [
                           Icon(Icons.timer),
                           Text('Wash Duration')
                         ],),
-                        description: Text('${set['WasherTime']}',style: TextStyle(fontWeight: FontWeight.bold))
+                        description: Text('${set['WasherTime']} minutes',style: const TextStyle(fontWeight: FontWeight.bold))
                     ),
-                    Divider(height: 25,),
+                    const Divider(height: 25,),
                     RowItem(
-                        title: Row(children: [
+                        title: const Row(children: [
                           Icon(Icons.timer),
                           Text('Dry Duration')
                         ],),
-                        description: Text('${set['DryerTime']}',style: TextStyle(fontWeight: FontWeight.bold))
+                        description: Text('${set['DryerTime']} minutes',style: const TextStyle(fontWeight: FontWeight.bold))
                     ),
-                    Divider(height: 25,),
+                    const Divider(height: 25,),
                     RowItem(
-                        title: Row(children: [
+                        title: const Row(children: [
                           Icon(Icons.timer),
                           Text('Fold Duration')
                         ],),
-                        description: Text('${set['FoldingTime']}',style: TextStyle(fontWeight: FontWeight.bold))
+                        description: Text('${set['FoldingTime']} minutes',style: const TextStyle(fontWeight: FontWeight.bold))
                     ),
-                    Divider(height: 25,),
+                    const Divider(height: 25,),
                     ListView.builder(
                         shrinkWrap: true,
                         physics: const NeverScrollableScrollPhysics(),
@@ -277,13 +287,13 @@ class _NewSettingsScreenState extends State<NewSettingsScreen> {
                           return Column(
                             children: [
                               RowItem(
-                                  title: Row(children: [
+                                  title: const Row(children: [
                                     Icon(Icons.miscellaneous_services),
                                     Text('Service Name')
                                   ],),
-                                  description: Text('${serve['ServiceName']}',style: TextStyle(fontWeight: FontWeight.bold))
+                                  description: Text('${serve['ServiceName']}',style: const TextStyle(fontWeight: FontWeight.bold))
                               ),
-                              Divider(height: 25,),
+                              const Divider(height: 25,),
                             ],
                           );
                         }
@@ -312,7 +322,7 @@ class _NewSettingsScreenState extends State<NewSettingsScreen> {
                               });
                             }
                           },
-                          child: const Text('Edit Shop   ', style: const TextStyle(color: Colors.white),textAlign: TextAlign.center,)
+                          child: const Text('Edit Shop   ', style: TextStyle(color: Colors.white),textAlign: TextAlign.center,)
                       ),
                     )
                   ],
@@ -329,9 +339,8 @@ class _NewSettingsScreenState extends State<NewSettingsScreen> {
 class EditUserScreen extends StatefulWidget {
   final String id; final String name; final String sex;
   final String address; final String contact; final String image;
-  final VoidCallback onUpdate;
   const EditUserScreen({super.key, required this.id, required this.name,
-    required this.sex, required this.address, required this.contact, required this.image, required this.onUpdate});
+    required this.sex, required this.address, required this.contact, required this.image});
 
   @override
   State<EditUserScreen> createState() => _EditUserScreenState();
@@ -388,8 +397,11 @@ class _EditUserScreenState extends State<EditUserScreen> {
 
     if(apiResponse.error == null){
       await successDialog(context, 'Profile has been updated');
-      widget.onUpdate();
-      Navigator.pop(context,true);
+      if(_contact.text != widget.contact){
+        await reloginDialog(context);
+        prefs.clear();
+      }
+      Navigator.pop(context, true);
     }else{
       errorDialog(context, '${apiResponse.error}');
     }
@@ -408,7 +420,7 @@ class _EditUserScreenState extends State<EditUserScreen> {
               onPressed: (){
                 Navigator.pop(context, ImageSource.camera);
               },
-              icon: Icon(Icons.camera_alt),
+              icon: const Icon(Icons.camera_alt),
               iconSize: 75,
               color: Colors.blueAccent,
               splashColor: Colors.transparent,
@@ -418,7 +430,7 @@ class _EditUserScreenState extends State<EditUserScreen> {
               onPressed: (){
                 Navigator.pop(context, ImageSource.gallery);
               },
-              icon: Icon(Icons.folder),
+              icon: const Icon(Icons.folder),
               iconSize: 75,
               color: Colors.blueAccent,
               splashColor: Colors.transparent,
@@ -446,16 +458,26 @@ class _EditUserScreenState extends State<EditUserScreen> {
 
       } else {
 
-        print('Image picking canceled');
       }
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    print(image);
     return Scaffold(
-      appBar: const ForAppBar(),
+      appBar: AppBar(
+        title: const Text('Edit Profile'),
+        titleTextStyle: const TextStyle(
+          fontWeight: FontWeight.bold,
+          fontSize: 18
+        ),
+        leading: IconButton(
+          onPressed: (){
+            Navigator.pop(context,true);
+          },
+          icon: const Icon(CupertinoIcons.chevron_left,color: Colors.white,),
+        ),
+      ),
       body: Padding(
         padding: const EdgeInsets.all(8.0),
         child: SingleChildScrollView(
@@ -480,9 +502,9 @@ class _EditUserScreenState extends State<EditUserScreen> {
                               ),
                               child: CircleAvatar(
                                 backgroundColor: Colors.white,
-                                backgroundImage: image!.isNotEmpty
+                                backgroundImage: image != null
                                     ? NetworkImage('$picaddress/$image')
-                                    : AssetImage('assets/pepe.png') as ImageProvider,
+                                    : const AssetImage('assets/pepe.png') as ImageProvider,
                                 radius: 50,
                               ),
                             ),
@@ -648,8 +670,7 @@ class _EditUserScreenState extends State<EditUserScreen> {
             )
         ),
       ),
-      bottomNavigationBar:
-      Container(
+      bottomNavigationBar: Container(
         margin: const EdgeInsets.symmetric(vertical: 10, horizontal: 5),
         height: 50,
         child: ElevatedButton(
@@ -746,9 +767,20 @@ class _EditShopScreenState extends State<EditShopScreen> {
 
   @override
   Widget build(BuildContext context) {
-    print(widget.services[0]['ServiceID'] );
     return Scaffold(
-      appBar: const ForAppBar(),
+      appBar: AppBar(
+        title: const Text('Edit Shop Profile'),
+        titleTextStyle: const TextStyle(
+          fontSize: 18,
+          fontWeight: FontWeight.bold
+        ),
+        leading: IconButton(
+          onPressed: (){
+            Navigator.pop(context);
+          },
+          icon: const Icon(CupertinoIcons.chevron_left,color: Colors.white,),
+        ),
+      ),
       body: Padding(
         padding: const EdgeInsets.all(8.0),
         child: SingleChildScrollView(
@@ -820,8 +852,8 @@ class _EditShopScreenState extends State<EditShopScreen> {
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(5),
                           ),
-                          side: BorderSide(style: BorderStyle.solid, width: 2),
-                          padding: EdgeInsets.symmetric(horizontal: 8),
+                          side: const BorderSide(style: BorderStyle.solid, width: 2),
+                          padding: const EdgeInsets.symmetric(horizontal: 8),
                           backgroundColor: Colors.white
                       ),
                       onPressed: (){
@@ -835,7 +867,7 @@ class _EditShopScreenState extends State<EditShopScreen> {
                         );
                       },
                       child: Align(alignment: Alignment.centerLeft,
-                        child: Text(_shopTime.isEmpty ? 'Select' : _shopTime, style: TextStyle(fontSize: 16, color: Colors.black54),),)
+                        child: Text(_shopTime.isEmpty ? 'Select' : _shopTime, style: const TextStyle(fontSize: 16, color: Colors.black54),),)
                   ),
                   const SizedBox(height: 15,),
 

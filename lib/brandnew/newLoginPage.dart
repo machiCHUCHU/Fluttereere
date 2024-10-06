@@ -2,24 +2,21 @@ import 'dart:ui';
 
 import 'package:capstone/api_response.dart';
 import 'package:capstone/brandnew/dialogs.dart';
+import 'package:capstone/brandnew/newForgotPasswordPage.dart';
 import 'package:capstone/brandnew/newHomePage.dart';
 import 'package:capstone/brandnew/newSetupPage.dart';
 import 'package:capstone/brandnew/newSignupPage.dart';
 import 'package:capstone/customer/newCustomerHomePage.dart';
-import 'package:capstone/drawer/ownerDrawer.dart';
-import 'package:capstone/home/homePage.dart';
-import 'package:capstone/imagepick.dart';
-import 'package:capstone/menu/getting_startedPage.dart';
 import 'package:capstone/model/user.dart';
 import 'package:capstone/services/services.dart';
+import 'package:capstone/testPage.dart';
 import 'package:flutter/material.dart';
 import 'package:capstone/styles/loginStyle.dart';
 import 'package:capstone/styles/mainColorStyle.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:top_snackbar_flutter/custom_snack_bar.dart';
-import 'package:top_snackbar_flutter/top_snack_bar.dart';
+
 
 class NewLoginScreen extends StatefulWidget {
   const NewLoginScreen({super.key});
@@ -73,9 +70,6 @@ class _NewLoginScreenState extends State<NewLoginScreen> {
     await prefs.setString('token', user.token ?? '');
     await prefs.setString('username', user.username ?? '');
     await prefs.setInt('userid', user.userid ?? 0);
-    await prefs.setString('ownername', user.name ?? '');
-    await prefs.setString('contact', user.contact ?? '');
-    await prefs.setString('image', user.image ?? '');
 
 
 
@@ -110,83 +104,93 @@ class _NewLoginScreenState extends State<NewLoginScreen> {
         )
       ),
       builder: (context) => SizedBox(
-        height: 300,
-        child: Column(
-          children: [
-            const SizedBox(height: 20,),
-            const Text(
+        height: MediaQuery.of(context).size.height * .3,
+        child: SingleChildScrollView(
+          child: Column(
+            children: [
+              const SizedBox(height: 20,),
+              const Text(
                 'Select an Account',
                 style: LoginStyle.modalTitle,
-            ),
-            const SizedBox(height: 20,),
-            Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    InkWell(
-                      onTap: (){
-                        Navigator.push(context, MaterialPageRoute(builder: (context) => const
-                        NewSignupScreen(usertype: 'customer',)));
-                      },
-                      child: Container(
-                        width: 125,
-                        height: 125,
-                        decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(5),
-                            border: Border.all(
+              ),
+              const SizedBox(height: 20,),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  InkWell(
+                    onTap: ()async{
+                      final response = await Navigator.push(context, MaterialPageRoute(builder: (context) => const
+                      NewSignupScreen(usertype: 'customer',)));
+
+                      if(response == true){
+                        Navigator.pop(context);
+                      }
+                    },
+                    child: Container(
+                      width: 125,
+                      height: 125,
+                      decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(5),
+                          border: Border.all(
                               color: ColorStyle.tertiary,
                               width: 2
-                            )
-                        ),
-                        child: const Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              Icons.person,
-                              size: 80,
-                              color: ColorStyle.tertiary,
-                            ),
-                            Text(
-                              'Customer',
-                              style: LoginStyle.modalSubTitle,
-                            )
-                          ],
-                        ),
+                          )
+                      ),
+                      child: const Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.person,
+                            size: 80,
+                            color: ColorStyle.tertiary,
+                          ),
+                          Text(
+                            'Customer',
+                            style: LoginStyle.modalSubTitle,
+                          )
+                        ],
                       ),
                     ),
-                    InkWell(
-                      onTap: (){
-                        Navigator.push(context, MaterialPageRoute(builder: (context) => const NewSignupScreen(
-                          usertype: 'owner',)));
-                      },
-                      child: Container(
-                        width: 125,
-                        height: 125,
-                        decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(5),
-                            border: Border.all(
-                                color: ColorStyle.tertiary,
-                                width: 2
-                            )
-                        ),
-                        child: const Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              Icons.work,
-                              size: 80,
+                  ),
+                  InkWell(
+                    onTap: ()async{
+                      final response = await Navigator.push(context, MaterialPageRoute(builder: (context) => const NewSignupScreen(
+                        usertype: 'owner',)));
+
+                      if(response == true){
+                        Navigator.pop(context);
+                      }
+                    },
+                    child: Container(
+                      width: 125,
+                      height: 125,
+                      decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(5),
+                          border: Border.all(
                               color: ColorStyle.tertiary,
-                            ),
-                            Text(
-                              'Owner',
-                              style: LoginStyle.modalSubTitle,
-                            )
-                          ],
-                        ),
+                              width: 2
+                          )
+                      ),
+                      child: const Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.work,
+                            size: 80,
+                            color: ColorStyle.tertiary,
+                          ),
+                          Text(
+                            'Owner',
+                            style: LoginStyle.modalSubTitle,
+                          )
+                        ],
                       ),
                     ),
-                  ],
-                )
-          ],
+                  ),
+                ],
+              )
+            ],
+          ),
         ),
       ),
     );
@@ -194,8 +198,7 @@ class _NewLoginScreenState extends State<NewLoginScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-        child: Scaffold(
+    return Scaffold(
           backgroundColor: Colors.white,
       body: Padding(
           padding: const EdgeInsets.all(15),
@@ -266,16 +269,18 @@ class _NewLoginScreenState extends State<NewLoginScreen> {
                               },
                             ),
                             const SizedBox(height: 5,),
-                            /*Align(
+                            Align(
                               alignment: Alignment.centerRight,
                               child: GestureDetector(
-                                  onTap: (){},
+                                  onTap: (){
+                                    Navigator.push(context, MaterialPageRoute(builder: (context) => const NewForgotPasswordScreen()));
+                                  },
                                   child: const Text(
                                     'Forgot Password?',
                                     style: LoginStyle.textButton,
                                   )
                               ),
-                            ),*/
+                            ),
                             const SizedBox(height: 30,),
                             SizedBox(
                               width: double.infinity,
@@ -321,6 +326,12 @@ class _NewLoginScreenState extends State<NewLoginScreen> {
                                 ),
                               ],
                             ),
+                            /*TextButton(
+                                onPressed: (){
+                                  Navigator.push(context, MaterialPageRoute(builder: (context) => testScreen()));
+                                },
+                                child: const Text('test')
+                            )*/
                           ],
                         ),
                       )
@@ -329,7 +340,6 @@ class _NewLoginScreenState extends State<NewLoginScreen> {
             ),
           )
       ),
-    )
     );
   }
 }
