@@ -220,6 +220,7 @@ class _ViewRatingScreenState extends State<ViewRatingScreen> {
           height: MediaQuery.of(context).size.height *.2,
           decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(5),
+              color: Colors.white,
               border: Border.all(
                   color: Colors.black
               )

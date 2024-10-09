@@ -10,6 +10,7 @@ import 'package:capstone/styles/settingStyle.dart';
 import 'package:capstone/styles/signupStyle.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_profile_picture/flutter_profile_picture.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:row_item/row_item.dart';
@@ -111,11 +112,15 @@ class _NewSettingsScreenState extends State<NewSettingsScreen> {
                         alignment: Alignment.center,
                         child:
                             CircleAvatar(
-                              backgroundColor: Colors.white,
-                              backgroundImage: hasImage
-                                  ? NetworkImage('$picaddress/${set['OwnerImage']}')
-                                  : const AssetImage('assets/user.png') as ImageProvider,
-                              radius: 50,
+                              backgroundColor: ColorStyle.tertiary,
+                              radius: 52,
+                              child: ProfilePicture(
+                                  name: '${set['OwnerName']}',
+                                  radius: 48,
+                                  fontsize: 24,
+                                  img: set['OwnerImage'] == null || set['OwnerImage'] == 'null' ? null
+                                        : '$picaddress/${set['OwnerImage']}'
+                              ),
                             ),
                     ),
                     const SizedBox(height: 20,),

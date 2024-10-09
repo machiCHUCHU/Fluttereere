@@ -58,7 +58,7 @@ class _NewNotificationInfoScreenState extends State<NewNotificationInfoScreen> {
         titleTextStyle: const TextStyle(color: Colors.white,fontSize: 18,fontWeight: FontWeight.bold),
         leading: IconButton(
           onPressed: (){
-            Navigator.pop(context);
+            Navigator.pop(context,true);
           },
           icon: const Icon(CupertinoIcons.chevron_left,color: Colors.white,),
         ),

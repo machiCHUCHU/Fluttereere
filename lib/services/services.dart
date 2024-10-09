@@ -1378,7 +1378,7 @@ Future<ApiResponse> updateWalkin(String stat, String token, String id) async{
   return apiResponse;
 }
 
-Future<ApiResponse> updateBooking(String stat, String token, String id) async{
+Future<ApiResponse> updateBooking(String stat, String token, String id, String finalweight, String finalcost) async{
   ApiResponse apiResponse = ApiResponse();
 
   try{
@@ -1389,7 +1389,9 @@ Future<ApiResponse> updateBooking(String stat, String token, String id) async{
           'Authorization': 'Bearer $token'
         },
         body: {
-          'stat': stat
+          'stat': stat,
+          'finalweight': finalweight,
+          'finalcost': finalcost
         }
     );
 

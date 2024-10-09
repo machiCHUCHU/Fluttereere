@@ -177,8 +177,8 @@ class _NewServiceBookingScreenState extends State<NewServiceBookingScreen> {
               const SizedBox(height: 10,),
 
               Column(
-                mainAxisSize: MainAxisSize.min, // Ensures the column only takes as much space as it needs
-                crossAxisAlignment: CrossAxisAlignment.stretch, // Ensures children take the full width
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   Container(
                     width: double.infinity,

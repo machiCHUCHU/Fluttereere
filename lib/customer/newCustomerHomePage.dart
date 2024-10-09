@@ -979,7 +979,6 @@ class _NotificationScreenState extends State<NotificationScreen> {
                     if(response == true){
                       setState(() {
                         laundryNotif();
-
                       });
                     }
                   },

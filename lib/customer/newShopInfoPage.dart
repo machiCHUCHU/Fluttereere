@@ -172,7 +172,7 @@ class _NewShopInfoScreenState extends State<NewShopInfoScreen> {
                       ),
                       Container(
                           padding: const EdgeInsets.all(8),
-                          height: 140,
+                          height: 180,
                           decoration: const BoxDecoration(
                               color: Colors.white,
                               borderRadius: BorderRadius.vertical(bottom: Radius.circular(5)),
@@ -209,19 +209,28 @@ class _NewShopInfoScreenState extends State<NewShopInfoScreen> {
                                   title: const Row(
                                     children: [
                                       Icon(Icons.circle, color: ColorStyle.tertiary,),
-                                      Text(' Status')
+                                      Text(' Day Open')
                                     ],
                                   ),
-                                  description: Text('${info['ShopStatus']}',style: const TextStyle(fontWeight: FontWeight.bold),textAlign: TextAlign.end,)
+                                  description: Text('${info['WorkDay']}',style: const TextStyle(fontWeight: FontWeight.bold),textAlign: TextAlign.end,)
+                              ),
+                              RowItem(
+                                  title: const Row(
+                                    children: [
+                                      Icon(Icons.circle, color: ColorStyle.tertiary,),
+                                      Text(' Opening Time')
+                                    ],
+                                  ),
+                                  description: Text('${info['WorkHour']}',style: const TextStyle(fontWeight: FontWeight.bold),textAlign: TextAlign.end,)
                               ),
                               RowItem(
                                   title: const Row(
                                     children: [
                                       Icon(Icons.production_quantity_limits, color: ColorStyle.tertiary,),
-                                      Text(' Max Load')
+                                      Text(' Remaining Load')
                                     ],
                                   ),
-                                  description: Text('${info['MaxLoad']}',style: const TextStyle(fontWeight: FontWeight.bold),textAlign: TextAlign.end,)
+                                  description: Text('${info['RemainingLoad']} load/s',style: const TextStyle(fontWeight: FontWeight.bold),textAlign: TextAlign.end,)
                               )
                             ],
                           )
@@ -359,12 +368,12 @@ class _NewShopInfoScreenState extends State<NewShopInfoScreen> {
                                             RowItem(
                                                 title: Row(
                                                   children: [
-                                                    CircleAvatar(
-                                                      backgroundImage: hasImage
-                                                          ? NetworkImage('$picaddress/${rate['CustomerImage']}')
-                                                          : const AssetImage('assets/user.png') as ImageProvider,
-                                                      backgroundColor: Colors.grey.shade300,
-                                                      radius: 15,
+                                                    ProfilePicture(
+                                                        name: '${rate['CustomerName']}',
+                                                        radius: 14,
+                                                        fontsize: 12,
+                                                        img: rate['CustomerImage'] == 'null' || rate['CustomerImage'] == null ? null
+                                                              : '$picaddress/${rate['CustomerImage']}',
                                                     ),
                                                     Expanded(child: Text(' ${rate['CustomerName']}'),)
                                                   ],
