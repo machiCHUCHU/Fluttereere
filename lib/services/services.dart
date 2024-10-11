@@ -1242,7 +1242,7 @@ Future<ApiResponse> getReport(String startDate, String endDate, String service, 
       case 200:
         apiResponse.data = jsonDecode(response.body)['data'];
         apiResponse.count = jsonDecode(response.body)['servicecount'];
-        apiResponse.total = jsonDecode(response.body)['loadcount'];
+        apiResponse.tot = jsonDecode(response.body)['loadcount'];
         break;
       case 422:
         final errors = jsonDecode(response.body)['message'];

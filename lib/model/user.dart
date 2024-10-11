@@ -1,41 +1,4 @@
-// class Customer {
-//   int? id;
-//   String? name;
-//   String? sex;
-//   String? add;
-//   String? cn;
-//   String? email;
-//   String? username;
-//   String? password;
-//   String? user_type;
-//
-//
-//   Customer({
-//     this.id,
-//     this.name,
-//     this.sex,
-//     this.add,
-//     this.cn,
-//     this.email,
-//     this.username,
-//     this.password,
-//     this.user_type
-//   });
-//
-//   factory Customer.fromJson(Map<String, dynamic> json){
-//     return Customer(
-//         id: json['tbl_customer']['id'],
-//         name: json['tbl_customer']['Name'],
-//         sex: json['tbl_customer']['Sex'],
-//         add: json['tbl_customer']['Address'],
-//         cn: json['tbl_customer']['ContactNumber'],
-//         email: json['tbl_customer']['Email'],
-//         username: json['tbl_user']['UserName'],
-//         password: json['tbl_user']['Password'],
-//         user_type: json['tbl_user']['UserType']
-//     );
-//   }
-// }
+
 
 class User {
   int? userid;
@@ -72,19 +35,16 @@ class User {
   }
 }
 
+class Test{
+  int? testid;
 
-class Profile {
-  String? name;
+  Test({
+    this.testid
+});
 
-  Profile({
-    this.name,
-
-  });
-
-  factory Profile.fromJson(Map<String, dynamic> json){
-    return Profile(
-        name: json['profile'][0]['Name'],
-
+  factory Test.fromJson(Map<String, dynamic> json){
+    return Test(
+      testid: json['sfsdf']
     );
   }
 }

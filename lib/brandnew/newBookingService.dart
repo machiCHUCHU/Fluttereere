@@ -90,7 +90,7 @@ class _ForRegisteredScreenState extends State<ForRegisteredScreen> {
     });
   }
 
-  TimeOfDay selectedTime = TimeOfDay.now();
+  // TimeOfDay selectedTime = TimeOfDay.now();
 
   Future<void> registeredAdd() async{
     final SharedPreferences prefs = await SharedPreferences.getInstance();

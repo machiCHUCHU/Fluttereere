@@ -1,4 +1,5 @@
 
+
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:calendar_date_picker2/calendar_date_picker2.dart';
 import 'package:capstone/api_response.dart';
@@ -55,7 +56,7 @@ class _NewReportScreenState extends State<NewReportScreen> {
   String? forstat;
   String type = '';
   int serviceCount = 0;
-  int serviceLoad = 0;
+  double serviceLoad = 0;
 
   List<dynamic> report = [];
 
@@ -219,17 +220,17 @@ class _NewReportScreenState extends State<NewReportScreen> {
       setState(() {
         report = response.data as List<dynamic>;
         serviceCount =  response.count ?? 0;
-        serviceLoad = response.total ?? 0;
+        serviceLoad = response.tot ?? 0;
       });
     }else{
-
+      print(response.error);
     }
   }
 
 
   @override
   Widget build(BuildContext context) {
-    print(selectedService);
+    print(report);
     return Scaffold(
       appBar: AppBar(
         title: const Text('Report'),
@@ -275,7 +276,7 @@ class _NewReportScreenState extends State<NewReportScreen> {
                       ),),
                       Expanded(child: Column(
                         children: [
-                          Text('$serviceLoad kg/s',style: const TextStyle(color: ColorStyle.tertiary, fontSize: 22,fontWeight: FontWeight.bold),),
+                          Text('${serviceLoad} kg/s',style: const TextStyle(color: ColorStyle.tertiary, fontSize: 22,fontWeight: FontWeight.bold),),
                           const Text('Total Laundry Load', style: TextStyle(fontSize: 12),textAlign: TextAlign.center,)
                         ],
                       ))

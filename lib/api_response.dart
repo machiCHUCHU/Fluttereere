@@ -11,6 +11,8 @@ class ApiResponse {
   Object? data1;
   Object? data2;
 
+  double? tot;
+
   int? count;
   int? out;
 

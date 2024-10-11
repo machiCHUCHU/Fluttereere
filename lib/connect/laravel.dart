@@ -1,3 +1,3 @@
-  const ipaddress = 'https://matelaundry.com/api';
+  const ipaddress = 'http://192.168.100.13:8000/api';
 
-  const picaddress = 'https://matelaundry.com';
+  const picaddress = 'http://192.168.100.13:8000/images';

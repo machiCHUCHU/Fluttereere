@@ -162,3 +162,16 @@ Future<void> reloginDialog(BuildContext context) async {
     desc: 'Please login again!'
   ).show();
 }
+
+Future<void> tryDialog(BuildContext context) async{
+  await AwesomeDialog(
+      context: context,
+      animType: AnimType.topSlide,
+      dialogType: DialogType.warning,
+      autoHide: Duration(seconds: 2),
+      dismissOnTouchOutside: false,
+      dismissOnBackKeyPress: false,
+      title: 'Hello World',
+      desc: 'Testing Testing',
+  ).show();
+}

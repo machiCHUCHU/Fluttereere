@@ -30,6 +30,35 @@ class _NewLoginScreenState extends State<NewLoginScreen> {
   final TextEditingController _contactForm = TextEditingController();
   final TextEditingController _passForm = TextEditingController();
 
+  Future<void> testing() async{
+    showMaterialModalBottomSheet(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(5)
+        ),
+        context: context, 
+        builder: (context) {
+          String hehe = 'sfs';
+          return StatefulBuilder(builder: (BuildContext context, StateSetter setState){
+            return SizedBox(height: 200,
+            child: Column(
+              children: [
+                Text(hehe),
+                TextButton(
+                    onPressed: (){
+                      setState((){
+                        hehe = 'asdfafafas';
+                      });
+                    }, child: Text('sfs')
+                )
+              ],
+            ),
+            );
+          });
+        }
+    );
+
+  }
+
   bool isHidden = true;
   bool loading = true;
   bool isSubmitted = false;
@@ -326,12 +355,12 @@ class _NewLoginScreenState extends State<NewLoginScreen> {
                                 ),
                               ],
                             ),
-                            /*TextButton(
+                            TextButton(
                                 onPressed: (){
-                                  Navigator.push(context, MaterialPageRoute(builder: (context) => testScreen()));
+                                  Navigator.push(context, MaterialPageRoute(builder: (context) => const testScreen()));
                                 },
                                 child: const Text('test')
-                            )*/
+                            )
                           ],
                         ),
                       )
