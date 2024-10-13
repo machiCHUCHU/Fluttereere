@@ -6,6 +6,7 @@ import 'package:capstone/brandnew/dialogs.dart';
 import 'package:capstone/brandnew/newLoginPage.dart';
 import 'package:capstone/brandnew/newSelectAddress.dart';
 import 'package:capstone/services/services.dart';
+import 'package:capstone/styles/registrationStyle.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:capstone/styles/mainColorStyle.dart';
@@ -94,7 +95,7 @@ class _NewSignupScreenState extends State<NewSignupScreen> {
                 ),
                 const Text(
                   'Camera',
-                  style: SignupStyle.imagePick,
+                  style: RegistrationStyle.imagePick,
                 )
               ],
             ),
@@ -111,9 +112,9 @@ class _NewSignupScreenState extends State<NewSignupScreen> {
                   splashColor: Colors.transparent,
                   highlightColor: Colors.transparent,
                 ),
-                const Text(
+                Text(
                   'Gallery',
-                  style: SignupStyle.imagePick,
+                  style: RegistrationStyle.imagePick,
                 )
               ],
             )
@@ -185,281 +186,271 @@ class _NewSignupScreenState extends State<NewSignupScreen> {
         ),
       ),
       body: Padding(
-        padding: const EdgeInsets.all(15),
+        padding: const EdgeInsets.all(8),
         child: Form(
           key: _formKey,
-          child: Column(
-            children: [
-              /*const SizedBox(height: 10,),
-              const Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  'Register',
-                  style: SignupStyle.titleStyle,
-                ),
-              ),
-              const Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  'Create a new account',
-                  style: SignupStyle.secondaryTitle,
-                ),
-              ),*/
-              const SizedBox(height: 10,),
-              Expanded(
-                  child: SingleChildScrollView(
-                    physics: const ClampingScrollPhysics(),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            if(_pickedImageBytes == null)
-                              SizedBox(
-                                height: 130,
-                                width: 100,
-                                child: Stack(
-                                  children: [
-                                    Container(
-                                      padding: const EdgeInsets.all(2),
-                                      decoration: const BoxDecoration(
-                                          color: ColorStyle.tertiary,
-                                          shape: BoxShape.circle
-                                      ),
-                                      child: const CircleAvatar(
-                                        backgroundColor: Colors.white,
-                                        backgroundImage: AssetImage('assets/user.png'),
-                                        radius: 50,
+          child: SingleChildScrollView(
+                    child: Container(
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(5),
+                          ),
+                          padding: const EdgeInsets.all(8),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text('${widget.usertype[0].toUpperCase()}${widget.usertype.substring(1)} Registration',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.grey
+                              ),),
+                              const Divider(),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  if(_pickedImageBytes == null)
+                                    SizedBox(
+                                      height: 130,
+                                      width: 100,
+                                      child: Stack(
+                                        children: [
+                                          Container(
+                                            padding: const EdgeInsets.all(2),
+                                            decoration: const BoxDecoration(
+                                                color: ColorStyle.tertiary,
+                                                shape: BoxShape.circle
+                                            ),
+                                            child: const CircleAvatar(
+                                              backgroundColor: Colors.white,
+                                              backgroundImage: AssetImage('assets/user.png'),
+                                              radius: 50,
+                                            ),
+                                          ),
+                                          Positioned(
+                                              top: 70,
+                                              left: 70,
+                                              child: Container(
+                                                  height: 30,
+                                                  width: 30,
+                                                  decoration: BoxDecoration(
+                                                    borderRadius: BorderRadius.circular(50),
+                                                    color: ColorStyle.tertiary,
+                                                  ),
+                                                  child: IconButton(
+                                                    onPressed: () {
+                                                      _pickAndUploadImage();
+                                                    },
+                                                    icon: const Icon(
+                                                      Icons.camera_alt,
+                                                      color: Colors.white,
+                                                      size: 15,
+                                                      weight: 50,
+                                                    ),
+                                                  )))
+                                        ],
                                       ),
                                     ),
-                                    Positioned(
-                                        top: 70,
-                                        left: 70,
-                                        child: Container(
-                                            height: 30,
-                                            width: 30,
-                                            decoration: BoxDecoration(
-                                              borderRadius: BorderRadius.circular(50),
-                                              color: ColorStyle.tertiary,
-                                            ),
-                                            child: IconButton(
-                                              onPressed: () {
-                                                _pickAndUploadImage();
-                                              },
-                                              icon: const Icon(
-                                                Icons.camera_alt,
-                                                color: Colors.white,
-                                                size: 15,
-                                                weight: 50,
+                                  if (_pickedImageBytes != null)
+                                    SizedBox(
+                                      height: 130,
+                                      width: 100,
+                                      child: Stack(
+                                        children: [
+                                          ClipRRect(
+                                            borderRadius: BorderRadius.circular(50),
+                                            child: Container(
+                                              padding: const EdgeInsets.all(2),
+                                              decoration: const BoxDecoration(
+                                                  color: ColorStyle.tertiary,
+                                                  shape: BoxShape.circle
                                               ),
-                                            )))
-                                  ],
-                                ),
-                              ),
-                            if (_pickedImageBytes != null)
-                              SizedBox(
-                                height: 130,
-                                width: 100,
-                                child: Stack(
-                                  children: [
-                                    ClipRRect(
-                                      borderRadius: BorderRadius.circular(50),
-                                      child: Container(
-                                        padding: const EdgeInsets.all(2),
-                                        decoration: const BoxDecoration(
-                                            color: ColorStyle.tertiary,
-                                            shape: BoxShape.circle
-                                        ),
-                                        child: CircleAvatar(
-                                          backgroundColor: Colors.white,
-                                          radius: 50,
-                                          backgroundImage: MemoryImage(_pickedImageBytes!),
-                                        ),
+                                              child: CircleAvatar(
+                                                backgroundColor: Colors.white,
+                                                radius: 50,
+                                                backgroundImage: MemoryImage(_pickedImageBytes!),
+                                              ),
+                                            ),
+                                          ),
+                                          Positioned(
+                                              top: 70,
+                                              left: 70,
+                                              child: Container(
+                                                  height: 30,
+                                                  width: 30,
+                                                  decoration: BoxDecoration(
+                                                    borderRadius: BorderRadius.circular(50),
+                                                    color: ColorStyle.tertiary,
+                                                  ),
+                                                  child: IconButton(
+                                                    onPressed: () {
+                                                      _pickAndUploadImage();
+                                                    },
+                                                    icon: const Icon(
+                                                      Icons.camera_alt,
+                                                      color: Colors.white,
+                                                      size: 15,
+                                                      weight: 50,
+                                                    ),
+                                                  )))
+                                        ],
                                       ),
                                     ),
-                                    Positioned(
-                                        top: 70,
-                                        left: 70,
-                                        child: Container(
-                                            height: 30,
-                                            width: 30,
-                                            decoration: BoxDecoration(
-                                              borderRadius: BorderRadius.circular(50),
-                                              color: ColorStyle.tertiary,
-                                            ),
-                                            child: IconButton(
-                                              onPressed: () {
-                                                _pickAndUploadImage();
-                                              },
-                                              icon: const Icon(
-                                                Icons.camera_alt,
-                                                color: Colors.white,
-                                                size: 15,
-                                                weight: 50,
-                                              ),
-                                            )))
-                                  ],
-                                ),
+                                ],
                               ),
-                          ],
-                        ),
 
-                        const Text(
-                          'Name',
-                          style: SignupStyle.formTitle,
-                        ),
-                        const SizedBox(height: 5,),
-                        TextFormField(
-                          controller: _nameForm,
-                          decoration: SignupStyle.allForm,
-                        ),
-                        const SizedBox(height: 15,),
+                              const Text(
+                                'Name',
+                                style: RegistrationStyle.formTitle,
+                              ),
+                              const SizedBox(height: 5,),
+                              TextFormField(
+                                controller: _nameForm,
+                                decoration: RegistrationStyle.allForm,
+                              ),
+                              const SizedBox(height: 15,),
 
-                        const Text(
-                          'Address',
-                          style: SignupStyle.formTitle,
-                        ),
-                        const SizedBox(height: 5,),
-                        TextFormField(
-                          controller: _addressForm,
-                          decoration: SignupStyle.allForm,
-                        ),
-                        const SizedBox(height: 15,),
+                              const Text(
+                                'Address',
+                                style: RegistrationStyle.formTitle,
+                              ),
+                              const SizedBox(height: 5,),
+                              TextFormField(
+                                controller: _addressForm,
+                                decoration: RegistrationStyle.allForm,
+                              ),
+                              const SizedBox(height: 15,),
 
-                        const Text(
-                          'Contact Number',
-                          style: SignupStyle.formTitle,
-                        ),
-                        const SizedBox(height: 5,),
-                        TextFormField(
-                          controller: _contactForm,
-                          keyboardType: TextInputType.number,
-                          decoration: SignupStyle.allForm,
-                        ),
+                              const Text(
+                                'Contact Number',
+                                style: RegistrationStyle.formTitle,
+                              ),
+                              const SizedBox(height: 5,),
+                              TextFormField(
+                                controller: _contactForm,
+                                keyboardType: TextInputType.number,
+                                decoration: RegistrationStyle.allForm,
+                              ),
 
-                        const SizedBox(height: 15,),
-                        const Text(
-                          'Sex',
-                          style: SignupStyle.formTitle,
-                        ),
-                        const SizedBox(height: 5,),
-                        DropdownButtonFormField<String>(
-                          decoration: SignupStyle.allForm,
-                          value: _selectedGender,
-                          items: ['Male', 'Female'].map((String value) {
-                            return DropdownMenuItem<String>(
-                              value: value,
-                              child: Text(value),
-                            );
-                          }).toList(),
-                          onChanged: (newValue) {
-                            setState(() {
-                              _selectedGender = newValue;
-                            });
-                          },
-                          validator: (String? value) {
-                            if (value == null || value.isEmpty) {
-                              return 'This field is required.';
-                            }
-                            return null;
-                          },
-                        ),
-
-                        const SizedBox(height: 15,),
-                        const Text(
-                          'Password',
-                          style: SignupStyle.formTitle,
-                        ),
-                        const SizedBox(height: 5,),
-                        TextFormField(
-                          controller: _passForm,
-                          obscureText: isHidden,
-                          decoration: SignupStyle.passForm(
-                            isHidden: isHidden,
-                            visibility: (){
-                              setState(() {
-                                isHidden = !isHidden;
-                              });
-                            },
-                          ),
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Please enter your password!';
-                            }
-                            return null;
-                          },
-                        ),
-                        const SizedBox(height: 20,),
-
-                        Text(
-                          'Password must consist of: \n- atleast 8 characters \n- 1 uppercase letter \n- 1 lowercase letter'
-                          '\n- 1 number \n- 1 special character',
-                          style: TextStyle(
-                            fontStyle: FontStyle.italic
-                          ),
-                        ),
-
-                        const SizedBox(height: 30,),
-                        SizedBox(
-                          width: double.infinity,
-                          height: 50,
-                          child: ElevatedButton(
-                              style: SignupStyle.signButton(),
-                              onPressed: ()async{
-                                await isNumberExists();
-                                if(_nameForm.text.isEmpty || _addressForm.text.isEmpty
-                                    || _contactForm.text.isEmpty || _selectedGender == null || _passForm.text.isEmpty){
-                                  warningDialog(context, 'Please fill out all the form');
-
-                                }else if(exist == true){
-                                  warningTextDialog(context, 'Invalid Contact Number',
-                                      'Contact number already existed. Please input another number.');
-                                }else if(!validateNumber(_contactForm.text)){
-                                  warningTextDialog(context, 'Invalid Contact Number',
-                                      'Please input a valid contact number.\n'
-                                          'e.g. 09123456789');
-                                }else if(!validatePassword(_passForm.text)){
-                                  warningTextDialog(context, 'Invalid Password Format',
-                                      'Your password should contain atleast 8 characters, one uppercase letter, '
-                                          'one lowercase letter, one number, and one special character');
-                                }
-                                else{
-                                  _confirmationDialog();
-                                }
-                              },
-                              child: const Text(
-                                'Register',
-                                style: TextStyle(
-                                    color: Colors.white
-                                ),
-                              )
-                          ),
-                        ),
-                        const SizedBox(height: 20,),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const Text(
-                                'Already have an account? '
-                            ),
-                            GestureDetector(
-                                onTap: (){
-                                  Navigator.push(context, MaterialPageRoute(builder: (context) => const NewLoginScreen()));
+                              const SizedBox(height: 15,),
+                              const Text(
+                                'Sex',
+                                style: RegistrationStyle.formTitle,
+                              ),
+                              const SizedBox(height: 5,),
+                              DropdownButtonFormField<String>(
+                                decoration: RegistrationStyle.allForm,
+                                value: _selectedGender,
+                                items: ['Male', 'Female'].map((String value) {
+                                  return DropdownMenuItem<String>(
+                                    value: value,
+                                    child: Text(value),
+                                  );
+                                }).toList(),
+                                onChanged: (newValue) {
+                                  setState(() {
+                                    _selectedGender = newValue;
+                                  });
                                 },
-                                child: const Text(
-                                  'Login',
-                                  style: SignupStyle.textButton,
-                                )
-                            ),
-                          ],
+                                validator: (String? value) {
+                                  if (value == null || value.isEmpty) {
+                                    return 'This field is required.';
+                                  }
+                                  return null;
+                                },
+                              ),
+
+                              const SizedBox(height: 15,),
+                              const Text(
+                                'Password',
+                                style: RegistrationStyle.formTitle,
+                              ),
+                              const SizedBox(height: 5,),
+                              TextFormField(
+                                controller: _passForm,
+                                obscureText: isHidden,
+                                decoration: RegistrationStyle.passForm(
+                                  isHidden: isHidden,
+                                  visibility: (){
+                                    setState(() {
+                                      isHidden = !isHidden;
+                                    });
+                                  },
+                                ),
+                                validator: (value) {
+                                  if (value == null || value.isEmpty) {
+                                    return 'Please enter your password!';
+                                  }
+                                  return null;
+                                },
+                              ),
+                              const SizedBox(height: 20,),
+
+                              Text(
+                                'Password must consist of: \n- atleast 8 characters \n- 1 uppercase letter \n- 1 lowercase letter'
+                                '\n- 1 number \n- 1 special character',
+                                style: TextStyle(
+                                  fontStyle: FontStyle.italic
+                                ),
+                              ),
+
+                              const SizedBox(height: 30,),
+                              SizedBox(
+                                width: double.infinity,
+                                height: 50,
+                                child: ElevatedButton(
+                                    style: RegistrationStyle.signButton(),
+                                    onPressed: ()async{
+                                      await isNumberExists();
+                                      if(_nameForm.text.isEmpty || _addressForm.text.isEmpty
+                                          || _contactForm.text.isEmpty || _selectedGender == null || _passForm.text.isEmpty){
+                                        warningDialog(context, 'Please fill out all the form');
+
+                                      }else if(exist == true){
+                                        warningTextDialog(context, 'Invalid Contact Number',
+                                            'Contact number already existed. Please input another number.');
+                                      }else if(!validateNumber(_contactForm.text)){
+                                        warningTextDialog(context, 'Invalid Contact Number',
+                                            'Please input a valid contact number.\n'
+                                                'e.g. 09123456789');
+                                      }else if(!validatePassword(_passForm.text)){
+                                        warningTextDialog(context, 'Invalid Password Format',
+                                            'Your password should contain atleast 8 characters, one uppercase letter, '
+                                                'one lowercase letter, one number, and one special character');
+                                      }
+                                      else{
+                                        _confirmationDialog();
+                                      }
+                                    },
+                                    child: const Text(
+                                      'Register',
+                                      style: TextStyle(
+                                          color: Colors.white
+                                      ),
+                                    )
+                                ),
+                              ),
+                              /*Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  const Text(
+                                      'Already have an account? '
+                                  ),
+                                  GestureDetector(
+                                      onTap: (){
+                                        Navigator.push(context, MaterialPageRoute(builder: (context) => const NewLoginScreen()));
+                                      },
+                                      child: const Text(
+                                        'Login',
+                                        style: RegistrationStyle.textButton,
+                                      )
+                                  ),
+                                ],
+                              ),*/
+                            ],
+                          ),
                         ),
-                      ],
-                    ),
                   )
-              ),
-            ],
-          ),
+              
         ),
         ),
     );
@@ -536,7 +527,7 @@ class _NewOTPScreenState extends State<NewOTPScreen> {
           fontSize: 22,
           color: Colors.black
       ),
-      decoration: SignupStyle.otpInput
+      decoration: RegistrationStyle.otpInput
   );
 
   bool showTimer = true;
@@ -639,7 +630,7 @@ class _NewOTPScreenState extends State<NewOTPScreen> {
                                     },
                                     child: const Text(
                                       'Resend',
-                                      style: SignupStyle.resendButton,
+                                      style: RegistrationStyle.resendButton,
                                     ),
                                   )
                               ),
@@ -649,7 +640,7 @@ class _NewOTPScreenState extends State<NewOTPScreen> {
                     ),
                     const SizedBox(height: 20,),
                     ElevatedButton(
-                        style: SignupStyle.signButton(),
+                        style: RegistrationStyle.signButton(),
                         onPressed: (){
                           inputCodeCheck();
                         },

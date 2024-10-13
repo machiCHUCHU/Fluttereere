@@ -12,6 +12,7 @@ import 'package:capstone/brandnew/newLoginPage.dart';
 import 'package:capstone/brandnew/newReportPage.dart';
 import 'package:capstone/brandnew/newReviewPage.dart';
 import 'package:capstone/brandnew/newSettings.dart';
+import 'package:capstone/brandnew/newUpcomingTaskScreen.dart';
 import 'package:capstone/connect/laravel.dart';
 import 'package:capstone/services/services.dart';
 import 'package:capstone/styles/loginStyle.dart';
@@ -233,7 +234,7 @@ class _NewHomeScreenState extends State<NewHomeScreen> {
             },
             child: Stack(
               children: [
-                CircleAvatar(
+                const CircleAvatar(
                   backgroundColor: Colors.white,
                   radius: 22,
                 ),
@@ -241,7 +242,7 @@ class _NewHomeScreenState extends State<NewHomeScreen> {
                   name: '${profile['shopname']}',
                   radius: 22,
                   fontsize: 14,
-                  img: profile['pic'] != null ? '$picaddress/${profile['pic']}' : null,
+                  img: profile['pic'] == '' || profile['pic'] == 'null' ? null : '$picaddress/${profile['pic']}'
                 )
               ],
             ),
@@ -395,7 +396,35 @@ class _NewHomeScreenState extends State<NewHomeScreen> {
                                 Text(hasData ? '${home['complete']}' : '0',style: const TextStyle(color: Colors.white,fontSize: 18))
                               ],
                             )
-                        )
+                        ),
+
+                      ],
+                    ),
+                    const SizedBox(height: 10,),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.lightBlueAccent.shade400,
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(5)
+                                ),
+                                padding: const EdgeInsets.all(8),
+                                fixedSize: Size(MediaQuery.of(context).size.width * .87, 70)
+                            ),
+                            onPressed: (){
+                              Navigator.push(context, MaterialPageRoute(builder: (context) => const NewUpcomingTaskScreen()));
+                            },
+                            child: const Column(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  Icon(Icons.calendar_month,size: 32,color: Colors.white,),
+                                  Text('Upcoming Laundry',style: TextStyle(color: Colors.white))
+                                ],
+                              ),
+                        ),
                       ],
                     ),
                     const Divider(),
@@ -434,18 +463,7 @@ class _NewHomeScreenState extends State<NewHomeScreen> {
                         )
                       ],
                     ),
-                    Align(
-                      alignment: Alignment.bottomRight,
-                      child: TextButton(
-                          style: TextButton.styleFrom(
-                            foregroundColor: ColorStyle.tertiary
-                          ),
-                          onPressed: (){
-                            Navigator.push(context, MaterialPageRoute(builder: (context) => const NewChartScreen()));
-                          },
-                          child: const Text('More Information >')
-                      ),
-                    )
+
                   ],
                 ),
               ),
@@ -469,7 +487,7 @@ class _NewHomeScreenState extends State<NewHomeScreen> {
                           appBarDisplay();
                         }
                       },
-                      child: Column(
+                      child: const Column(
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [
                           CircleAvatar(
@@ -493,7 +511,7 @@ class _NewHomeScreenState extends State<NewHomeScreen> {
                       onPressed: (){
                         _bottomModalCustomers();
                       },
-                      child: Column(
+                      child: const Column(
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [
                           CircleAvatar(
@@ -517,7 +535,7 @@ class _NewHomeScreenState extends State<NewHomeScreen> {
                       onPressed: (){
                         Navigator.push(context, MaterialPageRoute(builder: (context) => const NewInventoryScreen()));
                       },
-                      child: Column(
+                      child: const Column(
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [
                           CircleAvatar(
@@ -547,7 +565,7 @@ class _NewHomeScreenState extends State<NewHomeScreen> {
                       onPressed: (){
                         Navigator.push(context, MaterialPageRoute(builder: (context) => const NewCustomerScreen()));
                       },
-                      child: Column(
+                      child: const Column(
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [
                           CircleAvatar(
@@ -577,9 +595,9 @@ class _NewHomeScreenState extends State<NewHomeScreen> {
                           CircleAvatar(
                             radius: 28,
                             backgroundColor: Colors.yellow.shade400,
-                            child: Icon(Icons.feed,color:Colors.white,size: 32,),
+                            child: const Icon(Icons.feed,color:Colors.white,size: 32,),
                           ),
-                          Text('Reviews',style: TextStyle(color: Colors.black,fontSize: 14),)
+                          const Text('Reviews',style: TextStyle(color: Colors.black,fontSize: 14),)
                         ],
                       )
                   ),
@@ -595,7 +613,7 @@ class _NewHomeScreenState extends State<NewHomeScreen> {
                       onPressed: (){
                         Navigator.push(context, MaterialPageRoute(builder: (context) => const NewReportScreen()));
                       },
-                      child: Column(
+                      child: const Column(
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [
                           CircleAvatar(

@@ -60,3 +60,22 @@ Future<ApiResponse> getCityMunicipality(String provinceCode) async{
 
   return apiResponse;
 }
+
+Future<ApiResponse> getLocation() async{
+  ApiResponse apiResponse = ApiResponse();
+  
+  final response = await http.get(
+    Uri.parse('https://api.bigdatacloud.net/data/reverse-geocode-client'),
+    headers: {
+      'Accept': 'application/json'
+    }
+  );
+
+  if(response.statusCode == 200){
+    apiResponse.data = jsonDecode(response.body);
+  }else{
+    apiResponse.error = 'Something went wrong';
+  }
+
+  return apiResponse;
+}
