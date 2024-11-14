@@ -19,6 +19,7 @@ import 'package:capstone/styles/loginStyle.dart';
 import 'package:capstone/styles/mainColorStyle.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/painting.dart';
 import 'package:flutter_profile_picture/flutter_profile_picture.dart';
 import 'package:intl/intl.dart';
 import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
@@ -36,6 +37,8 @@ class NewHomeScreen extends StatefulWidget {
 class _NewHomeScreenState extends State<NewHomeScreen> {
 
   String? token;
+  String? usertype;
+  String? access;
   int? userid;
   int? shopid;
   String _selectedRange = 'Weekly';
@@ -51,6 +54,8 @@ class _NewHomeScreenState extends State<NewHomeScreen> {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
       token = prefs.getString('token');
+      usertype = prefs.getString('usertype');
+      access = prefs.getString('accesstype');
     });
     homeDisplay();
   }
@@ -225,7 +230,7 @@ class _NewHomeScreenState extends State<NewHomeScreen> {
       appBar: AppBar(
         title: const Text('Laundry Mate'),
         titleTextStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-        actions: [
+        /*actions: [
           Text('${profile['shopname'] ?? '...'}', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),overflow: TextOverflow.ellipsis,),
           const SizedBox(width: 5,),
           InkWell(
@@ -248,15 +253,16 @@ class _NewHomeScreenState extends State<NewHomeScreen> {
             ),
           ),
           const SizedBox(width: 5,),
-        ],
+        ],*/
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(8),
           child: Column(
             children: [
               Container(
-                decoration: const BoxDecoration(
-                  color: Colors.white
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(5)
                 ),
                 padding: const EdgeInsets.all(8),
                 child: Column(
@@ -509,7 +515,9 @@ class _NewHomeScreenState extends State<NewHomeScreen> {
                         fixedSize: const Size(105, 105),
                       ),
                       onPressed: (){
-                        _bottomModalCustomers();
+                        usertype == 'owner' ? _bottomModalCustomers()
+                            : access == 'full' ? _bottomModalCustomers()
+                            : warningTextDialog(context, 'Access Denied', 'Sorry you don\'t have a permission to book services');
                       },
                       child: const Column(
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,

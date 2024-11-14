@@ -5,6 +5,7 @@ import 'package:capstone/api_response.dart';
 import 'package:capstone/brandnew/dialogs.dart';
 import 'package:capstone/connect/laravel.dart';
 import 'package:capstone/services/services.dart';
+import 'package:capstone/services/servicesadd.dart';
 import 'package:capstone/styles/mainColorStyle.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -17,6 +18,7 @@ import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 import 'package:row_item/row_item.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:toggle_switch/toggle_switch.dart';
 
 
 class NewCustomerScreen extends StatefulWidget {
@@ -28,7 +30,7 @@ class NewCustomerScreen extends StatefulWidget {
 
 class _NewCustomerScreenState extends State<NewCustomerScreen> {
   String? token;
-  bool isLoading = true;
+  bool isLoading = true; String page = '';
 
   void _bottomModal(String name, String address, String contact, String image,
       bool hasPicture, String date, String valued, String id) {
@@ -53,8 +55,8 @@ class _NewCustomerScreenState extends State<NewCustomerScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+                    const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 16, horizontal: 16),
                       child: Row(
                         children: [
                           Icon(
@@ -62,7 +64,7 @@ class _NewCustomerScreenState extends State<NewCustomerScreen> {
                             size: 32,
                             color: ColorStyle.tertiary,
                           ),
-                          const Text(
+                          Text(
                             ' Customer Information',
                             style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
                           ),
@@ -85,39 +87,39 @@ class _NewCustomerScreenState extends State<NewCustomerScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
+                          const Text(
                             'Address',
                             style: TextStyle(color: Colors.grey),
                           ),
                           Text(
                             address,
-                            style: TextStyle(fontWeight: FontWeight.bold),
+                            style: const TextStyle(fontWeight: FontWeight.bold),
                           ),
                           const SizedBox(height: 5),
                           RowItem(
                               title: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text(
+                                  const Text(
                                     'Contact Information',
                                     style: TextStyle(color: Colors.grey),
                                   ),
                                   Text(
                                     contact,
-                                    style: TextStyle(fontWeight: FontWeight.bold),
+                                    style: const TextStyle(fontWeight: FontWeight.bold),
                                   ),
                                 ],
                               ),
                               description: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text(
+                                  const Text(
                                     'Date Requested',
                                     style: TextStyle(color: Colors.grey),
                                   ),
                                   Text(
                                     date,
-                                    style: TextStyle(fontWeight: FontWeight.bold),
+                                    style: const TextStyle(fontWeight: FontWeight.bold),
                                   ),
                                 ],
                               )
@@ -140,11 +142,11 @@ class _NewCustomerScreenState extends State<NewCustomerScreen> {
                         borderRadius: BorderRadius.circular(5),
                       ),
                       foregroundColor: ColorStyle.tertiary,
-                      side: BorderSide(color: ColorStyle.tertiary),
+                      side: const BorderSide(color: ColorStyle.tertiary),
                       fixedSize: Size(MediaQuery.of(context).size.width * .42, 30),
                     ),
                     onPressed: () {
-                      addedShopStat(id, '2');
+
                     },
                     child: const Text('Decline'),
                   ),
@@ -158,7 +160,7 @@ class _NewCustomerScreenState extends State<NewCustomerScreen> {
                       fixedSize: Size(MediaQuery.of(context).size.width * .42, 30),
                     ),
                     onPressed: () {
-                      addedShopStat(id, '1');
+
                     },
                     child: const Text('Mark Valued'),
                   ),
@@ -172,7 +174,27 @@ class _NewCustomerScreenState extends State<NewCustomerScreen> {
   }
 
 
-  List<dynamic> addedshop = [];
+  List<dynamic> topCustomers = []; List<dynamic> restCustomers = [];
+  List<Color> topColor = [
+    const Color(0xFFFFD700), const Color(0xFFC0C0C0),const Color(0xFFCD7F32),
+    const Color(0xFF4169E1), const Color(0xFF50C878)
+  ];
+
+  Future<void> customerDisplay() async{
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    ApiResponse response = await getValuedCustomers(page, '${prefs.getString('token')}');
+
+    if(response.error == null){
+      setState(() {
+        topCustomers = response.data as List<dynamic>;
+        restCustomers = response.data1 as List<dynamic>;
+        isLoading = false;
+        hasData = true;
+      });
+    }else{
+      print(response.error);
+    }
+  }
 
   String? id;
   String? status;
@@ -180,68 +202,13 @@ class _NewCustomerScreenState extends State<NewCustomerScreen> {
   bool hasData = false;
 
 
-  Future<void> addedShopStat(String customerid, String stat) async{
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    showDialog(
-        context: context,
-        builder: (context){
-          return Center(
-            child: LoadingAnimationWidget.staggeredDotsWave(
-              color: Colors.black,
-              size: 50,
-            ),
-          );
-        }
-    );
-
-    ApiResponse apiResponse = await updateAddedShop(
-        '${prefs.getString('token')}',
-        customerid.toString(),
-        stat
-    );
-
-    Navigator.pop(context);
-
-    if(apiResponse.error == null){
-     if(stat == '1'){
-       print(apiResponse.data);
-       await successDialog(context, 'Customer mark valued.');
-       Navigator.pop(context);
-     }else{
-       await warningDialog(context, 'Request rejected.');
-       Navigator.pop(context);
-     }
-        addedShopDisplay();
-    }else{
-      Navigator.pop(context);
-     await errorDialog(context, '${apiResponse.error}');
-    }
-  }
-
-  Future<void> addedShopDisplay() async{
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    ApiResponse response = await getAddedShop('${prefs.getString('token')}');
-
-    if(response.error == null){
-      setState(() {
-        addedshop = response.data as List<dynamic>;
-        isLoading = false;
-        hasData = addedshop.isNotEmpty;
-      });
-    } else {
-      setState(() {
-        isLoading = false;
-      });
-      errorDialog(context,'${response.error}');
-    }
-  }
 
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
   @override
   void initState() {
+    customerDisplay();
     super.initState();
-    addedShopDisplay();
   }
 
   @override
@@ -258,12 +225,7 @@ class _NewCustomerScreenState extends State<NewCustomerScreen> {
               icon: const Icon(CupertinoIcons.chevron_left,color: Colors.white,),
             ),
           ),
-          body: Center(
-            child: LoadingAnimationWidget.staggeredDotsWave(
-              color: Colors.black,
-              size: 50,
-            ),
-          )
+          body: loading()
       );
     }
 
@@ -299,83 +261,143 @@ class _NewCustomerScreenState extends State<NewCustomerScreen> {
         ),
       ),
       body: SingleChildScrollView(
-          child: Form(
-            key: _formKey,
-            child: Column(
+        padding: const EdgeInsets.all(8),
+          child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                ListView.builder(
-                      shrinkWrap: true,
-                      itemCount: addedshop.length,
-                      itemBuilder: (context, index){
-                        Map addshop = addedshop[index] as Map;
-
-                        bool hasPicture = addshop['CustomerImage'] != null;
-                        String status = '';
-                        Color statusColor;
-                        switch(addshop['IsValued']){
-                          case '0':
-                            status = 'Pending';
-                            statusColor = Colors.yellow.shade400;
-                            break;
-                          case '1':
-                            status = 'Valued';
-                            statusColor = Colors.greenAccent;
-                            break;
-                          default:
-                            status = 'Rejected';
-                            statusColor = Colors.redAccent;
-                            break;
-                        }
-                        return Padding(
-                          padding: const EdgeInsets.all(4.0),
-                          child: Container(
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(5),
-                              boxShadow: [
-                                BoxShadow(
-                                  blurRadius: 1,
-                                  color: Colors.grey.shade400,
-                                  offset: Offset(0, 2)
-                                )
-                              ]
-                            ),
-                            child: ListTile(
-                              onTap: (){
-                                _bottomModal('${addshop['CustomerName']}', '${addshop['CustomerAddress']}',
-                                    '${addshop['CustomerContactNumber']}', '${addshop['CustomerImage']}',
-                                    hasPicture, '${addshop['Date']}', '${addshop['IsValued']}', '${addshop['AddedShopID']}');
-                              },
-                              contentPadding: EdgeInsets.all(8),
-                              leading: ProfilePicture(
-                                name: '${addshop['CustomerName']}',
-                                radius: 28,
-                                fontsize: 18,
-                                img: hasPicture ? '$picaddress/${addshop['CustomerImage']}' : null,
-                              ),
-                              title: Text('${addshop['CustomerName']}'),
-                              titleTextStyle: TextStyle(
-                                color: Colors.black,
-                                fontWeight: FontWeight.bold
-                              ),
-                              subtitle: Text('${addshop['CustomerAddress']}',style: TextStyle(fontSize: 10),),
-                              trailing: Container(
-                                decoration: BoxDecoration(
-                                  color: statusColor,
-                                  borderRadius: BorderRadius.circular(50)
-                                ),
-                                padding: const EdgeInsets.symmetric(vertical: 4,horizontal: 8),
-                                child: Text(status,style: TextStyle(color: Colors.white,fontSize: 14),textAlign: TextAlign.center,),
-                              ),
-                            ),
-                          ),
-                        );
-                      }
+                ToggleSwitch(
+                  minWidth: 100,
+                  minHeight: 30,
+                  animationDuration: 800,
+                  cornerRadius: 5.0,
+                  activeBgColors: [[ColorStyle.tertiary], [ColorStyle.tertiary]],
+                  activeFgColor: Colors.white,
+                  inactiveBgColor: Colors.white,
+                  inactiveFgColor: ColorStyle.tertiary,
+                  initialLabelIndex: page == '' ? 0 : int.parse(page),
+                  totalSwitches: 2,
+                  labels: ['Bookings', 'Walk-in'],
+                  customTextStyles: [
+                    const TextStyle(
+                        fontWeight: FontWeight.bold),
+                  ],
+                  radiusStyle: true,
+                  onToggle: (index) {
+                    page = index.toString();
+                    setState(() {
+                      isLoading = true;
+                    });
+                    customerDisplay();
+                  },
+                ),
+                const SizedBox(height: 10,),
+                Container(
+                  width: double.infinity,
+                  decoration: const BoxDecoration(
+                    color: ColorStyle.tertiary,
+                    borderRadius: BorderRadius.vertical(top: Radius.circular(5))
                   ),
+                  padding: const EdgeInsets.all(4),
+                  child: const Text('Top Customers',style: TextStyle(color: Colors.white,fontWeight: FontWeight.bold),)
+                ),
+                Column(
+                  children: [
+                    Container(
+                      decoration: const BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.vertical(bottom: Radius.circular(5)),
+                          boxShadow: [
+                            BoxShadow(
+                                blurRadius: 1,
+                                color: Colors.grey
+                            )
+                          ]
+                      ),
+                      padding: const EdgeInsets.all(8),
+                      child: ListView.builder(
+                          shrinkWrap: true,
+                          itemCount: topCustomers.length,
+                          physics: const NeverScrollableScrollPhysics(),
+                          itemBuilder: (context,index){
+                            Map top = topCustomers[index] as Map;
+                            bool isPage = page == '0' || page == '' ? true : false;
+
+                            return Padding(
+                                padding: const EdgeInsets.all(2),
+                                child: Row(
+                                  children: [
+                                    CircleAvatar(
+                                      backgroundColor: topColor[index],
+                                      foregroundColor: Colors.white,
+                                      radius: 18,
+                                      child: Text('${index + 1}'),
+                                    ),
+                                    Expanded(child: Text(isPage ? ' ${top['CustomerName']}': ' ${top['ContactNumber']}'),),
+                                    Text(isPage ? '${top['total_bookings']} bookings' : '${top['total_walkins']} availed',style: const TextStyle(fontWeight: FontWeight.bold),)
+                                  ],
+                                )
+                            );
+                          }
+                      ),
+                    ),
+                    const SizedBox(height: 10,),
+
+
+                    const SizedBox(height: 15,),
+                    ConstrainedBox(
+                      constraints: BoxConstraints(
+                          maxHeight: MediaQuery.of(context).size.height * .4
+                      ),
+                      child: Container(
+                        width: double.infinity,
+                        decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(5),
+                            boxShadow: [
+                              const BoxShadow(
+                                  blurRadius: 1,
+                                  color: Colors.grey
+                              )
+                            ]
+                        ),
+
+                        child: restCustomers.isEmpty
+                            ? const Text('No additional records',textAlign: TextAlign.center,)
+                            : ListView.builder(
+                            shrinkWrap: true,
+                            itemCount: restCustomers.length,
+                            itemBuilder: (context,index){
+                              Map rest = restCustomers[index] as Map;
+                              bool isPage = page == '1' ? true : false;
+
+                              return Padding(
+                                  padding: const EdgeInsets.all(6),
+                                  child: Column(
+                                    children: [
+                                      Row(
+                                        children: [
+                                          CircleAvatar(
+                                            backgroundColor: ColorStyle.tertiary,
+                                            foregroundColor: Colors.white,
+                                            radius: 18,
+                                            child: Text('${index + 6}'),
+                                          ),
+                                          Expanded(child: Text(isPage ? ' ${rest['ContactNumber']}': ' ${rest['CustomerName']}'),),
+                                          Text(isPage ? ' ${rest['total_walkins']} availed': ' ${rest['total_bookings']} bookings',style: const TextStyle(fontWeight: FontWeight.bold),)
+                                        ],
+                                      ),
+                                    ],
+                                  )
+                              );
+                            }
+                        ),
+                      ),
+                    )
+                  ],
+                )
               ],
             ),
-          )
+
       ),
     );
   }

@@ -3,6 +3,12 @@ import 'dart:core';
 
 import 'package:capstone/api_response.dart';
 import 'package:capstone/brandnew/dialogs.dart';
+import 'package:capstone/brandnew/newCoOwnerPage.dart';
+import 'package:capstone/brandnew/newLaundryServicePage.dart';
+import 'package:capstone/brandnew/newLoginPage.dart';
+import 'package:capstone/brandnew/newProfilePage.dart';
+import 'package:capstone/brandnew/newServiceTime.dart';
+import 'package:capstone/brandnew/newShopInformationPage.dart';
 import 'package:capstone/connect/laravel.dart';
 import 'package:capstone/services/services.dart';
 import 'package:capstone/styles/mainColorStyle.dart';
@@ -34,6 +40,16 @@ class _NewSettingsScreenState extends State<NewSettingsScreen> {
   bool hasImage = false;
   bool isLoading = true;
   String? token;
+  String? usertype;
+  String? access;
+
+  void getUser() async{
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      usertype = prefs.getString('usertype');
+      access = prefs.getString('accesstype');
+    });
+  }
 
   Future<void> settingsDisplay() async{
     final SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -53,34 +69,35 @@ class _NewSettingsScreenState extends State<NewSettingsScreen> {
     }
   }
 
-  @override
-  void initState(){
-    super.initState();
-    settingsDisplay();
+  Future<void> logoutState() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    ApiResponse response = await logout('${prefs.getString('token')}');
+
+    if (response.error == null) {
+      await prefs.clear();
+      if (mounted) {
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (context) => const NewLoginScreen()),
+              (route) => false,
+        );
+      }
+    } else {
+      print(response.error);
+    }
   }
 
   @override
+  void initState(){
+    super.initState();
+    getUser();
+    settingsDisplay();
+  }
+
+
+  @override
   Widget build(BuildContext context) {
-    if(isLoading){
-      return Scaffold(
-          appBar: AppBar(
-            title: const Text('Settings'),
-            titleTextStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            leading: IconButton(
-              onPressed: (){
-                Navigator.pop(context,true);
-              },
-              icon: const Icon(CupertinoIcons.chevron_left,color: Colors.white,),
-            ),
-          ),
-          body: Center(
-            child: LoadingAnimationWidget.staggeredDotsWave(
-              color: Colors.black,
-              size: 50,
-            ),
-          )
-      );
-    }
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Settings'),
@@ -93,250 +110,192 @@ class _NewSettingsScreenState extends State<NewSettingsScreen> {
         ),
       ),
       body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Column(
+        padding: const EdgeInsets.all(8),
+        child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const SizedBox(height: 20,),
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(5)
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Align(
-                        alignment: Alignment.center,
-                        child:
-                            CircleAvatar(
-                              backgroundColor: ColorStyle.tertiary,
-                              radius: 52,
-                              child: ProfilePicture(
-                                  name: '${set['OwnerName']}',
-                                  radius: 48,
-                                  fontsize: 24,
-                                  img: set['OwnerImage'] == null || set['OwnerImage'] == 'null' ? null
-                                        : '$picaddress/${set['OwnerImage']}'
-                              ),
-                            ),
-                    ),
-                    const SizedBox(height: 20,),
-                    const Text('User Information', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),),
-                    const SizedBox(height: 20,),
-                    RowItem(
-                        title: const Row(children: [
-                          Icon(Icons.person),
-                          Text('Name')
-                        ],), 
-                        description: Text('${set['OwnerName']}',style: const TextStyle(fontWeight: FontWeight.bold))
-                    ),
-                    const Divider(height: 25,),
-                    RowItem(
-                        title: const Row(children: [
-                          Icon(Icons.fiber_manual_record_sharp),
-                          Text('Sex')
-                        ],),
-                        description: Text('${set['OwnerSex']}',style: const TextStyle(fontWeight: FontWeight.bold))
-                    ),
-                    const Divider(height: 25,),
-                    RowItem(
-                        title: const Row(children: [
-                          Icon(Icons.location_on),
-                          Text('Address')
-                        ],),
-                        description: Text('${set['OwnerAddress']}',style: const TextStyle(fontWeight: FontWeight.bold))
-                    ),
-                    const Divider(height: 25,),
-                    RowItem(
-                        title: const Row(children: [
-                          Icon(Icons.call),
-                          Text('Contact Number')
-                        ],),
-                        description: Text('${set['OwnerContactNumber']}', style: const TextStyle(fontWeight: FontWeight.bold),)
-                    ),
-                    const Divider(height: 25,),
-                    Align(
-                      alignment: Alignment.centerRight,
-                      child: ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: ColorStyle.tertiary,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(5)
-                            )
-                          ),
-                          onPressed: ()async{
-                            final response = await Navigator.push(context, MaterialPageRoute(builder: (context) => EditUserScreen(
-                                id: '${set['OwnerID']}', name: '${set['OwnerName']}', sex: '${set['OwnerSex']}', address: '${set['OwnerAddress']}',
-                                contact: '${set['OwnerContactNumber']}', image: '${set['OwnerImage']}')));
-
-                            if(response == true){
-                              settingsDisplay();
-                            }
-                          },
-                          child: const Text('Edit Profile', style: TextStyle(color: Colors.white),)
-                      ),
-                    )
-                  ],
-                ),
-              ),
-              const SizedBox(height: 20,),
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
+              InkWell(
+                onTap: (){
+                  usertype == 'owner'
+                      ? Navigator.push(context, MaterialPageRoute(builder: (context) => const NewProfileScreen()))
+                      : warningTextDialog(context, 'Access Denied', 'Sorry you dont\'t have permission to access this.');
+                },
+                child: Ink(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(5),
                     color: Colors.white,
-                    borderRadius: BorderRadius.circular(5)
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text('Shop Information', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),),
-                    const SizedBox(height: 20,),
-                    RowItem(
-                        title: const Row(children: [
-                          Icon(Icons.store),
-                          Text('Shop Name')
-                        ],),
-                        description: Text('${set['ShopName']}',style: const TextStyle(fontWeight: FontWeight.bold))
-                    ),
-                    const Divider(height: 25,),
-                    RowItem(
-                        title: const Row(children: [
-                          Icon(Icons.location_on),
-                          Text('Shop Address')
-                        ],),
-                        description: Text('${set['ShopAddress']}',style: const TextStyle(fontWeight: FontWeight.bold),textAlign: TextAlign.right,)
-                    ),
-                    const Divider(height: 25,),
-                    RowItem(
-                        title: const Row(children: [
-                          Icon(Icons.line_weight),
-                          Text('Max Load Cater')
-                        ],),
-                        description: Text('${set['MaxLoad']}',style: const TextStyle(fontWeight: FontWeight.bold))
-                    ),
-                    const Divider(height: 25,),
-                    RowItem(
-                        title: const Row(children: [
-                          Icon(Icons.calendar_month),
-                          Text('Working Days')
-                        ],),
-                        description: Text('${set['WorkDay']}',style: const TextStyle(fontWeight: FontWeight.bold))
-                    ),
-                    const Divider(height: 25,),
-                    RowItem(
-                        title: const Row(children: [
-                          Icon(Icons.timelapse),
-                          Text('Working Hour')
-                        ],),
-                        description: Text('${set['WorkHour']}',style: const TextStyle(fontWeight: FontWeight.bold))
-                    ),
-                    const Divider(height: 25,),
-                    RowItem(
-                        title: const Row(children: [
-                          Icon(Icons.lock),
-                          Text('ShopCode')
-                        ],),
-                        description: Text('${set['ShopCode']}',style: const TextStyle(fontWeight: FontWeight.bold))
-                    ),
-                    const Divider(height: 25,),
-                    RowItem(
-                        title: const Row(children: [
-                          Icon(Icons.local_laundry_service),
-                          Text('Washer Count')
-                        ],),
-                        description: Text('${set['WasherQty']}',style: const TextStyle(fontWeight: FontWeight.bold))
-                    ),
-                    const Divider(height: 25,),
-                    RowItem(
-                        title: const Row(children: [
-                          Icon(Icons.local_laundry_service),
-                          Text('Dryer Count')
-                        ],),
-                        description: Text('${set['DryerQty']}',style: const TextStyle(fontWeight: FontWeight.bold))
-                    ),
-                    const Divider(height: 25,),
-                    RowItem(
-                        title: const Row(children: [
-                          Icon(Icons.timer),
-                          Text('Wash Duration')
-                        ],),
-                        description: Text('${set['WasherTime']} minutes',style: const TextStyle(fontWeight: FontWeight.bold))
-                    ),
-                    const Divider(height: 25,),
-                    RowItem(
-                        title: const Row(children: [
-                          Icon(Icons.timer),
-                          Text('Dry Duration')
-                        ],),
-                        description: Text('${set['DryerTime']} minutes',style: const TextStyle(fontWeight: FontWeight.bold))
-                    ),
-                    const Divider(height: 25,),
-                    RowItem(
-                        title: const Row(children: [
-                          Icon(Icons.timer),
-                          Text('Fold Duration')
-                        ],),
-                        description: Text('${set['FoldingTime']} minutes',style: const TextStyle(fontWeight: FontWeight.bold))
-                    ),
-                    const Divider(height: 25,),
-                    ListView.builder(
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        itemCount: service.length,
-                        itemBuilder: (context,index){
-                          Map serve = service[index] as Map;
-
-                          return Column(
-                            children: [
-                              RowItem(
-                                  title: const Row(children: [
-                                    Icon(Icons.miscellaneous_services),
-                                    Text('Service Name')
-                                  ],),
-                                  description: Text('${serve['ServiceName']}',style: const TextStyle(fontWeight: FontWeight.bold))
-                              ),
-                              const Divider(height: 25,),
-                            ],
-                          );
-                        }
-                    ),
-
-
-                    Align(
-                      alignment: Alignment.centerRight,
-                      child: ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                              backgroundColor: ColorStyle.tertiary,
-                              shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(5)
-                              )
+                  ),
+                  child: RowItem(
+                      title: Row(
+                        children: [
+                          Container(
+                            decoration: BoxDecoration(
+                              color: Colors.yellow.shade600,
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            padding: const EdgeInsets.all(8),
+                            child: Icon(Icons.person,color: Colors.white,),
                           ),
-                          onPressed: ()async{
-                            final response = await Navigator.push(context, MaterialPageRoute(builder: (context) => EditShopScreen(
-                                shopName: '${set['ShopName']}', shopAddress: '${set['ShopAddress']}',
-                                workDay: '${set['WorkDay']}', workHour: '${set['WorkHour']}', washerCount: '${set['WasherQty']}',
-                                washerTime: '${set['WasherTime']}', dryerCount: '${set['DryerQty']}', dryerTime: '${set['DryerTime']}',
-                                foldTime: '${set['FoldingTime']}', services: service)));
-
-                            if(response == true){
-                              setState(() {
-                                settingsDisplay();
-                              });
-                            }
-                          },
-                          child: const Text('Edit Shop   ', style: TextStyle(color: Colors.white),textAlign: TextAlign.center,)
+                          Text(' Profile',style: TextStyle(fontSize: 14,fontWeight: FontWeight.bold),)
+                        ],
                       ),
-                    )
-                  ],
+                      description: Icon(CupertinoIcons.chevron_forward)
+                  ),
                 ),
               ),
+              const SizedBox(height: 10,),
+
+              InkWell(
+                onTap: (){
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => const NewShopInformationScreen()));
+                },
+                child: Ink(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(5),
+                    color: Colors.white,
+                  ),
+                  child: RowItem(
+                      title: Row(
+                        children: [
+                          Container(
+                            decoration: BoxDecoration(
+                              color: Colors.blue,
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            padding: const EdgeInsets.all(8),
+                            child: Icon(Icons.store,color: Colors.white,),
+                          ),
+                          Text(' Shop Information',style: TextStyle(fontSize: 14,fontWeight: FontWeight.bold),)
+                        ],
+                      ),
+                      description: Icon(CupertinoIcons.chevron_forward)
+                  ),
+                ),
+              ),
+              const SizedBox(height: 10,),
+
+             InkWell(
+               onTap: (){
+                 Navigator.push(context, MaterialPageRoute(builder: (context) => const NewLaundryServiceScreen()));
+               },
+               child: Ink(
+                 padding: const EdgeInsets.all(8),
+                 decoration: BoxDecoration(
+                   borderRadius: BorderRadius.circular(5),
+                   color: Colors.white,
+                 ),
+                 child: RowItem(
+                     title: Row(
+                       children: [
+                         Container(
+                           decoration: BoxDecoration(
+                             color: Colors.green,
+                             borderRadius: BorderRadius.circular(10),
+                           ),
+                           padding: const EdgeInsets.all(8),
+                           child: Icon(Icons.local_laundry_service,color: Colors.white,),
+                         ),
+                         Text(' Laundry Services',style: TextStyle(fontSize: 14,fontWeight: FontWeight.bold),)
+                       ],
+                     ),
+                     description: Icon(CupertinoIcons.chevron_forward)
+                 ),
+               ),
+             ),
+              const SizedBox(height: 10,),
+
+              InkWell(
+                onTap: (){
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => const NewServiceTimeScreen()));
+                },
+                child: Ink(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(5),
+                    color: Colors.white,
+                  ),
+                  child: RowItem(
+                      title: Row(
+                        children: [
+                          Container(
+                            decoration: BoxDecoration(
+                              color: Colors.lightBlueAccent,
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            padding: const EdgeInsets.all(8),
+                            child: Icon(Icons.timelapse_outlined,color: Colors.white,),
+                          ),
+                          Text(' Service Time',style: TextStyle(fontSize: 14,fontWeight: FontWeight.bold),)
+                        ],
+                      ),
+                      description: Icon(CupertinoIcons.chevron_forward)
+                  ),
+                ),
+              ),
+              const SizedBox(height: 10,),
+
+             InkWell(
+               onTap: (){
+                 usertype == 'owner'
+                     ? Navigator.push(context, MaterialPageRoute(builder: (context) => const NewCoOwnerScreen()))
+                     : warningTextDialog(context, 'Access Denied', 'Sorry you don\'t have permission to access this');
+               },
+               child: Ink(
+                 padding: const EdgeInsets.all(8),
+                 decoration: BoxDecoration(
+                   borderRadius: BorderRadius.circular(5),
+                   color: Colors.white,
+                 ),
+                 child: RowItem(
+                     title: Row(
+                       children: [
+                         Container(
+                           decoration: BoxDecoration(
+                             color: Colors.black,
+                             borderRadius: BorderRadius.circular(10),
+                           ),
+                           padding: const EdgeInsets.all(8),
+                           child: Icon(CupertinoIcons.person_3_fill,color: Colors.white,),
+                         ),
+                         Text(' Co-Owners',style: TextStyle(fontSize: 14,fontWeight: FontWeight.bold),)
+                       ],
+                     ),
+                     description: Icon(CupertinoIcons.chevron_forward)
+                 ),
+               ),
+             ),
+              const SizedBox(height: 10,),
+
+              InkWell(
+                onTap: (){
+                  logoutDialog(context, logoutState);
+                },
+                child: Ink(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(5),
+                    color: Colors.white,
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        decoration: BoxDecoration(
+                          color: Colors.red,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        padding: const EdgeInsets.all(8),
+                        child: Icon(Icons.logout,color: Colors.white,),
+                      ),
+                      Text(' Logout ',style: TextStyle(fontSize: 14,fontWeight: FontWeight.bold),)
+                    ],
+                  ),
+                ),
+              )
             ],
           ),
         ),
-      ),
     );
   }
 }

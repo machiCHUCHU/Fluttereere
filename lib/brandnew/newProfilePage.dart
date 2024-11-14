@@ -4,19 +4,142 @@ import 'package:capstone/api_response.dart';
 import 'package:capstone/brandnew/dialogs.dart';
 import 'package:capstone/connect/laravel.dart';
 import 'package:capstone/services/services.dart';
+import 'package:capstone/services/servicesadd.dart';
 import 'package:capstone/styles/mainColorStyle.dart';
 import 'package:capstone/styles/signupStyle.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_profile_picture/flutter_profile_picture.dart';
 import 'package:flutter_timer_countdown/flutter_timer_countdown.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:pinput/pinput.dart';
 import 'package:row_item/row_item.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:typed_data';
 
+class NewProfileScreen extends StatefulWidget {
+  const NewProfileScreen({super.key});
 
-import 'package:shared_preferences/shared_preferences.dart';
+  @override
+  State<NewProfileScreen> createState() => _NewProfileScreenState();
+}
+
+class _NewProfileScreenState extends State<NewProfileScreen> {
+  List<dynamic> profile = []; Map prof = {}; bool isLoading = true;
+
+  Future<void> profileDisplay() async{
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    ApiResponse response = await getProfile('${prefs.get('token')}');
+
+    if(response.error == null){
+      setState(() {
+        profile = response.data as List<dynamic>;
+        prof = profile[0] as Map;
+        isLoading = false;
+      });
+    }else{
+      print(response.error);
+    }
+  }
+
+  @override
+  void initState() {
+    profileDisplay();
+    super.initState();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    print(prof);
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Profile'),
+        titleTextStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        leading: IconButton(
+          onPressed: (){
+            Navigator.pop(context,true);
+          },
+          icon: const Icon(CupertinoIcons.chevron_left,color: Colors.white,),
+        ),
+      ),
+      body: isLoading
+          ? loading()
+          : SingleChildScrollView(
+        padding: const EdgeInsets.all(8),
+        child: Container(
+          width: double.infinity,
+          decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(5),
+              boxShadow: [
+                BoxShadow(
+                  blurRadius: 1,
+                  color: Colors.grey
+                )
+              ]
+          ),
+          padding: const EdgeInsets.all(8),
+          child: Column(
+            children: [
+              CircleAvatar(
+                backgroundColor: ColorStyle.tertiary,
+                radius: 42,
+                child: ProfilePicture(
+                  name: '${prof['OwnerName']}',
+                  radius: 38,
+                  fontsize: 24,
+                  img: prof['OwnerImage'] == null || prof['OwnerImage'] == '' ? null : '$picaddress/${prof['OwnerImage']}',
+                ),
+              ),
+              const SizedBox(height: 10,),
+              RowItem(
+                  title: const Text('Name',style: TextStyle(fontSize: 12)),
+                  description: Text('${prof['OwnerName']}',style: TextStyle(fontSize: 12),textAlign: TextAlign.end,)
+              ),
+              const Divider(),
+              RowItem(
+                  title: const Text('Sex',style: TextStyle(fontSize: 12)),
+                  description: Text('${prof['OwnerSex']}',style: TextStyle(fontSize: 12),textAlign: TextAlign.end,)
+              ),
+              const Divider(),
+              RowItem(
+                  title: const Text('Address',style: TextStyle(fontSize: 12)),
+                  description: Text('${prof['OwnerAddress']}',style: TextStyle(fontSize: 12),textAlign: TextAlign.end,)
+              ),
+              const Divider(),
+              RowItem(
+                  title: const Text('Contact Number',style: TextStyle(fontSize: 12)),
+                  description: Text('${prof['OwnerContactNumber']}',style: TextStyle(fontSize: 12),textAlign: TextAlign.end,)
+              ),
+              const Divider(),
+              const SizedBox(height: 10,),
+              ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                      backgroundColor: ColorStyle.tertiary,
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(5)
+                      )
+                  ),
+                  onPressed: ()async{
+                    final response = await Navigator.push(context, MaterialPageRoute(builder: (context) =>
+                    NewProfileEditScreen(image: '${prof['OwnerImage']}', name: '${prof['OwnerName']}', sex: '${prof['OwnerSex']}',
+                        address: '${prof['OwnerAddress']}', contact: '${prof['OwnerContactNumber']}',
+                        id: '${prof['OwnerID']}')));
+
+                    if(response == true){
+                      profileDisplay();
+                    }
+                  },
+                  child: const Text('Edit Profile',style: TextStyle(color: Colors.white),)
+              )
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
 
 class NewProfileEditScreen extends StatefulWidget {
   final String id;
@@ -26,7 +149,7 @@ class NewProfileEditScreen extends StatefulWidget {
   final String address;
   final String contact;
   const NewProfileEditScreen({super.key, required this.image, required this.name, required this.sex, required this.address, required this.contact, required this.id});
-  
+
   @override
   State<NewProfileEditScreen> createState() => _NewProfileEditScreenState();
 }
@@ -140,7 +263,7 @@ class _NewProfileEditScreenState extends State<NewProfileEditScreen> {
       hasPickedImage = _image;
     }
 
-    ApiResponse response = await updateCustomerProfile(
+    ApiResponse response = await updateOwnerProfile(
         widget.id, _name, _sex, _address, _contact, hasPickedImage, '${prefs.getString('token')}');
 
     if(!mounted) return;
@@ -174,14 +297,14 @@ class _NewProfileEditScreenState extends State<NewProfileEditScreen> {
         builder: (context){
           return AlertDialog(
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(5)
+                borderRadius: BorderRadius.circular(5)
             ),
             contentPadding: const EdgeInsets.symmetric(horizontal: 8),
             title: const Text('Sex',textAlign: TextAlign.center,),
             titleTextStyle: const TextStyle(
-              color: Colors.black,
-              fontSize: 18,
-              fontWeight: FontWeight.bold
+                color: Colors.black,
+                fontSize: 18,
+                fontWeight: FontWeight.bold
             ),
             content: Container(
               height: 150,
@@ -190,10 +313,10 @@ class _NewProfileEditScreenState extends State<NewProfileEditScreen> {
                 children: [
                   InkWell(
                     onTap: (){
-                     setState(() {
-                       _sex = 'male';
-                     });
-                     Navigator.pop(context);
+                      setState(() {
+                        _sex = 'male';
+                      });
+                      Navigator.pop(context);
                     },
                     child: Container(
                         width: double.infinity,
@@ -203,10 +326,10 @@ class _NewProfileEditScreenState extends State<NewProfileEditScreen> {
                   ),
                   InkWell(
                     onTap: (){
-                     setState(() {
-                       _sex = 'female';
-                     });
-                     Navigator.pop(context);
+                      setState(() {
+                        _sex = 'female';
+                      });
+                      Navigator.pop(context);
                     },
                     child: Container(
                         width: double.infinity,
@@ -231,7 +354,7 @@ class _NewProfileEditScreenState extends State<NewProfileEditScreen> {
         titleTextStyle: const TextStyle(fontSize: 18,fontWeight: FontWeight.bold),
         leading: IconButton(
           onPressed: (){
-            isEditable() 
+            isEditable()
                 ? confirmationDialog(context, 'Discard Changes?', 'Your current changes will be lost.')
                 : Navigator.pop(context);
           },
@@ -239,10 +362,10 @@ class _NewProfileEditScreenState extends State<NewProfileEditScreen> {
         ),
         actions: [
           IconButton(
-              onPressed: isEditable() ? (){
-                updateProfile();
-              } : null,
-              icon: Icon(Icons.check_sharp, color: isEditable() ? Colors.white : Colors.white70,),
+            onPressed: isEditable() ? (){
+              updateProfile();
+            } : null,
+            icon: Icon(Icons.check_sharp, color: isEditable() ? Colors.white : Colors.white70,),
           )
         ],
       ),
@@ -268,7 +391,7 @@ class _NewProfileEditScreenState extends State<NewProfileEditScreen> {
                           child: CircleAvatar(
                             backgroundColor: Colors.white,
                             backgroundImage: _image.isNotEmpty
-                                ? NetworkImage('$picaddress/$_image')
+                                ? NetworkImage('$picaddress$_image')
                                 : const AssetImage('assets/pepe.png') as ImageProvider,
                             radius: 50,
                           ),
@@ -349,7 +472,7 @@ class _NewProfileEditScreenState extends State<NewProfileEditScreen> {
               InkWell(
                 onTap: ()async{
                   final response = await Navigator.push(context, MaterialPageRoute(builder: (context) =>
-                  InputNameScreen(name: _name,)));
+                      InputNameScreen(name: _name,)));
 
                   setState(() {
                     _name = response;
@@ -360,20 +483,20 @@ class _NewProfileEditScreenState extends State<NewProfileEditScreen> {
                   child: Container(
                     padding: const EdgeInsets.all(14),
                     decoration: BoxDecoration(
-                        border: Border(
-                            bottom: BorderSide(color: Colors.grey.shade300),
-                            top: BorderSide(color: Colors.grey.shade300)
-                        ),
+                      border: Border(
+                          bottom: BorderSide(color: Colors.grey.shade300),
+                          top: BorderSide(color: Colors.grey.shade300)
+                      ),
                     ),
                     child: RowItem(
-                      title: const Text('Name'),
-                      description: Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          Flexible(child: Text(_name, overflow: TextOverflow.ellipsis,),),
-                          const Icon(CupertinoIcons.chevron_forward,size: 18,color: Colors.grey,)
-                        ],
-                      )
+                        title: const Text('Name'),
+                        description: Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            Flexible(child: Text(_name, overflow: TextOverflow.ellipsis,),),
+                            const Icon(CupertinoIcons.chevron_forward,size: 18,color: Colors.grey,)
+                          ],
+                        )
                     ),
                   ),
                 ),
@@ -387,85 +510,85 @@ class _NewProfileEditScreenState extends State<NewProfileEditScreen> {
                   child: Container(
                     padding: const EdgeInsets.all(14),
                     decoration: BoxDecoration(
-                        border: Border(
-                            bottom: BorderSide(color: Colors.grey.shade300)
-                        ),
-                    ),
-                    child: RowItem(
-                      title: const Text('Sex'),
-                      description: Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          Text(_sex, overflow: TextOverflow.ellipsis,textAlign: TextAlign.end,),
-                          const Icon(CupertinoIcons.chevron_forward,size: 18,color: Colors.grey,)
-                        ],
-                      )
-                    ),
-                  ),
-                ),
-              ),
-              InkWell(
-                onTap: ()async{
-                  final result = await Navigator.push(context, MaterialPageRoute(builder: (context) =>
-                  InputAddressScreen(address: _address)));
-
-                    setState(() {
-                      _address = result;
-                    });
-                },
-                child: Ink(
-                  color: Colors.white,
-                  child: Container(
-                    padding: const EdgeInsets.all(14),
-                    decoration: BoxDecoration(
-                        border: Border(
-                            bottom: BorderSide(color: Colors.grey.shade300)
-                        ),
-                    ),
-                    child: RowItem(
-                      title: const Text('Address'),
-                      description: Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          Flexible(child: Text(_address, overflow: TextOverflow.ellipsis,textAlign: TextAlign.end,)),
-                          const Icon(CupertinoIcons.chevron_forward,size: 18,color: Colors.grey,)
-                        ],
-                      )
-                    ),
-                  ),
-                )
-              ),
-              InkWell(
-                onTap: ()async{
-                  final result = await Navigator.push(context, MaterialPageRoute(builder: (context) => InputNumberScreen(number: _contact)));
-
-                  if(result != null){
-                    setState(() {
-                      _contact = result;
-                    });
-                  }
-                },
-                child: Ink(
-                  color: Colors.white,
-                  child: Container(
-                    padding: const EdgeInsets.all(14),
-                    decoration: BoxDecoration(
                       border: Border(
                           bottom: BorderSide(color: Colors.grey.shade300)
                       ),
                     ),
                     child: RowItem(
-                      title: const Text('Contact'),
-                      description: Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          Text(_contact, overflow: TextOverflow.ellipsis,textAlign: TextAlign.end,),
-                          const Icon(CupertinoIcons.chevron_forward,size: 18,color: Colors.grey,)
-                        ],
-                      )
+                        title: const Text('Sex'),
+                        description: Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            Text(_sex, overflow: TextOverflow.ellipsis,textAlign: TextAlign.end,),
+                            const Icon(CupertinoIcons.chevron_forward,size: 18,color: Colors.grey,)
+                          ],
+                        )
                     ),
                   ),
-                )
+                ),
+              ),
+              InkWell(
+                  onTap: ()async{
+                    final result = await Navigator.push(context, MaterialPageRoute(builder: (context) =>
+                        InputAddressScreen(address: _address)));
+
+                    setState(() {
+                      _address = result;
+                    });
+                  },
+                  child: Ink(
+                    color: Colors.white,
+                    child: Container(
+                      padding: const EdgeInsets.all(14),
+                      decoration: BoxDecoration(
+                        border: Border(
+                            bottom: BorderSide(color: Colors.grey.shade300)
+                        ),
+                      ),
+                      child: RowItem(
+                          title: const Text('Address'),
+                          description: Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              Flexible(child: Text(_address, overflow: TextOverflow.ellipsis,textAlign: TextAlign.end,)),
+                              const Icon(CupertinoIcons.chevron_forward,size: 18,color: Colors.grey,)
+                            ],
+                          )
+                      ),
+                    ),
+                  )
+              ),
+              InkWell(
+                  onTap: ()async{
+                    final result = await Navigator.push(context, MaterialPageRoute(builder: (context) => InputNumberScreen(number: _contact)));
+
+                    if(result != null){
+                      setState(() {
+                        _contact = result;
+                      });
+                    }
+                  },
+                  child: Ink(
+                    color: Colors.white,
+                    child: Container(
+                      padding: const EdgeInsets.all(14),
+                      decoration: BoxDecoration(
+                        border: Border(
+                            bottom: BorderSide(color: Colors.grey.shade300)
+                        ),
+                      ),
+                      child: RowItem(
+                          title: const Text('Contact'),
+                          description: Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              Text(_contact, overflow: TextOverflow.ellipsis,textAlign: TextAlign.end,),
+                              const Icon(CupertinoIcons.chevron_forward,size: 18,color: Colors.grey,)
+                            ],
+                          )
+                      ),
+                    ),
+                  )
               )
             ],
           ),
@@ -506,65 +629,65 @@ class _InputNumberScreenState extends State<InputNumberScreen> {
         ),
       ),
       body: Padding(
-        padding: const EdgeInsets.all(8),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            children: [
-              TextFormField(
-                keyboardType: TextInputType.phone,
-                controller: _number,
-                decoration: const InputDecoration(
-                  prefixIcon: Icon(Icons.call),
-                  contentPadding: EdgeInsets.all(0),
-                  border: OutlineInputBorder(
-                    borderSide: BorderSide(
-                      color: Colors.red
-                    )
-                  )
-                ),
-                maxLength: 11,
-                validator: (newValue){
-                  numInput = newValue;
-                  if(newValue == widget.number){
-                    warningTextDialog(context, 'Invalid Number', 'You have entered your current number. Please input a new number.');
-                    return 'Invalid Number';
-                  }else if(newValue == null || newValue.isEmpty){
-                    return 'Input a value';
-                  }else if(newValue.length < 10){
-                    return 'Invalid Number';
-                  }else{
-                    otpDisplay();
-                    return null;
-                  }
-                },
-              ),
-              ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    fixedSize: Size(MediaQuery.of(context).size.width,20),
-                    backgroundColor: ColorStyle.tertiary,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(5)
-                    )
+          padding: const EdgeInsets.all(8),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              children: [
+                TextFormField(
+                  keyboardType: TextInputType.phone,
+                  controller: _number,
+                  decoration: const InputDecoration(
+                      prefixIcon: Icon(Icons.call),
+                      contentPadding: EdgeInsets.all(0),
+                      border: OutlineInputBorder(
+                          borderSide: BorderSide(
+                              color: Colors.red
+                          )
+                      )
                   ),
-                  onPressed: () async{
-                    if(_formKey.currentState!.validate()){
-
-                      final response = await Navigator.push(context, MaterialPageRoute(builder: (context) => OTPScreen(contact: numInput!)));
-
-                      Navigator.pop(context, response);
+                  maxLength: 11,
+                  validator: (newValue){
+                    numInput = newValue;
+                    if(newValue == widget.number){
+                      warningTextDialog(context, 'Invalid Number', 'You have entered your current number. Please input a new number.');
+                      return 'Invalid Number';
+                    }else if(newValue == null || newValue.isEmpty){
+                      return 'Input a value';
+                    }else if(newValue.length < 10){
+                      return 'Invalid Number';
+                    }else{
+                      otpDisplay();
+                      return null;
                     }
                   },
-                  child: const Text(
-                    'Next',
-                    style: TextStyle(
-                      color: Colors.white
+                ),
+                ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                        fixedSize: Size(MediaQuery.of(context).size.width,20),
+                        backgroundColor: ColorStyle.tertiary,
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(5)
+                        )
                     ),
-                  )
-              )
-            ],
-          ),
-        )
+                    onPressed: () async{
+                      if(_formKey.currentState!.validate()){
+
+                        final response = await Navigator.push(context, MaterialPageRoute(builder: (context) => OTPScreen(contact: numInput!)));
+
+                        Navigator.pop(context, response);
+                      }
+                    },
+                    child: const Text(
+                      'Next',
+                      style: TextStyle(
+                          color: Colors.white
+                      ),
+                    )
+                )
+              ],
+            ),
+          )
       ),
     );
   }
@@ -594,8 +717,8 @@ class _InputAddressScreenState extends State<InputAddressScreen> {
       appBar: AppBar(
         title: const Text('Change Address'),
         titleTextStyle: const TextStyle(
-          color: Colors.white,
-          fontSize: 18
+            color: Colors.white,
+            fontSize: 18
         ),
         leading: IconButton(
           onPressed: (){
@@ -605,50 +728,50 @@ class _InputAddressScreenState extends State<InputAddressScreen> {
         ),
       ),
       body: Padding(
-        padding: const EdgeInsets.all(8),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            children: [
-              TextFormField(
-                controller: _address,
-                decoration: InputDecoration(
-                    border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(5)
-                    )
-                ),
-                validator: (value){
-                  newAddress = value!;
-                  if(value.isEmpty){
-                    return 'Input a value';
-                  }else{
-                    return null;
-                  }
-                },
-              ),
-              ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                      fixedSize: Size(MediaQuery.of(context).size.width,20),
-                      backgroundColor: ColorStyle.tertiary,
-                      shape: RoundedRectangleBorder(
+          padding: const EdgeInsets.all(8),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              children: [
+                TextFormField(
+                  controller: _address,
+                  decoration: InputDecoration(
+                      border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(5)
                       )
                   ),
-                  onPressed: () async{
-                    if(_formKey.currentState!.validate()){
-                      Navigator.pop(context, newAddress);
+                  validator: (value){
+                    newAddress = value!;
+                    if(value.isEmpty){
+                      return 'Input a value';
+                    }else{
+                      return null;
                     }
                   },
-                  child: const Text(
-                    'Next',
-                    style: TextStyle(
-                        color: Colors.white
+                ),
+                ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                        fixedSize: Size(MediaQuery.of(context).size.width,20),
+                        backgroundColor: ColorStyle.tertiary,
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(5)
+                        )
                     ),
-                  )
-              )
-            ],
-          ),
-        )
+                    onPressed: () async{
+                      if(_formKey.currentState!.validate()){
+                        Navigator.pop(context, newAddress);
+                      }
+                    },
+                    child: const Text(
+                      'Next',
+                      style: TextStyle(
+                          color: Colors.white
+                      ),
+                    )
+                )
+              ],
+            ),
+          )
       ),
     );
   }
@@ -789,9 +912,9 @@ class _OTPScreenState extends State<OTPScreen> {
       appBar: AppBar(
         title: const Text('Enter Verification Code'),
         titleTextStyle: const TextStyle(
-          color: Colors.white,
-          fontSize: 18,
-          fontWeight: FontWeight.bold
+            color: Colors.white,
+            fontSize: 18,
+            fontWeight: FontWeight.bold
         ),
       ),
       body: SingleChildScrollView(
@@ -802,21 +925,21 @@ class _OTPScreenState extends State<OTPScreen> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 const Text(
-                    'Your verification code is sent to',
-                    style: TextStyle(
+                  'Your verification code is sent to',
+                  style: TextStyle(
 
-                        fontSize: 14
-                    ),
+                      fontSize: 14
                   ),
+                ),
                 const SizedBox(height: 10,),
                 Text(
-                    widget.contact,
-                    style: const TextStyle(
-                        color: Colors.black,
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold
-                    ),
+                  widget.contact,
+                  style: const TextStyle(
+                      color: Colors.black,
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold
                   ),
+                ),
                 const SizedBox(height: 20,),
                 Column(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -895,4 +1018,5 @@ class _OTPScreenState extends State<OTPScreen> {
     );
   }
 }
+
 

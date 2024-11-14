@@ -31,6 +31,8 @@ class _NewInventoryScreenState extends State<NewInventoryScreen> {
   bool hasData = false;
   String? categoryName;
   bool isDefault = false;
+  String? usertype;
+  String? access;
 
   List<String> category = [
     'Detergent',
@@ -43,9 +45,8 @@ class _NewInventoryScreenState extends State<NewInventoryScreen> {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
       token = prefs.getString('token');
-      userid = prefs.getInt('userid');
-      shopid = prefs.getInt('shopid');
-
+      usertype = prefs.getString('usertype');
+      access = prefs.getString('accesstype');
     });
 
     inventoryDisplay();
@@ -76,12 +77,7 @@ class _NewInventoryScreenState extends State<NewInventoryScreen> {
         context: context,
         barrierDismissible: false,
         builder: (context){
-          return Center(
-            child: LoadingAnimationWidget.staggeredDotsWave(
-              color: Colors.black,
-              size: 50,
-            ),
-          );
+          return loading();
         }
     );
 
@@ -245,11 +241,11 @@ class _NewInventoryScreenState extends State<NewInventoryScreen> {
   void initState(){
     super.initState();
     getUser();
-
   }
 
   @override
   Widget build(BuildContext context) {
+    print(access);
     if(isLoading){
       return Scaffold(
           appBar: AppBar(
@@ -262,12 +258,7 @@ class _NewInventoryScreenState extends State<NewInventoryScreen> {
               icon: const Icon(CupertinoIcons.chevron_left,color: Colors.white,),
             ),
           ),
-          body: Center(
-            child: LoadingAnimationWidget.staggeredDotsWave(
-              color: Colors.black,
-              size: 50,
-            ),
-          )
+          body: loading()
       );
     }
 
@@ -438,12 +429,17 @@ class _NewInventoryScreenState extends State<NewInventoryScreen> {
                                           ),
                                           description: IconButton(
                                             onPressed: (){
-                                              _bottomModal(
+                                              usertype == 'owner' ? _bottomModal(
                                                   '${inv['ItemName']}', '${inv['ItemQty']}',
                                                   '${inv['InventoryID']}', '${inv['ItemVolume']}',
                                                   '${inv['VolumeUse']}', '${inv['RemainingVolume']}',
                                                   '${inv['Category']}',setuse
-                                              );
+                                              ) : access == 'full' ? _bottomModal(
+                                                  '${inv['ItemName']}', '${inv['ItemQty']}',
+                                                  '${inv['InventoryID']}', '${inv['ItemVolume']}',
+                                                  '${inv['VolumeUse']}', '${inv['RemainingVolume']}',
+                                                  '${inv['Category']}',setuse
+                                              ) : warningTextDialog(context, 'Access Denied', 'Sorry you don\'t have permission to edit the inventory');
                                             },
                                             icon: const Icon(Icons.more_vert),
                                           )
@@ -463,12 +459,20 @@ class _NewInventoryScreenState extends State<NewInventoryScreen> {
       floatingActionButton: FloatingActionButton(
         backgroundColor: ColorStyle.tertiary,
         tooltip: 'Add Laundry Detergent',
-        onPressed: () async{
+        onPressed: usertype == 'owner' ? () async{
           final result = await Navigator.push(context, MaterialPageRoute(builder: (context) => const InventoryAddScreen()));
 
           if (result == true) {
             await inventoryDisplay();
           }
+        } : access == 'full' ? () async{
+          final result = await Navigator.push(context, MaterialPageRoute(builder: (context) => const InventoryAddScreen()));
+
+          if (result == true) {
+            await inventoryDisplay();
+          }
+        } : (){
+          warningTextDialog(context, 'Access Denied', 'Sorry you don\'t have permission to add item to the inventory');
         },
         child: const Icon(Icons.add, size: 50, color: Colors.white,), // Set icon size here
       ),
@@ -525,12 +529,7 @@ class _InventoryAddScreenState extends State<InventoryAddScreen> {
         context: context,
         barrierDismissible: false,
         builder: (context){
-          return Center(
-            child: LoadingAnimationWidget.staggeredDotsWave(
-              color: Colors.black,
-              size: 50,
-            ),
-          );
+          return loading();
         }
     );
 
@@ -854,12 +853,7 @@ class _InventoryEditScreenState extends State<InventoryEditScreen> {
         context: context,
         barrierDismissible: false,
         builder: (context){
-          return Center(
-            child: LoadingAnimationWidget.staggeredDotsWave(
-              color: Colors.black,
-              size: 50,
-            ),
-          );
+          return loading();
         }
     );
 

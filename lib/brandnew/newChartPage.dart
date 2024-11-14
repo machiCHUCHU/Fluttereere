@@ -49,7 +49,7 @@ class _NewChartScreenState extends State<NewChartScreen> {
 
       });
     }else{
-
+      print(response.error);
     }
   }
 
@@ -60,7 +60,6 @@ class _NewChartScreenState extends State<NewChartScreen> {
     if(response.error == null){
       setState(() {
         monthlyBar = response.data as Map;
-
       });
     }else{
 
@@ -109,7 +108,7 @@ class _NewChartScreenState extends State<NewChartScreen> {
 
   @override
   Widget build(BuildContext context) {
-    print(monthlyBar);
+    print(bar);
     return Scaffold(
       appBar: AppBar(
         title: const Text('Dashboard'),
@@ -196,7 +195,7 @@ class _NewChartScreenState extends State<NewChartScreen> {
                     child: Row(
                       children: [
                         const Icon(Icons.square,size: 18,color: ColorStyle.tertiary,),
-                        Text('Total: ₱${formatter.format(bar['total'] ?? 0)}.00'),
+                        Text('Total: ₱${formatter.format(bar['total'] ?? 0)}'),
                       ],
                     ),
                   )
@@ -278,7 +277,7 @@ class _NewChartScreenState extends State<NewChartScreen> {
                     child: Row(
                       children: [
                         const Icon(Icons.square,size: 18,color: ColorStyle.tertiary,),
-                        Text('Total: ₱${formatter.format(monthlyBar['total'] ?? 0)}.00'),
+                        Text('Total: ₱${formatter.format(monthlyBar['total'] ?? 0)}'),
                       ],
                     ),
                   )
@@ -342,7 +341,7 @@ class _NewChartScreenState extends State<NewChartScreen> {
             ),
             const SizedBox(height: 10,),
 
-            Container(
+            /*Container(
               width: double.infinity,
               decoration: const BoxDecoration(
                   color: ColorStyle.tertiary,
@@ -408,7 +407,7 @@ class _NewChartScreenState extends State<NewChartScreen> {
                   )
                 ],
               ),
-            ),
+            ),*/
           ],
         ),
       ),

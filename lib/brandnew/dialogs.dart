@@ -1,7 +1,10 @@
 import 'package:awesome_dialog/awesome_dialog.dart';
+import 'package:capstone/brandnew/newCoOwnerPage.dart';
 import 'package:capstone/brandnew/newLoginPage.dart';
+import 'package:capstone/services/services.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:loading_animation_widget/loading_animation_widget.dart';
 
 Future<void> successDialog(BuildContext context, String title) async {
   await AwesomeDialog(
@@ -145,9 +148,20 @@ Future<void> warningTextDialog(BuildContext context, String title, String desc) 
   ).show();
 }
 
+Future<void> successTextDialog(BuildContext context, String title, String desc) async {
+  await AwesomeDialog(
+      context: context,
+      animType: AnimType.topSlide,
+      dismissOnBackKeyPress: false,
+      dismissOnTouchOutside: false,
+      dialogType: DialogType.success,
+      autoHide: const Duration(seconds: 3),
+      title: title,
+      desc: desc
+  ).show();
+}
+
 Future<void> reloginDialog(BuildContext context) async {
-
-
 
   await AwesomeDialog(
     context: context,
@@ -163,6 +177,26 @@ Future<void> reloginDialog(BuildContext context) async {
   ).show();
 }
 
+Future<void> resendOTPDialog(String contact,BuildContext context) async {
+  Future<void> otpDisplay() async{/*widget.contact*/
+    await otpVerification(contact);
+  }
+
+  await AwesomeDialog(
+      context: context,
+      animType: AnimType.topSlide,
+      dismissOnBackKeyPress: false,
+      dismissOnTouchOutside: false,
+      dialogType: DialogType.warning,
+      btnOkOnPress: (){
+        otpDisplay();
+        Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => ValidateNewContactOTP(contact: contact)), (route) => false);
+      },
+      title: 'Phone Number Changed',
+      desc: 'Please verify your co-owner\'s contact.'
+  ).show();
+}
+
 Future<void> tryDialog(BuildContext context) async{
   await AwesomeDialog(
       context: context,
@@ -174,4 +208,13 @@ Future<void> tryDialog(BuildContext context) async{
       title: 'Hello World',
       desc: 'Testing Testing',
   ).show();
+}
+
+Center loading(){
+  return Center(
+    child: LoadingAnimationWidget.staggeredDotsWave(
+      color: Colors.black,
+      size: 32,
+    ),
+  );
 }

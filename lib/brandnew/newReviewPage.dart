@@ -1,13 +1,16 @@
 
 
 import 'package:capstone/api_response.dart';
+import 'package:capstone/brandnew/dialogs.dart';
 import 'package:capstone/brandnew/newLoginPage.dart';
 import 'package:capstone/connect/laravel.dart';
 import 'package:capstone/services/services.dart';
+import 'package:capstone/styles/mainColorStyle.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_profile_picture/flutter_profile_picture.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
+import 'package:group_button/group_button.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:percent_indicator/linear_percent_indicator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -44,7 +47,7 @@ class _NewReviewPageState extends State<NewReviewPage> {
 
 
   Future<void> reviewsDisplay() async{
-    ApiResponse apiResponse = await getRating(token.toString());
+    ApiResponse apiResponse = await getRating(selectedRate,token.toString());
 
     if(apiResponse.error == null){
       setState(() {
@@ -59,7 +62,6 @@ class _NewReviewPageState extends State<NewReviewPage> {
         isLoading = false;
         hasData = false;
       });
-      print('${apiResponse.error}');
     }
   }
 
@@ -76,9 +78,13 @@ class _NewReviewPageState extends State<NewReviewPage> {
         Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => const NewLoginScreen()), (route) => false);
       }
     }else{
-      print(response.error);
     }
   }
+
+  final GroupButtonController _controller = GroupButtonController(
+    selectedIndex: 0,
+  );
+  String selectedRate = '';
 
   @override
   void initState(){
@@ -88,7 +94,6 @@ class _NewReviewPageState extends State<NewReviewPage> {
 
   @override
   Widget build(BuildContext context) {
-
     if(isLoading == true){
       return Scaffold(
           appBar: AppBar(
@@ -103,12 +108,7 @@ class _NewReviewPageState extends State<NewReviewPage> {
               icon: const Icon(CupertinoIcons.chevron_left,color: Colors.white,),
             ),
           ),
-          body: Center(
-            child: LoadingAnimationWidget.staggeredDotsWave(
-              color: Colors.black,
-              size: 50,
-            ),
-          )
+          body: loading()
       );
     }
 
@@ -127,20 +127,28 @@ class _NewReviewPageState extends State<NewReviewPage> {
             ),
           ),
           body: SingleChildScrollView(
+            padding: const EdgeInsets.all(8),
             child: Column(
               children: [
                 Container(
-                  decoration: const BoxDecoration(
-                      color: Colors.white
+                  decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(5),
+                      boxShadow: const [
+                        BoxShadow(
+                            blurRadius: 1,
+                            color: Colors.grey
+                        )
+                      ]
                   ),
                   padding: const EdgeInsets.all(12),
                   child: Row(
                     children: [
                       Column(
                         children: [
-                          const Text('0',style: TextStyle(fontSize: 24,fontWeight: FontWeight.bold),selectionColor: Colors.red,),
+                          Text('${(ratings['rate_sum'] ?? 0/ratings['rater']).toStringAsFixed(1)}',style: const TextStyle(fontSize: 24,fontWeight: FontWeight.bold),selectionColor: Colors.red,),
                           RatingBar.builder(
-                            initialRating: 0,
+                            initialRating: ratings['rate_sum']/ratings['rater'],
                             direction: Axis.horizontal,
                             allowHalfRating: true,
                             itemCount: 5,
@@ -158,71 +166,71 @@ class _NewReviewPageState extends State<NewReviewPage> {
                       Expanded(
                           child: Column(
                             children: [
-                              Row(
-                                children: [
-                                  const Text('5 star(0)'),
-                                  Expanded(child: LinearPercentIndicator(
-                                    animation: true,
-                                    lineHeight: 12.0,
-                                    animationDuration: 100,
-                                    percent: 0,
-                                    barRadius: const Radius.circular(20),
-                                    progressColor: Colors.orange.shade300,
-                                  ))
-                                ],),
-                              Row(
-                                children: [
-                                  const Text('4 star(0)'),
-                                  Expanded(child: LinearPercentIndicator(
-                                    animation: true,
-                                    lineHeight: 12.0,
-                                    animationDuration: 100,
-                                    percent: 0,
-                                    barRadius: const Radius.circular(20),
-                                    progressColor: Colors.orange.shade300,
-                                  ))
-                                ],),
-                              Row(
-                                children: [
-                                  const Text('3 star(0)'),
-                                  Expanded(child: LinearPercentIndicator(
-                                    animation: true,
-                                    lineHeight: 12.0,
-                                    animationDuration: 100,
-                                    percent: 0,
-                                    barRadius: const Radius.circular(20),
-                                    progressColor: Colors.orange.shade300,
-                                  ))
-                                ],),
-                              Row(
-                                children: [
-                                  const Text('2 star(0)'),
-                                  Expanded(child: LinearPercentIndicator(
-                                    animation: true,
-                                    lineHeight: 12.0,
-                                    animationDuration: 100,
-                                    percent: 0,
-                                    barRadius: const Radius.circular(20),
-                                    progressColor: Colors.orange.shade300,
-                                  ))
-                                ],),
-                              Row(
-                                children: [
-                                  const Text('1 star(0)'),
-                                  Expanded(child: LinearPercentIndicator(
-                                    animation: true,
-                                    lineHeight: 12.0,
-                                    animationDuration: 100,
-                                    percent: 0,
-                                    barRadius: const Radius.circular(20),
-                                    progressColor: Colors.orange.shade300,
-                                  ))
-                                ],),
+                              GroupButton(
+                                controller: _controller,
+                                isRadio: true,
+                                onSelected: (selected, index, isSelected){
+                                  switch(index){
+                                    case 0:
+                                      selectedRate = '0';
+                                      break;
+                                    case 1:
+                                      selectedRate = '5';
+                                      break;
+                                    case 2:
+                                      selectedRate = '4';
+                                      break;
+                                    case 3:
+                                      selectedRate = '3';
+                                      break;
+                                    case 4:
+                                      selectedRate = '2';
+                                      break;
+                                    default:
+                                      selectedRate = '1';
+                                      break;
+                                  }
+                                  setState(() {
+                                  });
+                                  reviewsDisplay();
+                                },
+
+                                buttons: [
+                                  "All (${ratings['rater']})", "5 Star (${ratings['five_star']})",
+                                  "4 Star (${ratings['four_star']})", "3 Star (${ratings['three_star']})",
+                                  "2 Star (${ratings['two_star']})", "1 Star (${ratings['one_star']})"
+                                ],
+                                buttonBuilder: (selected, value, context) {
+                                  return Container(
+                                    height: 30,
+                                    width: 70,
+                                    decoration: BoxDecoration(
+                                        color: selected ? Colors.white : Colors.grey.shade200,
+                                        border: Border.all(
+                                            color: selected ? ColorStyle.tertiary : Colors.grey,
+                                            width: 1
+                                        ),
+                                        borderRadius: BorderRadius.circular(5)
+                                    ),
+                                    child: Align(
+                                      alignment: Alignment.center,
+                                      child: Text(
+                                        value,
+                                        style: TextStyle(
+                                            color: selected ? ColorStyle.tertiary : Colors.black
+                                        ),
+                                        textAlign: TextAlign.center,
+                                      ),
+                                    ),
+                                  );
+                                },
+                              )
                             ],
                           ))
                     ],
                   ),
                 ),
+                const SizedBox(height: 10,),
                 const Center(
                   child: Text('No Reviews Yet'),
                 )
@@ -246,11 +254,19 @@ class _NewReviewPageState extends State<NewReviewPage> {
         ),
       ),
       body: SingleChildScrollView(
+        padding: const EdgeInsets.all(8),
         child: Column(
           children: [
             Container(
-              decoration: const BoxDecoration(
-                  color: Colors.white
+              decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(5),
+                  boxShadow: const [
+                    BoxShadow(
+                      blurRadius: 1,
+                      color: Colors.grey
+                    )
+                  ]
               ),
               padding: const EdgeInsets.all(12),
               child: Row(
@@ -277,140 +293,148 @@ class _NewReviewPageState extends State<NewReviewPage> {
                   Expanded(
                       child: Column(
                     children: [
-                      Row(
-                        children: [
-                        Text('5 star(${ratings['five_star']})'),
-                        Expanded(child: LinearPercentIndicator(
-                          animation: true,
-                          lineHeight: 12.0,
-                          animationDuration: 100,
-                          percent: ratings['five_star'] / ratings['rater'],
-                          barRadius: const Radius.circular(20),
-                          progressColor: Colors.orange.shade300,
-                        ))
-                      ],),
-                      Row(
-                        children: [
-                          Text('4 star(${ratings['four_star']})'),
-                          Expanded(child: LinearPercentIndicator(
-                            animation: true,
-                            lineHeight: 12.0,
-                            animationDuration: 100,
-                            percent: ratings['four_star'] / ratings['rater'],
-                            barRadius: const Radius.circular(20),
-                            progressColor: Colors.orange.shade300,
-                          ))
-                        ],),
-                      Row(
-                        children: [
-                          Text('3 star(${ratings['three_star']})'),
-                          Expanded(child: LinearPercentIndicator(
-                            animation: true,
-                            lineHeight: 12.0,
-                            animationDuration: 100,
-                            percent: ratings['three_star'] / ratings['rater'],
-                            barRadius: const Radius.circular(20),
-                            progressColor: Colors.orange.shade300,
-                          ))
-                        ],),
-                      Row(
-                        children: [
-                          Text('2 star(${ratings['two_star']})'),
-                          Expanded(child: LinearPercentIndicator(
-                            animation: true,
-                            lineHeight: 12.0,
-                            animationDuration: 100,
-                            percent: ratings['two_star'] / ratings['rater'],
-                            barRadius: const Radius.circular(20),
-                            progressColor: Colors.orange.shade300,
-                          ))
-                        ],),
-                      Row(
-                        children: [
-                          Text('1 star(${ratings['one_star']})'),
-                          Expanded(child: LinearPercentIndicator(
-                            animation: true,
-                            lineHeight: 12.0,
-                            animationDuration: 100,
-                            percent: ratings['one_star'] / ratings['rater'],
-                            barRadius: const Radius.circular(20),
-                            progressColor: Colors.orange.shade300,
-                          ))
-                        ],),
+                      GroupButton(
+                        controller: _controller,
+                        isRadio: true,
+                        onSelected: (selected, index, isSelected){
+                          switch(index){
+                            case 0:
+                              selectedRate = '0';
+                              break;
+                            case 1:
+                              selectedRate = '5';
+                              break;
+                            case 2:
+                              selectedRate = '4';
+                              break;
+                            case 3:
+                              selectedRate = '3';
+                              break;
+                            case 4:
+                              selectedRate = '2';
+                              break;
+                            default:
+                              selectedRate = '1';
+                              break;
+                          }
+                          setState(() {
+                          });
+                          reviewsDisplay();
+                        },
+
+                        buttons: [
+                          "All (${ratings['rater']})", "5 Star (${ratings['five_star']})",
+                          "4 Star (${ratings['four_star']})", "3 Star (${ratings['three_star']})",
+                          "2 Star (${ratings['two_star']})", "1 Star (${ratings['one_star']})"
+                        ],
+                        buttonBuilder: (selected, value, context) {
+                          return Container(
+                            height: 30,
+                            width: 70,
+                            decoration: BoxDecoration(
+                              color: selected ? Colors.white : Colors.grey.shade200,
+                              border: Border.all(
+                                color: selected ? ColorStyle.tertiary : Colors.grey,
+                                width: 1
+                              ),
+                              borderRadius: BorderRadius.circular(5)
+                            ),
+                            child: Align(
+                              alignment: Alignment.center,
+                              child: Text(
+                                value,
+                                style: TextStyle(
+                                    color: selected ? ColorStyle.tertiary : Colors.black
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                            ),
+                          );
+                        },
+                      )
                     ],
                   ))
                 ],
               ),
             ),
-            ListView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: review.length,
-                itemBuilder: (context, index){
-                  Map rev = review[index] as Map;
-                  bool hasImage = rev['Image'] != null;
-                  print(rev);
-                  return Container(
-                    height: MediaQuery.of(context).size.height *.2,
-                    decoration: const BoxDecoration(
-                        color: Colors.white
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: [
-                        const Divider(height: 0,),
-                        const SizedBox(height: 5,),
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const SizedBox(width: 5),
-                            ProfilePicture(
+            const SizedBox(height: 10,),
+            Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(5),
+                boxShadow: const [
+                  BoxShadow(
+                    color: Colors.grey,
+                    blurRadius: 1
+                  )
+                ]
+              ),
+              child: ListView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: review.length,
+                  itemBuilder: (context, index){
+                    Map rev = review[index] as Map;
+                    bool hasImage = rev['Image'] != null;
+                    return SizedBox(
+                      height: MediaQuery.of(context).size.height *.2,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: [
+                          const Divider(height: 0,),
+                          const SizedBox(height: 5,),
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const SizedBox(width: 5),
+                              ProfilePicture(
                                 name: '${rev['CustomerName']}',
                                 radius: 16,
                                 fontsize: 14,
                                 img: hasImage ? '$picaddress/${rev['CustomerImage']}' : null,
-                            ),
-                            Expanded(child: Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Text('${rev['CustomerName']}', style: const TextStyle(fontWeight: FontWeight.bold),),
-                                      Text('${rev['DateIssued']}', textDirection: TextDirection.rtl,)
-                                    ],
-                                  ),
-                                  RatingBar.builder(
-                                    initialRating: double.tryParse('${rev['Rate']}')!.toDouble(),
-                                    direction: Axis.horizontal,
-                                    allowHalfRating: true,
-                                    itemCount: 5,
-                                    itemSize: 15,
-                                    ignoreGestures: true,
-                                    itemBuilder: (context, _) => Icon(
-                                      Icons.star,
-                                      color: Colors.orange.shade300,
-                                    ),
-                                    onRatingUpdate: (rating) {},
-                                  ),
-                                  const SizedBox(height: 5,),
-                                  rev['Comment'] == null
-                                      ? const SizedBox()
-                                      : Text('${rev['Comment']}',),
-                                ],
                               ),
-                            ),)
-                          ],
-                        ),
-                      ],
-                    ),
-                  );
+                              Expanded(child: Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Text('${rev['CustomerName']}', style: const TextStyle(fontWeight: FontWeight.bold),),
+                                        Text('${rev['DateIssued']}', textDirection: TextDirection.rtl,)
+                                      ],
+                                    ),
+                                    RatingBar.builder(
+                                      initialRating: double.tryParse('${rev['Rate']}')!.toDouble(),
+                                      direction: Axis.horizontal,
+                                      allowHalfRating: true,
+                                      itemCount: 5,
+                                      itemSize: 15,
+                                      ignoreGestures: true,
+                                      itemBuilder: (context, _) => Icon(
+                                        Icons.star,
+                                        color: Colors.orange.shade300,
+                                      ),
+                                      onRatingUpdate: (rating) {},
+                                    ),
+                                    const SizedBox(height: 5,),
+                                    rev['Comment'] == null
+                                        ? const SizedBox()
+                                        : Text('${rev['Comment']}',),
+                                  ],
+                                ),
+                              ),)
+                            ],
+                          ),
+                        ],
+                      ),
+                    );
 
-                }
-            ),
+                  }
+              ),
+            )
           ],
         ),
       )

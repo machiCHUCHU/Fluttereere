@@ -60,19 +60,14 @@ class _NewLoginScreenState extends State<NewLoginScreen> {
   }
 
   bool isHidden = true;
-  bool loading = true;
+  bool isloading = true;
   bool isSubmitted = false;
 
   Future<void> loginUser() async {
     showDialog(
         context: context,
         builder: (context){
-          return Center(
-            child: LoadingAnimationWidget.staggeredDotsWave(
-              color: Colors.black,
-              size: 50,
-            ),
-          );
+          return loading();
         }
     );
 
@@ -86,25 +81,31 @@ class _NewLoginScreenState extends State<NewLoginScreen> {
       _saveAndRedirectToHome(response.data as User);
     } else {
       setState(() {
-        loading = false;
+        isloading = false;
       });
       Navigator.pop(context);
+      print('${response.error}');
       errorDialog(context, 'Invalid Credentials');
     }
   }
   Future<void> _saveAndRedirectToHome(User user) async {
     ApiResponse apiResponse = await matchShop('${user.token}');
+    ApiResponse access = await accessType('${user.token}');
+
 
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.setString('token', user.token ?? '');
-    await prefs.setString('username', user.username ?? '');
+    await prefs.setString('usertype', user.usertype ?? '');
     await prefs.setInt('userid', user.userid ?? 0);
+    await prefs.setInt('customerid', user.cusid ?? 0);
 
 
 
 
-    if(user.usertype == 'owner'){
+
+    if(user.usertype == 'owner' || user.usertype == 'co-owner'){
       await successDialog(context, 'Login Successfully');
+      await prefs.setString('accesstype', '${access.data}' ?? '');
       if(apiResponse.data == 'empty'){
         if(mounted){
           Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => const NewSetupScreen()), (route) => false);
@@ -117,6 +118,7 @@ class _NewLoginScreenState extends State<NewLoginScreen> {
     }
     else {
       await successDialog(context, 'Login Successfully');
+
       if(mounted){
         Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => NewCustomerHomeScreen()), (route) => false);
       }
@@ -322,7 +324,7 @@ class _NewLoginScreenState extends State<NewLoginScreen> {
                                     });
                                     if(_formKey.currentState!.validate()){
                                       setState(() {
-                                        loading = true;
+                                        isloading = true;
                                         loginUser();
                                       });
                                     }
@@ -355,12 +357,12 @@ class _NewLoginScreenState extends State<NewLoginScreen> {
                                 ),
                               ],
                             ),
-                            TextButton(
+                            /*TextButton(
                                 onPressed: (){
-                                  Navigator.push(context, MaterialPageRoute(builder: (context) => const testScreen()));
+                                  Navigator.push(context, MaterialPageRoute(builder: (context) => const SetupInformationScreen()));
                                 },
                                 child: const Text('test')
-                            )
+                            )*/
                           ],
                         ),
                       )

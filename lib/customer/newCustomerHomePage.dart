@@ -10,11 +10,10 @@ import 'package:capstone/customer/newProfileEditPage.dart';
 import 'package:capstone/customer/newServiceSummaryPage.dart';
 import 'package:capstone/customer/newShopInfoPage.dart';
 import 'package:capstone/services/services.dart';
+import 'package:capstone/services/timelineservices.dart';
 import 'package:capstone/styles/mainColorStyle.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_profile_picture/flutter_profile_picture.dart';
-import 'package:intl/intl.dart';
-import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:persistent_bottom_nav_bar_v2/persistent_bottom_nav_bar_v2.dart';
 import 'package:row_item/row_item.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -57,6 +56,7 @@ class _NewCustomerHomeScreenState extends State<NewCustomerHomeScreen> {
       _homeScreenKey.currentState!.shopreqDisplay();
       _trackScreenKey.currentState!.laundryDisplay();
     });*/
+    getToken();
     super.initState();
   }
 
@@ -68,7 +68,6 @@ class _NewCustomerHomeScreenState extends State<NewCustomerHomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    print(token);
     return Scaffold(
       appBar: AppBar(
         title: const Text('Laundry Mate',),
@@ -104,6 +103,7 @@ class _NewCustomerHomeScreenState extends State<NewCustomerHomeScreen> {
             screen: NotificationScreen(key: _notifScreenKey,),
             onSelectedTabPressWhenNoScreensPushed: (){
               _notifScreenKey.currentState?.laundryNotif();
+              _notifScreenKey.currentState?.timelineNotif();
             },
             item: ItemConfig(
               icon: const Icon(Icons.notifications),
@@ -191,7 +191,9 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
 
     return Scaffold(
-      body: ListView.builder(
+      body: isloading
+          ? loading()
+          : ListView.builder(
           shrinkWrap: true,
           itemCount: shops.length,
           itemBuilder: (context,index){
@@ -222,53 +224,53 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: Ink(
                     color: Colors.white,
                     child: ListTile(
-                      contentPadding: const EdgeInsets.symmetric(vertical: 2,horizontal: 6),
-                      minTileHeight: 80,
-                      leadingAndTrailingTextStyle: const TextStyle(
-                        overflow: TextOverflow.ellipsis
-                      ),
-                      leading: Stack(
-                        alignment: Alignment.center,
-                        children: [
-                          CircleAvatar(
-                            backgroundColor: ColorStyle.tertiary,
-                            radius: 36,
-                          ),
-                          ProfilePicture(
-                            name: '${req['ShopName']}',
-                            radius: 25,
-                            fontsize: 16,
-                            img: req['ShopImage'] == '' ? null : '$picaddress/${req['ShopImage']}',
-                          )
-                        ],
-                      ),
-                      title: Row(
-                        children: [
-                          Text('${req['ShopName']} ',
-                            style: const TextStyle(fontWeight: FontWeight.bold,color: ColorStyle.tertiary),
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ],
-                      ),
-                      subtitle: Text('${req['ShopAddress']}',style: const TextStyle(fontSize: 10),),
-                      trailing: Container(
-                        width: 60,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(2),
-                          border: Border.all(color: status),
-                          color: status
+                        contentPadding: const EdgeInsets.symmetric(vertical: 2,horizontal: 6),
+                        minTileHeight: 80,
+                        leadingAndTrailingTextStyle: const TextStyle(
+                            overflow: TextOverflow.ellipsis
                         ),
-                        padding: const EdgeInsets.all(8),
+                        leading: Stack(
+                          alignment: Alignment.center,
+                          children: [
+                            const CircleAvatar(
+                              backgroundColor: ColorStyle.tertiary,
+                              radius: 36,
+                            ),
+                            ProfilePicture(
+                              name: '${req['ShopName']}',
+                              radius: 25,
+                              fontsize: 16,
+                              img: req['ShopImage'] == '' ? null : '$picaddress/${req['ShopImage']}',
+                            )
+                          ],
+                        ),
+                        title: Row(
+                          children: [
+                            Text('${req['ShopName']} ',
+                              style: const TextStyle(fontWeight: FontWeight.bold,color: ColorStyle.tertiary),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ],
+                        ),
+                        subtitle: Text('${req['ShopAddress']}',style: const TextStyle(fontSize: 10),),
+                        trailing: Container(
+                          width: 60,
+                          decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(2),
+                              border: Border.all(color: status),
+                              color: status
+                          ),
+                          padding: const EdgeInsets.all(8),
 
-                        child: Text(
+                          child: Text(
                             '${req['ShopStatus']}',
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold
+                            style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold
+                            ),
+                            textAlign: TextAlign.center,
                           ),
-                          textAlign: TextAlign.center,
-                        ),
-                      )
+                        )
                     ),
                   )
 
@@ -276,14 +278,7 @@ class _HomeScreenState extends State<HomeScreen> {
             );
           }
       ),
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: ColorStyle.tertiary,
-        foregroundColor: Colors.white,
-        onPressed: (){
-            inputDialog(context, requestShops, _code);
-        },
-        child: const Icon(Icons.add),
-      ),
+      
     );
   }
 }
@@ -310,7 +305,7 @@ class _TrackScreenState extends State<TrackScreen> {
       setState(() {
         laundry = response.data as List<dynamic>;
         isLoading = false;
-
+        hasdata = laundry.isNotEmpty;
       });
     }else{
 
@@ -318,12 +313,23 @@ class _TrackScreenState extends State<TrackScreen> {
   }
 
   Future<void> serviceCancelation(String bookId) async{
+    /*showDialog(
+        context: context,
+        builder: (context){
+          return loading();
+        }
+    );*/
+
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     ApiResponse response = await cancelService(bookId, '${prefs.getString('token')}');
 
+
+
     if(response.error == null){
+
       await successDialog(context, '${response.data}');
       laundryDisplay();
+
     }else{
       await errorDialog(context, '${response.error}');
     }
@@ -341,14 +347,7 @@ class _TrackScreenState extends State<TrackScreen> {
     }
   }
 
-  Center loading(){
-    return Center(
-      child: LoadingAnimationWidget.staggeredDotsWave(
-        color: Colors.black,
-        size: 50,
-      ),
-    );
-  }
+
 
   @override
   void initState(){
@@ -393,7 +392,8 @@ class _TrackScreenState extends State<TrackScreen> {
                 children: [
                   isLoading
                       ? loading()
-                      : ListView.builder(
+                      : hasdata
+                      ? ListView.builder(
                       shrinkWrap: true,
                       itemCount: laundry.length,
                       itemBuilder: (context, index){
@@ -433,17 +433,26 @@ class _TrackScreenState extends State<TrackScreen> {
                         return Padding(
                           padding: const EdgeInsets.all(4.0),
                           child: InkWell(
-                            onTap: isCancelled ? null : (){
+
+                            onTap: (){
                               pushWithoutNavBar(context, MaterialPageRoute(builder: (context) =>
                                   NewServiceSummaryScreen(bookId: '${laun['BookingID']}')));
                             },
                             child: Ink(
-                              color: Colors.white,
+
+                              decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(5),
+                                  color: Colors.white,
+                                  boxShadow: [
+                                    const BoxShadow(
+                                        blurRadius: 1,
+                                        color: Colors.grey
+                                    )
+                                  ]
+                              ),
                               child: Container(
                                 padding: const EdgeInsets.all(8),
-                                decoration: const BoxDecoration(
 
-                                ),
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
@@ -462,7 +471,7 @@ class _TrackScreenState extends State<TrackScreen> {
                                     const Divider(),
                                     const Text('Laundry Information', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),),
                                     RowItem(title: const Text('Service Availed'), description: Text('${laun['ServiceName']}', style: const TextStyle(fontWeight: FontWeight.bold))),
-                                    RowItem(title: const Text('Laundry Load'), description: Text('${laun['CustomerLoad']} kg/s', style: const TextStyle(fontWeight: FontWeight.bold))),
+                                    RowItem(title: const Text('Laundry Load'), description: Text('${laun['CustomerLoad']} kg', style: const TextStyle(fontWeight: FontWeight.bold))),
                                     RowItem(title: const Text('Date'), description: Text('${laun['Schedule']}', style: const TextStyle(fontWeight: FontWeight.bold),)),
                                     const SizedBox(height: 10,),
                                     RowItem(
@@ -471,7 +480,7 @@ class _TrackScreenState extends State<TrackScreen> {
                                           mainAxisAlignment: MainAxisAlignment.end,
                                           children: [
                                             const Text('Total Cost: '),
-                                            Text('₱${laun['LoadCost']}.00', style: const TextStyle(fontWeight: FontWeight.bold,fontSize: 19),)
+                                            Text('₱${laun['LoadCost']}', style: const TextStyle(fontWeight: FontWeight.bold,fontSize: 19),)
                                           ],
                                         )
                                     ),
@@ -490,7 +499,7 @@ class _TrackScreenState extends State<TrackScreen> {
                                           onPressed: (){
                                             serviceCancelation('${laun['BookingID']}');
                                           },
-                                          child: const Text('Cancel       ',style: TextStyle(color: Colors.white),textAlign: TextAlign.center,),
+                                          child: const Text('Cancel',style: TextStyle(color: Colors.white),textAlign: TextAlign.center,),
                                         ):
                                         ElevatedButton(
                                           style: ElevatedButton.styleFrom(
@@ -499,9 +508,10 @@ class _TrackScreenState extends State<TrackScreen> {
                                                   borderRadius: BorderRadius.circular(5)
                                               )
                                           ),
-                                          onPressed: isPickup ? (){
+                                          onPressed: isPickup ? laun['PaymentStatus'] == 'paid'
+                                              ? (){
                                             serviceCompletion('${laun['BookingID']}');
-                                          } : null,
+                                          }:null: null,
                                           child: const Text('Completed',style: TextStyle(color: Colors.white),),
                                         )
                                     )
@@ -547,10 +557,12 @@ class _TrackScreenState extends State<TrackScreen> {
                           ),
                         );
                       }
-                  ),
+                  )
+                      : const Center(child: Text('No Laundry Service Availed'),),
                   isLoading
                       ? loading()
-                      : ListView.builder(
+                      : hasdata
+                      ? ListView.builder(
                       shrinkWrap: true,
                       itemCount: laundry.length,
                       itemBuilder: (context, index){
@@ -595,7 +607,16 @@ class _TrackScreenState extends State<TrackScreen> {
                                   NewServiceSummaryScreen(bookId: '${laun['BookingID']}')));
                             },
                             child: Ink(
-                              color: Colors.white,
+                              decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(5),
+                                  color: Colors.white,
+                                  boxShadow: [
+                                    const BoxShadow(
+                                        blurRadius: 1,
+                                        color: Colors.grey
+                                    )
+                                  ]
+                              ),
                               child: Container(
                                 padding: const EdgeInsets.all(8),
                                 decoration: const BoxDecoration(
@@ -618,7 +639,7 @@ class _TrackScreenState extends State<TrackScreen> {
                                     const Divider(),
                                     const Text('Laundry Information', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),),
                                     RowItem(title: const Text('Service Availed'), description: Text('${laun['ServiceName']}', style: const TextStyle(fontWeight: FontWeight.bold))),
-                                    RowItem(title: const Text('Laundry Load'), description: Text('${laun['CustomerLoad']} kg/s', style: const TextStyle(fontWeight: FontWeight.bold))),
+                                    RowItem(title: const Text('Laundry Load'), description: Text('${laun['CustomerLoad']} kg', style: const TextStyle(fontWeight: FontWeight.bold))),
                                     RowItem(title: const Text('Date'), description: Text('${laun['Schedule']}', style: const TextStyle(fontWeight: FontWeight.bold),)),
                                     const SizedBox(height: 10,),
                                     RowItem(
@@ -627,7 +648,7 @@ class _TrackScreenState extends State<TrackScreen> {
                                           mainAxisAlignment: MainAxisAlignment.end,
                                           children: [
                                             const Text('Total Cost: '),
-                                            Text('₱${laun['LoadCost']}.00', style: const TextStyle(fontWeight: FontWeight.bold,fontSize: 19),)
+                                            Text('₱${laun['LoadCost']}', style: const TextStyle(fontWeight: FontWeight.bold,fontSize: 19),)
                                           ],
                                         )
                                     ),
@@ -645,7 +666,7 @@ class _TrackScreenState extends State<TrackScreen> {
                                           onPressed: (){
                                             serviceCancelation('${laun['BookingID']}');
                                           },
-                                          child: const Text('Cancel       ',style: TextStyle(color: Colors.white),textAlign: TextAlign.center,),
+                                          child: const Text('Cancel',style: TextStyle(color: Colors.white),textAlign: TextAlign.center,),
                                         ):
                                         ElevatedButton(
                                           style: ElevatedButton.styleFrom(
@@ -654,9 +675,10 @@ class _TrackScreenState extends State<TrackScreen> {
                                                   borderRadius: BorderRadius.circular(5)
                                               )
                                           ),
-                                          onPressed: isPickup ? (){
+                                          onPressed: isPickup ? laun['PaymentStatus'] == 'paid'
+                                              ? (){
                                             serviceCompletion('${laun['BookingID']}');
-                                          } : null,
+                                          } : null: null,
                                           child: const Text('Completed',style: TextStyle(color: Colors.white),),
                                         )
                                     )
@@ -667,10 +689,12 @@ class _TrackScreenState extends State<TrackScreen> {
                           ),
                         );
                       }
-                  ),
+                  )
+                      : const Center(child: Text('No Laundry Available for Pick-up'),),
                   isLoading
                       ? loading()
-                      : ListView.builder(
+                      : hasdata
+                      ? ListView.builder(
                       shrinkWrap: true,
                       itemCount: laundry.length,
                       itemBuilder: (context, index){
@@ -714,7 +738,16 @@ class _TrackScreenState extends State<TrackScreen> {
                                   NewServiceSummaryScreen(bookId: '${laun['BookingID']}')));
                             },
                             child: Ink(
-                              color: Colors.white,
+                              decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(5),
+                                  color: Colors.white,
+                                  boxShadow: [
+                                    const BoxShadow(
+                                        blurRadius: 1,
+                                        color: Colors.grey
+                                    )
+                                  ]
+                              ),
                               child: Container(
                                 padding: const EdgeInsets.all(8),
                                 decoration: const BoxDecoration(
@@ -737,7 +770,7 @@ class _TrackScreenState extends State<TrackScreen> {
                                     const Divider(),
                                     const Text('Laundry Information', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),),
                                     RowItem(title: const Text('Service Availed'), description: Text('${laun['ServiceName']}', style: const TextStyle(fontWeight: FontWeight.bold))),
-                                    RowItem(title: const Text('Laundry Load'), description: Text('${laun['CustomerLoad']} kg/s', style: const TextStyle(fontWeight: FontWeight.bold))),
+                                    RowItem(title: const Text('Laundry Load'), description: Text('${laun['CustomerLoad']} kg', style: const TextStyle(fontWeight: FontWeight.bold))),
                                     RowItem(title: const Text('Date'), description: Text('${laun['Schedule']}', style: const TextStyle(fontWeight: FontWeight.bold),)),
                                     const SizedBox(height: 10,),
                                     RowItem(
@@ -746,7 +779,7 @@ class _TrackScreenState extends State<TrackScreen> {
                                           mainAxisAlignment: MainAxisAlignment.end,
                                           children: [
                                             const Text('Total Cost: '),
-                                            Text('₱${laun['LoadCost']}.00', style: const TextStyle(fontWeight: FontWeight.bold,fontSize: 19),)
+                                            Text('₱${laun['LoadCost']}', style: const TextStyle(fontWeight: FontWeight.bold,fontSize: 19),)
                                           ],
                                         )
                                     ),
@@ -759,11 +792,11 @@ class _TrackScreenState extends State<TrackScreen> {
                                               shape: RoundedRectangleBorder(
                                                   borderRadius: BorderRadius.circular(5)
                                               ),
-                                            padding: const EdgeInsets.all(8)
+                                              padding: const EdgeInsets.all(8)
                                           ),
                                           onPressed: (){
                                             pushWithoutNavBar(context, MaterialPageRoute(builder: (context) =>
-                                            ViewRatingScreen(bookId: '${laun['BookingID']}')));
+                                                ViewRatingScreen(bookId: '${laun['BookingID']}')));
                                           },
                                           child: const Text('View Rating',style: TextStyle(color: ColorStyle.tertiary),),
                                         )
@@ -792,10 +825,12 @@ class _TrackScreenState extends State<TrackScreen> {
                           ),
                         );
                       }
-                  ),
+                  )
+                      : const Center(child: Text('No Completed Laundry'),),
                   isLoading
                       ? loading()
-                      : ListView.builder(
+                      : hasdata
+                      ? ListView.builder(
                       shrinkWrap: true,
                       itemCount: laundry.length,
                       itemBuilder: (context, index){
@@ -833,7 +868,7 @@ class _TrackScreenState extends State<TrackScreen> {
                         return Padding(
                           padding: const EdgeInsets.all(4.0),
                           child: InkWell(
-                            onTap: isCancelled ? null : (){
+                            onTap:(){
                               pushWithoutNavBar(context, MaterialPageRoute(builder: (context) =>
                                   NewServiceSummaryScreen(bookId: '${laun['BookingID']}')));
                             },
@@ -841,7 +876,8 @@ class _TrackScreenState extends State<TrackScreen> {
                               color: Colors.white,
                               child: Container(
                                 padding: const EdgeInsets.all(8),
-                                decoration: const BoxDecoration(
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(5)
                                 ),
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -861,7 +897,7 @@ class _TrackScreenState extends State<TrackScreen> {
                                     const Divider(),
                                     const Text('Laundry Information', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),),
                                     RowItem(title: const Text('Service Availed'), description: Text('${laun['ServiceName']}', style: const TextStyle(fontWeight: FontWeight.bold))),
-                                    RowItem(title: const Text('Laundry Load (kg)'), description: Text('${laun['CustomerLoad']}', style: const TextStyle(fontWeight: FontWeight.bold))),
+                                    RowItem(title: const Text('Laundry Load'), description: Text('${laun['CustomerLoad']} kg', style: const TextStyle(fontWeight: FontWeight.bold))),
                                     RowItem(title: const Text('Date'), description: Text('${laun['Schedule']}', style: const TextStyle(fontWeight: FontWeight.bold),)),
                                     const SizedBox(height: 10,),
                                     RowItem(
@@ -898,7 +934,8 @@ class _TrackScreenState extends State<TrackScreen> {
                           ),
                         );
                       }
-                  ),
+                  )
+                      : const Center(child: Text('No Cancelled Laundry'),),
                 ],
               ),
             ),
@@ -917,20 +954,34 @@ class NotificationScreen extends StatefulWidget {
 }
 
 class _NotificationScreenState extends State<NotificationScreen> {
-  List<dynamic> notification = [];
+  List<dynamic> notification = []; List<dynamic> timelinenotif = [];
   bool isLoading = true;
   String notifId = '';
   String isRead = '';
-  bool hasdata = false;
+  bool hasdata = false; bool hasData1 = false;
 
   Future<void> laundryNotif() async{
     final SharedPreferences prefs = await SharedPreferences.getInstance();
-    ApiResponse response = await customerNotif('${prefs.getString('token')}');
+    ApiResponse response = await confirmationNotif('${prefs.getString('token')}');
 
     if(response.error == null){
       setState(() {
         notification = response.data as List<dynamic>;
         isLoading = false;
+        hasData1 = notification.isNotEmpty;
+      });
+    }else{
+
+    }
+  }
+
+  Future<void> timelineNotif() async{
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    ApiResponse response = await getTimelineNotif('${prefs.getString('token')}');
+
+    if(response.error == null){
+      setState(() {
+        timelinenotif = response.data as List<dynamic>;
         hasdata = notification.isNotEmpty;
       });
     }else{
@@ -956,51 +1007,120 @@ class _NotificationScreenState extends State<NotificationScreen> {
   @override
   void initState() {
     super.initState();
+    timelineNotif();
     laundryNotif();
   }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: hasdata
-          ? ListView.builder(
-          itemCount: notification.length,
-          itemBuilder: (context,index){
-            Map notif = notification[index] as Map;
-            String dateTime = DateFormat('MM/dd/yyyy hh:mm').format(DateTime.parse(notif['updated_at']));
-            notifId = '${notif['NotifID']}';
-            return Column(
-              children: [
-                InkWell(
-                  onTap: () async {
-                    notifRead();
-                    final response = await pushWithoutNavBar(context, MaterialPageRoute(builder: (context) =>
-                        NewNotificationInfoScreen(bookId: '${notif['BookingID']}', title: notif['Title'])));
+      body: isLoading
+          ? loading()
+          : Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: double.infinity,
+            decoration: const BoxDecoration(
+                color: Colors.white,
+                border: Border(
+                    bottom: BorderSide(color: Colors.black)
+                )
+            ),
+            padding: const EdgeInsets.all(4),
+            child: const Text('Laundry Confirmation',style: TextStyle(color: ColorStyle.tertiary),),
+          ),
+          Expanded(
+              child: Container(
+                color: Colors.white,
+                child: ListView.builder(
+                    shrinkWrap: true,
+                    itemCount: notification.length,
+                    itemBuilder: (context,index){
+                      Map notif = notification[index] as Map;
+                      notifId = '${notif['NotifID']}';
+                      return Column(
+                        children: [
+                          InkWell(
+                            onTap: () async {
+                              notifRead();
+                              final response = await pushWithoutNavBar(context, MaterialPageRoute(builder: (context) =>
+                                  NewNotificationInfoScreen(bookId: '${notif['BookingID']}', title: notif['Title'])));
 
-                    if(response == true){
-                      setState(() {
-                        laundryNotif();
-                      });
+                              if(response == true){
+                                setState(() {
+                                  laundryNotif();
+                                });
+                              }
+                            },
+                            child: ListTile(
+                              tileColor: notif['is_read'] == '0' ? Colors.blue.shade50 : null,
+                              leading: Image.asset('assets/LMateLogo.png',alignment: Alignment.topCenter,),
+                              title: Text('${notif['Title']}',style: const TextStyle(fontWeight: FontWeight.bold),),
+                              subtitle: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text('${notif['Message']}'),
+                                  Text('${notif['date']}',style: const TextStyle(fontSize: 10),)
+                                ],
+                              ),
+                            ),
+                          ),
+                          const Divider(height: 0,)
+                        ],
+                      );
                     }
-                  },
-                  child: ListTile(
-                    tileColor: notif['is_read'] == '0' ? Colors.blue.shade50 : null,
-                    leading: Image.asset('assets/LMateLogo.png',alignment: Alignment.topCenter,),
-                    title: Text('${notif['Title']}',style: const TextStyle(fontWeight: FontWeight.bold),),
-                    subtitle: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text('${notif['Message']}'),
-                        Text(dateTime,style: const TextStyle(fontSize: 10),)
-                      ],
-                    ),
-                  ),
                 ),
-                const Divider(height: 0,)
-              ],
-            );
-          }
-      )
-          : const Center(child: Text('No Notifications'),),
+              )
+          ),
+          Container(height: 10,color: Colors.grey.shade300,),
+          Container(
+            width: double.infinity,
+            decoration: const BoxDecoration(
+                color: Colors.white,
+                border: Border(
+                    bottom: BorderSide(color: Colors.black)
+                )
+            ),
+            padding: const EdgeInsets.all(4),
+            child: const Text('Laundry Updates',style: TextStyle(color: ColorStyle.tertiary),),
+          ),
+          Expanded(
+              child: Container(
+                color: Colors.white,
+                child: ListView.builder(
+                    shrinkWrap: true,
+                    itemCount: timelinenotif.length,
+                    itemBuilder: (context,index){
+                      Map notif = timelinenotif[index] as Map;
+                      return Column(
+                        children: [
+                          InkWell(
+                            onTap: () async {
+                              notifRead();
+                              final response = await pushWithoutNavBar(context, MaterialPageRoute(builder: (context) =>
+                                  LaundryUpdatesScreen(title: '${notif['Message']}',bookId: '${notif['BookingID']}')));
+
+                              if(response == true){
+                                setState(() {
+                                  laundryNotif();
+                                });
+                              }
+                            },
+                            child: ListTile(
+                              leading: Image.asset('assets/LMateLogo.png',alignment: Alignment.topCenter,),
+                              title: Text('${notif['Message']}',style: const TextStyle(fontWeight: FontWeight.bold,fontSize: 12),),
+                              subtitle: Text('${notif['timeline']}',style: const TextStyle(fontSize: 10),),
+                            ),
+                          ),
+                          const Divider(height: 0,)
+                        ],
+                      );
+                    }
+                ),
+              )
+          )
+        ],
+      ),
     );
   }
 }
@@ -1044,15 +1164,6 @@ class _AccountScreenState extends State<AccountScreen> {
     } else {
 
     }
-  }
-
-  Center loading(){
-    return Center(
-      child: LoadingAnimationWidget.staggeredDotsWave(
-        color: Colors.black,
-        size: 50,
-      ),
-    );
   }
 
   @override

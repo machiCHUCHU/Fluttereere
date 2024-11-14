@@ -1,4 +1,6 @@
 
+import 'dart:ui';
+
 import 'package:calendar_date_picker2/calendar_date_picker2.dart';
 import 'package:capstone/api_response.dart';
 import 'package:capstone/brandnew/dialogs.dart';
@@ -45,6 +47,22 @@ class _ForRegisteredScreenState extends State<ForRegisteredScreen> {
   int total = 0;
 
 
+  String time = ''; String timeformatted = '';
+  void showTimePickerDialog() {
+    showTimePicker(
+      context: context,
+      initialTime: TimeOfDay.now(),
+    ).then((selectedTime) {
+      if (selectedTime != null) {
+        setState(() {
+          time = "${selectedTime.hour}:${selectedTime.minute}";
+          timeformatted = selectedTime.format(context);
+        });
+      } else {
+        print("No time selected");
+      }
+    });
+  }
 
 
   Future<void> settingsDisplay() async{
@@ -59,7 +77,7 @@ class _ForRegisteredScreenState extends State<ForRegisteredScreen> {
         isLoading = false;
       });
     }else{
-
+      print(response.error);
     }
   }
 
@@ -87,6 +105,7 @@ class _ForRegisteredScreenState extends State<ForRegisteredScreen> {
     setState(() {
       date = pickedDates!;
       chosenDate = DateFormat('yyyy-MM-dd').format(date[0]!);
+      schedule = DateFormat('MM-dd-yyyy').format(date[0]!);
     });
   }
 
@@ -95,7 +114,7 @@ class _ForRegisteredScreenState extends State<ForRegisteredScreen> {
   Future<void> registeredAdd() async{
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     ApiResponse response = await addBookings(
-        _load.text, schedule,
+        _load.text, '$chosenDate $time',
         customerId.toString(), serviceName.toString(),
         total.toString(),
         '${prefs.getString('token')}');
@@ -108,20 +127,10 @@ class _ForRegisteredScreenState extends State<ForRegisteredScreen> {
     }
   }
 
-
-  Center loading(){
-    return Center(
-      child: LoadingAnimationWidget.staggeredDotsWave(
-        color: Colors.black,
-        size: 50,
-      ),
-    );
-  }
-
   void _bottomModalCustomer() {
     showMaterialModalBottomSheet(
       context: context,
-      shape: RoundedRectangleBorder(
+      shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(25))
       ),
       builder: (BuildContext context) {
@@ -358,12 +367,11 @@ class _ForRegisteredScreenState extends State<ForRegisteredScreen> {
                   ),
                   onPressed: ()async{
                     await datepick1();
-                    setState(() {
-                      schedule = '$chosenDate';
-                    });
+                    showTimePickerDialog();
+
                   },
                   child: Align(alignment: Alignment.centerLeft,
-                    child: Text(schedule.isEmpty ? 'Select Schedule' : schedule, style: const TextStyle(fontSize: 16, color: ColorStyle.tertiary),),)
+                    child: Text(schedule.isEmpty ? 'Select Schedule' : '$schedule $timeformatted', style: const TextStyle(fontSize: 16, color: ColorStyle.tertiary),),)
               ),
 
               const SizedBox(height: 15,),
@@ -371,7 +379,6 @@ class _ForRegisteredScreenState extends State<ForRegisteredScreen> {
                 width: double.infinity,
                 decoration: const BoxDecoration(
                   color: ColorStyle.tertiary,
-
                 ),
                 padding: const EdgeInsets.all(4),
                 child: const Text(
@@ -382,52 +389,40 @@ class _ForRegisteredScreenState extends State<ForRegisteredScreen> {
                     )
                 ),
               ),
-              ListView.builder(
-                  itemCount: service.length,
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemBuilder: (context,index){
-                    Map serve = service[index] as Map;
-                    List icon = [
-                      'assets/sport-wear.png',
-                      'assets/jacket.png',
-                      'assets/bed-sheets.png'
-                    ];
-                    return Padding(
-                      padding: const EdgeInsets.all(0),
-                      child: Container(
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(5),
-                          ),
-                          child: Column(
-                            children: [
-                              const Divider(height: 0,),
-                              ListTile(
-                                contentPadding: const EdgeInsets.all(8),
-                                onTap: (){
-                                  setState(() {
-                                    serviceName = '${serve['ServiceID']}';
-                                    shopweight = serve['LoadWeight'];
-                                    shopprice = serve['LoadPrice'];
-                                    multiplier = (weight / shopweight).ceil();
-
-
-                                    total = multiplier * shopprice;
-                                  });
-                                },
-                                leading: Image.asset(icon[index],color: ColorStyle.tertiary,),
-                                title: Text('${serve['ServiceName']}'),
-                                titleTextStyle: const TextStyle(fontSize: 14,color: Colors.black),
-                                subtitle: Text('₱${serve['LoadPrice']}.00/${serve['LoadWeight']} kg.'),
-                                subtitleTextStyle: const TextStyle(color: ColorStyle.tertiary),
-                                trailing: Radio(
-                                  value: '${serve['ServiceID']}',
-                                  activeColor: ColorStyle.tertiary,
-                                  groupValue: serviceName,
-                                  onChanged: (value) {
+              Container(
+                constraints: const BoxConstraints(
+                  maxHeight: 200
+                ),
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.vertical(bottom: Radius.circular(5)),
+                  boxShadow: [
+                    BoxShadow(
+                      blurRadius: 1,
+                      color: Colors.grey
+                    )
+                  ]
+                ),
+                child: ListView.builder(
+                    itemCount: service.length,
+                    shrinkWrap: true,
+                    itemBuilder: (context,index){
+                      Map serve = service[index] as Map;
+                      List icon = [
+                        'assets/sport-wear.png',
+                        'assets/jacket.png',
+                        'assets/bed-sheets.png'
+                      ];
+                      return Padding(
+                        padding: const EdgeInsets.all(0),
+                        child: Column(
+                              children: [
+                                const Divider(height: 0,),
+                                ListTile(
+                                  contentPadding: const EdgeInsets.all(8),
+                                  onTap: (){
                                     setState(() {
-                                      serviceName = value;
+                                      serviceName = '${serve['ServiceID']}';
                                       shopweight = serve['LoadWeight'];
                                       shopprice = serve['LoadPrice'];
                                       multiplier = (weight / shopweight).ceil();
@@ -436,13 +431,33 @@ class _ForRegisteredScreenState extends State<ForRegisteredScreen> {
                                       total = multiplier * shopprice;
                                     });
                                   },
+                                  leading: const Icon(Icons.local_laundry_service,size: 48, color: ColorStyle.tertiary,),
+                                  title: Text('${serve['ServiceName']}'),
+                                  titleTextStyle: const TextStyle(fontSize: 14,color: Colors.black),
+                                  subtitle: Text('₱${serve['LoadPrice']}.00/${serve['LoadWeight']} kg.'),
+                                  subtitleTextStyle: const TextStyle(color: ColorStyle.tertiary),
+                                  trailing: Radio(
+                                    value: '${serve['ServiceID']}',
+                                    activeColor: ColorStyle.tertiary,
+                                    groupValue: serviceName,
+                                    onChanged: (value) {
+                                      setState(() {
+                                        serviceName = value;
+                                        shopweight = serve['LoadWeight'];
+                                        shopprice = serve['LoadPrice'];
+                                        multiplier = (weight / shopweight).ceil();
+
+
+                                        total = multiplier * shopprice;
+                                      });
+                                    },
+                                  ),
                                 ),
-                              ),
-                            ],
-                          )
-                      ),
-                    );
-                  }
+                              ],
+                            )
+                      );
+                    }
+                ),
               ),
               const SizedBox(height: 15,),
               
@@ -452,9 +467,8 @@ class _ForRegisteredScreenState extends State<ForRegisteredScreen> {
                   borderRadius: BorderRadius.circular(5),
                   boxShadow: const [
                     BoxShadow(
-                      blurRadius: 2,
+                      blurRadius: 1,
                       color: Colors.grey,
-                      offset: Offset(0, 22)
                     )
                   ]
                 ),
@@ -569,6 +583,7 @@ class _ForWalkinScreenState extends State<ForWalkinScreen> {
 
     }
   }
+
 
   @override
   void initState(){
@@ -798,24 +813,22 @@ class _ForWalkinScreenState extends State<ForWalkinScreen> {
                         )
                     ),
                   ),
-                  ListView.builder(
-                      itemCount: service.length,
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      itemBuilder: (context,index){
-                        Map serve = service[index] as Map;
-                        List icon = [
-                          'assets/sport-wear.png',
-                          'assets/jacket.png',
-                          'assets/bed-sheets.png'
-                        ];
-                        return Padding(
-                          padding: const EdgeInsets.all(0),
-                          child: Container(
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(5),
-                              ),
+                  Container(
+                    constraints: const BoxConstraints(
+                      maxHeight: 200
+                    ),
+                    decoration: const BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.vertical(bottom: Radius.circular(5))
+                    ),
+                    child: ListView.builder(
+                        itemCount: service.length,
+                        shrinkWrap: true,
+                        itemBuilder: (context,index){
+                          Map serve = service[index] as Map;
+
+                          return Padding(
+                              padding: const EdgeInsets.all(0),
                               child: Column(
                                 children: [
                                   const Divider(height: 0,),
@@ -832,11 +845,11 @@ class _ForWalkinScreenState extends State<ForWalkinScreen> {
                                         total = multiplier * shopprice;
                                       });
                                     },
-                                    leading: Image.asset(icon[index],color: ColorStyle.tertiary,),
+                                    leading: const Icon(Icons.local_laundry_service,size: 48,color: ColorStyle.tertiary,),
                                     title: Text('${serve['ServiceName']}'),
-                                    titleTextStyle: const TextStyle(fontSize: 14,color: Colors.black),
+                                    titleTextStyle: const TextStyle(fontSize: 14,color: Colors.black,fontWeight: FontWeight.bold),
                                     subtitle: Text('₱${serve['LoadPrice']}.00/${serve['LoadWeight']} kg.'),
-                                    subtitleTextStyle: const TextStyle(color: ColorStyle.tertiary),
+                                    subtitleTextStyle: const TextStyle(color: ColorStyle.tertiary,fontSize: 12),
                                     trailing: Radio(
                                       value: '${serve['ServiceID']}',
                                       activeColor: ColorStyle.tertiary,
@@ -856,9 +869,9 @@ class _ForWalkinScreenState extends State<ForWalkinScreen> {
                                   ),
                                 ],
                               )
-                          ),
-                        );
-                      }
+                          );
+                        }
+                    ),
                   ),
                   const SizedBox(height: 15,),
 
@@ -868,9 +881,8 @@ class _ForWalkinScreenState extends State<ForWalkinScreen> {
                         borderRadius: BorderRadius.circular(5),
                         boxShadow: const [
                           BoxShadow(
-                              blurRadius: 2,
+                              blurRadius: 1,
                               color: Colors.grey,
-                              offset: Offset(0, 2)
                           )
                         ]
                     ),

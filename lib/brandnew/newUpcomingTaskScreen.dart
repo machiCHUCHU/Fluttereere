@@ -1,4 +1,5 @@
 import 'package:capstone/api_response.dart';
+import 'package:capstone/brandnew/dialogs.dart';
 import 'package:capstone/connect/laravel.dart';
 import 'package:capstone/services/servicesadd.dart';
 import 'package:capstone/styles/mainColorStyle.dart';
@@ -19,7 +20,7 @@ class NewUpcomingTaskScreen extends StatefulWidget {
 }
 
 class _NewUpcomingTaskScreenState extends State<NewUpcomingTaskScreen> {
-  DateTime? _selectedDate; String _dateString = '';
+  DateTime? _selectedDate; String _dateString = ''; bool isLoading = true;
   List<dynamic> upTask = [];
 
   Future<void> displayTask() async{
@@ -29,6 +30,7 @@ class _NewUpcomingTaskScreenState extends State<NewUpcomingTaskScreen> {
     if(response.error == null){
       setState(() {
         upTask = response.data as List<dynamic>;
+        isLoading = false;
       });
     }else{
       print(response.error);
@@ -91,7 +93,7 @@ class _NewUpcomingTaskScreenState extends State<NewUpcomingTaskScreen> {
                           children: [
                             const Text(
                               'Address',
-                              style: TextStyle(color: Colors.grey),
+                              style: TextStyle(color: Colors.grey,fontSize: 12),
                             ),
                             Text(
                               customerAddress,
@@ -104,7 +106,7 @@ class _NewUpcomingTaskScreenState extends State<NewUpcomingTaskScreen> {
                                 children: [
                                   const Text(
                                     'Contact Information',
-                                    style: TextStyle(color: Colors.grey),
+                                    style: TextStyle(color: Colors.grey,fontSize: 12),
                                   ),
                                   Text(
                                     contact,
@@ -117,7 +119,7 @@ class _NewUpcomingTaskScreenState extends State<NewUpcomingTaskScreen> {
                                 children: [
                                   const Text(
                                     'Date Requested',
-                                    style: TextStyle(color: Colors.grey),
+                                    style: TextStyle(color: Colors.grey,fontSize: 12),
                                   ),
                                   Text(
                                     date,
@@ -141,7 +143,7 @@ class _NewUpcomingTaskScreenState extends State<NewUpcomingTaskScreen> {
                                 children: [
                                   const Text(
                                     'Service Availed',
-                                    style: TextStyle(color: Colors.grey),
+                                    style: TextStyle(color: Colors.grey,fontSize: 12),
                                   ),
                                   Text(
                                     service,
@@ -154,7 +156,7 @@ class _NewUpcomingTaskScreenState extends State<NewUpcomingTaskScreen> {
                                 children: [
                                   const Text(
                                     'Laundry Weight',
-                                    style: TextStyle(color: Colors.grey),
+                                    style: TextStyle(color: Colors.grey,fontSize: 12),
                                   ),
                                   Text(
                                     '$load kg/s',
@@ -170,7 +172,7 @@ class _NewUpcomingTaskScreenState extends State<NewUpcomingTaskScreen> {
                                 children: [
                                   const Text(
                                     'Estimated Total',
-                                    style: TextStyle(color: Colors.grey),
+                                    style: TextStyle(color: Colors.grey,fontSize: 12),
                                   ),
                                   Text(
                                     '₱$total.00',
@@ -183,7 +185,7 @@ class _NewUpcomingTaskScreenState extends State<NewUpcomingTaskScreen> {
                                 children: [
                                   const Text(
                                     'Payment Status',
-                                    style: TextStyle(color: Colors.grey),
+                                    style: TextStyle(color: Colors.grey,fontSize: 12),
                                   ),
                                   Text(
                                     payment,
@@ -215,7 +217,6 @@ class _NewUpcomingTaskScreenState extends State<NewUpcomingTaskScreen> {
 
   @override
   Widget build(BuildContext context) {
-    print(upTask);
     return Scaffold(
       appBar: AppBar(
         title: const Text('Upcoming Laundry'),
@@ -230,93 +231,96 @@ class _NewUpcomingTaskScreenState extends State<NewUpcomingTaskScreen> {
           icon: const Icon(CupertinoIcons.chevron_left,color: Colors.white,),
         ),
       ),
-      body: Column(
-        children: [
-          Container(
-            decoration: BoxDecoration(
-              color: Colors.white
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            Container(
+              decoration: const BoxDecoration(
+                  color: Colors.white
+              ),
+              child: DatePicker(
+                height: 90,
+                DateTime.now().add(const Duration(days: 1)),
+                selectionColor: ColorStyle.tertiary,
+                daysCount: 7,
+                initialSelectedDate: DateTime.now().add(const Duration(days: 1)),
+                onDateChange: (date){
+                  setState(() {
+                    _selectedDate = date;
+                    _dateString = DateFormat('yyyy-MM-dd').format(_selectedDate!);
+                    isLoading = true;
+                  });
+                  displayTask();
+                },
+              ),
             ),
-            child: DatePicker(
-              height: 90,
-              DateTime.now().add(Duration(days: 1)),
-              selectionColor: ColorStyle.tertiary,
-              daysCount: 7,
-              initialSelectedDate: DateTime.now().add(Duration(days: 1)),
-              onDateChange: (date){
-                setState(() {
-                  _selectedDate = date;
-                  _dateString = DateFormat('yyyy-MM-dd').format(_selectedDate!);
-                });
-                displayTask();
-              },
-            ),
-          ),
-          upTask.isEmpty
-              ? Text('No booking for this day')
-              : ListView.builder(
-              shrinkWrap: true,
-              itemCount: upTask.length,
-              padding: const EdgeInsets.all(8),
-              itemBuilder: (context, index){
-                Map task = upTask[index] as Map;
+            isLoading ? loading() : upTask.isEmpty
+                ? Center(child: const Text('No booking for this day'))
+                : ListView.builder(
+                shrinkWrap: true,
+                itemCount: upTask.length,
+                padding: const EdgeInsets.all(8),
+                itemBuilder: (context, index){
+                  Map task = upTask[index] as Map;
 
-                String pic = ''; Color picColor; Color bgColor;
+                  String pic = ''; Color picColor; Color bgColor;
 
-                switch(task['ServiceName']){
-                  case 'Light Load':
-                    pic = 'assets/sport-wear.png';
-                    bgColor = Colors.lightGreen.shade100;
-                    picColor = Colors.green;
-                    break;
-                  case 'Heavy Load':
-                    pic = 'assets/jacket.png';
-                    bgColor = Colors.orangeAccent.shade100;
-                    picColor = Colors.orange;
-                    break;
-                  case 'Comforter Load':
-                    pic = 'assets/bed-sheets(1).png';
-                    bgColor = Colors.purpleAccent.shade100;
-                    picColor = Colors.purple;
-                    break;
-                  default:
-                    picColor = Colors.transparent;
-                    bgColor = Colors.transparent;
-                    break;
-                }
+                  switch(task['ServiceName']){
+                    case 'Light Load':
+                      pic = 'assets/sport-wear.png';
+                      bgColor = Colors.lightGreen.shade100;
+                      picColor = Colors.green;
+                      break;
+                    case 'Heavy Load':
+                      pic = 'assets/jacket.png';
+                      bgColor = Colors.orangeAccent.shade100;
+                      picColor = Colors.orange;
+                      break;
+                    case 'Comforter Load':
+                      pic = 'assets/bed-sheets(1).png';
+                      bgColor = Colors.purpleAccent.shade100;
+                      picColor = Colors.purple;
+                      break;
+                    default:
+                      picColor = Colors.transparent;
+                      bgColor = Colors.transparent;
+                      break;
+                  }
 
-                return Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 4.0),
-                  child: ListTile(
-                    tileColor: Colors.white,
-                    onTap: (){
-                      _bottomModalBookings(
-                          '${task['CustomerName']}', '${task['CustomerContactNumber']}', '${task['CustomerLoad']}', '${task['LoadCost']}',
-                          '${task['Schedule']}', '${task['PaymentStatus']}', '${task['ServiceName']}',
-                          '${task['CustomerImage']}', '${task['CustomerAddress']}');
-                    },
-                    minTileHeight: 60,
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(5)
-                    ),
-                    contentPadding: const EdgeInsets.all(4),
-                    leading: Tooltip(
-                      message: '${task['ServiceName']}',
-                      child: Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                            color: bgColor,
-                            borderRadius: BorderRadius.circular(5)
-                        ),
-                        child: Image.asset(pic,color: picColor,scale: 5,),
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 4.0),
+                    child: ListTile(
+                      tileColor: Colors.white,
+                      onTap: (){
+                        _bottomModalBookings(
+                            '${task['CustomerName']}', '${task['CustomerContactNumber']}', '${task['CustomerLoad']}', '${task['LoadCost']}',
+                            '${task['Schedule']}', '${task['PaymentStatus']}', '${task['ServiceName']}',
+                            '${task['CustomerImage']}', '${task['CustomerAddress']}');
+                      },
+                      minTileHeight: 60,
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(5)
                       ),
+                      contentPadding: const EdgeInsets.all(4),
+                      leading: Tooltip(
+                        message: '${task['ServiceName']}',
+                        child: Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                              color: ColorStyle.tertiary,
+                              borderRadius: BorderRadius.circular(5)
+                          ),
+                          child: Icon(Icons.local_laundry_service,size: 38,color: Colors.white,),
+                        ),
+                      ),
+                      title: Text('${task['CustomerName']}',style: TextStyle(color: ColorStyle.tertiary),),
+                      subtitle: Text('${task['CustomerContactNumber']}',style: TextStyle(fontSize: 12),),
                     ),
-                    title: Text('${task['CustomerName']}',style: TextStyle(color: picColor),),
-                    subtitle: Text('${task['CustomerContactNumber']}'),
-                  ),
-                );
-              }
-          )
-        ],
+                  );
+                }
+            )
+          ],
+        ),
       ),
     );
   }

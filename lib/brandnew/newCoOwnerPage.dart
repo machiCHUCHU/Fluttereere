@@ -1,0 +1,1259 @@
+import 'dart:ui';
+
+import 'package:capstone/api_response.dart';
+import 'package:capstone/brandnew/dialogs.dart';
+import 'package:capstone/brandnew/newLaundryServicePage.dart';
+import 'package:capstone/services/services.dart';
+import 'package:capstone/services/servicesadd.dart';
+import 'package:capstone/services/validation.dart';
+import 'package:capstone/styles/mainColorStyle.dart';
+import 'package:capstone/styles/registrationStyle.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/painting.dart';
+import 'package:flutter/rendering.dart';
+import 'package:flutter_profile_picture/flutter_profile_picture.dart';
+import 'package:flutter_timer_countdown/flutter_timer_countdown.dart';
+import 'package:group_button/group_button.dart';
+import 'package:loading_animation_widget/loading_animation_widget.dart';
+import 'package:pinput/pinput.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+class NewCoOwnerScreen extends StatefulWidget {
+  const NewCoOwnerScreen({super.key});
+
+  @override
+  State<NewCoOwnerScreen> createState() => _NewCoOwnerScreenState();
+}
+
+class _NewCoOwnerScreenState extends State<NewCoOwnerScreen> {
+  List<dynamic> coOwners = []; bool isLoading = true; bool hasdata = false;
+
+  Future<void> coOwnerDisplay() async{
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    ApiResponse response = await getCoOwners('${prefs.getString('token')}');
+
+    if(response.error == null){
+      setState(() {
+        coOwners = response.data as List<dynamic>;
+        isLoading = false;
+        hasdata = coOwners.isNotEmpty;
+      });
+    }else{
+      warningDialog(context, '${response.error}');
+    }
+  }
+
+  @override
+  void initState() {
+    coOwnerDisplay();
+    super.initState();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Co-Owners'),
+        titleTextStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        leading: IconButton(
+          onPressed: (){
+            Navigator.pop(context,true);
+          },
+          icon: const Icon(CupertinoIcons.chevron_left,color: Colors.white,),
+        ),
+      ),
+      body: isLoading
+          ? loading()
+          : hasdata
+          ? ListView.builder(
+          padding: const EdgeInsets.all(8),
+          itemCount: coOwners.length,
+          itemBuilder: (context, index){
+            Map co = coOwners[index] as Map;
+            Color accessColor; Color bgColor;
+            if(co['AccessType'] == 'full'){
+              accessColor = Colors.green;
+              bgColor = Colors.greenAccent.shade100;
+            }else{
+              accessColor = Colors.yellow.shade700;
+              bgColor = Colors.yellowAccent.shade100;
+            }
+
+            return InkWell(
+              onTap: ()async{
+                final response = await Navigator.push(context, MaterialPageRoute(builder: (context) =>
+                    EditCoOwnerScreen(coname: '${co['CoOwnerName']}', coaddress: '${co['CoOwnerAddress']}',
+                      cocontact: '${co['CoOwnerContact']}', access: '${co['AccessType']}', coid: '${co['CoOwnerID']}',)));
+
+                if(response == true){
+                  coOwnerDisplay();
+                }
+              },
+              child: Ink(
+                decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(5),
+                    boxShadow: [
+                      const BoxShadow(
+                          blurRadius: 1,
+                          color: Colors.grey
+                      )
+                    ]
+                ),
+                child: ListTile(
+                  contentPadding: const EdgeInsets.all(8),
+                  leading: ProfilePicture(
+                      name: '${co['CoOwnerName']}',
+                      radius: 28,
+                      fontsize: 22
+                  ),
+                  title: Text('${co['CoOwnerName']}'),
+                  subtitleTextStyle: const TextStyle(fontSize: 12,color: Colors.black),
+                  titleTextStyle: const TextStyle(color: ColorStyle.tertiary, fontWeight: FontWeight.bold,fontSize: 18),
+                  subtitle: Text('${co['CoOwnerAddress']}'),
+                  trailing: Container(
+                    width: 80,
+                    decoration: BoxDecoration(
+                        color: bgColor,
+                        borderRadius: BorderRadius.circular(8)
+                    ),
+                    padding: const EdgeInsets.all(8),
+                    child: Text('${co['AccessType']}',textAlign: TextAlign.center,style: TextStyle(fontSize: 14,color: accessColor),),
+                  ),
+                ),
+              ),
+            );
+          }
+      )
+          : const Center(child: Text('No Co-Owners Added Yet'),),
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: ColorStyle.tertiary,
+        tooltip: 'Add Co-Owner',
+        onPressed: ()async{
+          final response = await Navigator.push(context, MaterialPageRoute(builder: (context) => const AddCoOwnerScreen()));
+
+          if(response == true){
+
+          }
+        },
+        child: const Icon(Icons.add, size: 50,color: Colors.white,),
+      ),
+    );
+  }
+}
+
+class AddCoOwnerScreen extends StatefulWidget {
+  const AddCoOwnerScreen({super.key});
+
+  @override
+  State<AddCoOwnerScreen> createState() => _AddCoOwnerScreenState();
+}
+
+class _AddCoOwnerScreenState extends State<AddCoOwnerScreen> {
+  final TextEditingController _coName = TextEditingController();
+  final TextEditingController _coAddress = TextEditingController();
+  final TextEditingController _coContact = TextEditingController();
+  final TextEditingController _coPassword = TextEditingController();
+  String selectedAccess = ''; bool exist = false; bool isHidden =true;
+
+  bool validateNumber(String contactNumber) {
+    final regex = RegExp(r'^(09|\+639)\d{9}$');
+
+    return regex.hasMatch(contactNumber);
+  }
+
+  bool validatePassword(String password){
+    final regex = RegExp(r'^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$');
+
+    return regex.hasMatch(password);
+  }
+  Future<bool> isNumberExists() async{
+    ApiResponse response = await numberExist(_coAddress.text);
+
+    if(response.error == null){
+      return exist = response.data as bool;
+    }else{
+      throw ('');
+    }
+  }
+
+  Future<void> otpDisplay() async{/*widget.contact*/
+    await otpVerification(_coContact.text);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Add Co-Owners'),
+        titleTextStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        leading: IconButton(
+          onPressed: (){
+            Navigator.pop(context,true);
+          },
+          icon: const Icon(CupertinoIcons.chevron_left,color: Colors.white,),
+        ),
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(8),
+        child: Column(
+          children: [
+            Container(
+              width: double.infinity,
+              decoration: const BoxDecoration(
+                color: ColorStyle.tertiary,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(5))
+              ),
+              padding: const EdgeInsets.all(4),
+              child: const Text('Co-Owner Name',style: TextStyle(color: Colors.white,fontWeight: FontWeight.bold),),
+            ),
+            TextField(
+              controller: _coName,
+              decoration: const InputDecoration(
+                  filled: true,
+                  fillColor: Colors.white,
+                  focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.vertical(bottom: Radius.circular(5)),
+                      borderSide: BorderSide(
+                          color: Colors.grey
+                      )
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.vertical(bottom: Radius.circular(5))
+                  )
+              ),
+            ),
+            const SizedBox(height: 10,),
+
+            Container(
+              width: double.infinity,
+              decoration: const BoxDecoration(
+                  color: ColorStyle.tertiary,
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(5))
+              ),
+              padding: const EdgeInsets.all(4),
+              child: const Text('Co-Owner Address',style: TextStyle(color: Colors.white,fontWeight: FontWeight.bold),),
+            ),
+            TextField(
+              controller: _coAddress,
+              decoration: const InputDecoration(
+                  filled: true,
+                  fillColor: Colors.white,
+                  focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.vertical(bottom: Radius.circular(5)),
+                      borderSide: BorderSide(
+                          color: Colors.grey
+                      )
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.vertical(bottom: Radius.circular(5))
+                  )
+              ),
+            ),
+            const SizedBox(height: 10,),
+
+            Container(
+              width: double.infinity,
+              decoration: const BoxDecoration(
+                  color: ColorStyle.tertiary,
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(5))
+              ),
+              padding: const EdgeInsets.all(4),
+              child: const Text('Co-Owner Contact Number',style: TextStyle(color: Colors.white,fontWeight: FontWeight.bold),),
+            ),
+            TextField(
+              controller: _coContact,
+              keyboardType: TextInputType.phone,
+              decoration: const InputDecoration(
+                  filled: true,
+                  fillColor: Colors.white,
+                  focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.vertical(bottom: Radius.circular(5)),
+                      borderSide: BorderSide(
+                          color: Colors.grey
+                      )
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.vertical(bottom: Radius.circular(5))
+                  )
+              ),
+            ),
+            const SizedBox(height: 10,),
+
+            Container(
+              width: double.infinity,
+              decoration: const BoxDecoration(
+                  color: ColorStyle.tertiary,
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(5))
+              ),
+              padding: const EdgeInsets.all(4),
+              child: const Text('Password',style: TextStyle(color: Colors.white,fontWeight: FontWeight.bold),),
+            ),
+            TextField(
+              controller: _coPassword,
+              obscureText: isHidden,
+              decoration: InputDecoration(
+                  filled: true,
+                  fillColor: Colors.white, suffixIcon: IconButton(
+                onPressed: (){
+                  setState(() {
+                    isHidden = !isHidden;
+                  });
+                },
+                icon: Icon(isHidden ? Icons.visibility_outlined : Icons.visibility_off_outlined),
+              ),
+                  focusedBorder: const OutlineInputBorder(
+                      borderRadius: BorderRadius.vertical(bottom: Radius.circular(5)),
+                      borderSide: BorderSide(
+                          color: Colors.grey
+                      )
+                  ),
+                  enabledBorder: const OutlineInputBorder(
+                      borderRadius: BorderRadius.vertical(bottom: Radius.circular(5))
+                  )
+              ),
+            ),
+
+            const SizedBox(height: 10,),
+
+            Container(
+              width: double.infinity,
+              decoration: const BoxDecoration(
+                  color: ColorStyle.tertiary,
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(5))
+              ),
+              padding: const EdgeInsets.all(4),
+              child: const Text('Access Privilege',style: TextStyle(color: Colors.white,fontWeight: FontWeight.bold),),
+            ),
+            Container(
+              width: double.infinity,
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.vertical(bottom: Radius.circular(5))
+              ),
+              padding: const EdgeInsets.all(8),
+              child: Column(
+                children: [
+                  GroupButton(
+                    isRadio: true,
+                    options: const GroupButtonOptions(
+                      selectedColor: Colors.blue,
+                      unselectedColor: Colors.grey,
+                      selectedTextStyle: TextStyle(color: Colors.white),
+                    ),
+                    onSelected: (selected, index, isSelected) {
+                      print('$selected button is selected');
+                      setState(() {
+                        selectedAccess = selected;
+                      });
+                    },
+                    buttons: ["Full Access", "Limited Access"],
+                    buttonBuilder: (selected, value, context) {
+                      return Container(
+                        width: 100,
+                        height: 100,
+                        decoration: BoxDecoration(
+                          color: selected ? ColorStyle.tertiary : Colors.white,
+                          borderRadius: BorderRadius.circular(5),
+                          border: Border.all(
+                            color: ColorStyle.tertiary,
+                            width: 2
+                          )
+                        ),
+                        padding: const EdgeInsets.all(8),
+                        child: Column(
+                          children: [
+                            Icon(
+                              value == 'Full Access' ? Icons.verified : Icons.report,
+                              color: selected ? Colors.white : ColorStyle.tertiary,
+                              size: 32,
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              value,
+                              style: TextStyle(
+                                color: selected ? Colors.white : ColorStyle.tertiary,
+                                fontWeight: FontWeight.bold
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 20,),
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                        selectedAccess,
+                      style: TextStyle(
+                        color: selectedAccess == 'Full Access' ?
+                            Colors.green : Colors.orange,
+                        fontWeight: FontWeight.bold
+                      ),
+                    ),
+                  ),
+                  selectedAccess == '' ?
+                      const Align(
+                        alignment: Alignment.center,
+                        child: Text(
+                            'Select Privilege',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold
+                          ),
+                        ),
+                      )
+                      : Text(
+                    selectedAccess == 'Full Access' ?
+                    'Giving your co-owner this privilege will grant them full control of your shop\'s details.'
+                        ' This includes viewing, updating, and deleting any information provided of your shop as well as manipulating'
+                        ' transactions happening within.' :
+                    'Giving your co-owner this privilege will only grant them limited access of your shop\'s '
+                        'information and transaction. Specifically, they can only view the activity happening.',
+                    style: const TextStyle(
+
+                    ),
+                    textAlign: TextAlign.justify,
+                  )
+                ],
+              ),
+            ),
+            const SizedBox(height: 10,),
+
+          ],
+        ),
+      ),
+      bottomNavigationBar: Container(
+        margin: const EdgeInsets.all(4),
+        child: ElevatedButton(
+          style: ElevatedButton.styleFrom(
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(5)
+              ),
+              backgroundColor: ColorStyle.tertiary
+          ),
+          onPressed: ()async{
+            await isNumberExists();
+            if(_coName.text.isEmpty || _coAddress.text.isEmpty || _coContact.text.isEmpty || _coPassword.text.isEmpty || selectedAccess == ''){
+              warningDialog(context, 'All fields are required');
+            }else if(exist == true){
+              warningTextDialog(context, 'Invalid Contact Number',
+                  'Contact number already existed. Please input another number.');
+            }else if(!validateNumber(_coContact.text)){
+              warningTextDialog(context, 'Invalid Contact Number',
+                  'Please input a valid contact number.\n'
+                      'e.g. 09123456789');
+            }else if(!validatePassword(_coPassword.text)){
+              warningTextDialog(context, 'Invalid Password Format',
+                  'Your password should contain atleast 8 characters, one uppercase letter, '
+                      'one lowercase letter, one number, and one special character');
+            }
+            else{
+              Navigator.push(context, MaterialPageRoute(builder: (context) =>
+                  NewOTPScreen(coname: _coName.text, coaddress: _coAddress.text, cocontact: _coContact.text,
+                      access: selectedAccess, password: _coPassword.text)));
+              otpDisplay();
+            }
+          },
+          child: const Text('Add Co-Owner',style: TextStyle(color: Colors.white),),
+        ),
+      ),
+    );
+  }
+}
+
+class NewOTPScreen extends StatefulWidget {
+  final String coname; final String coaddress; final String cocontact;
+  final String access; final String password;
+  const NewOTPScreen({super.key, required this.coname, required this.coaddress, required this.cocontact, required this.access, required this.password});
+
+  @override
+  State<NewOTPScreen> createState() => _NewOTPScreenState();
+}
+
+class _NewOTPScreenState extends State<NewOTPScreen> {
+
+
+  Future<void> regForm() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) {
+        return loading();
+      },
+    );
+    String access = '';
+    if(widget.access == 'Full Access'){
+      access = 'full';
+    }else{
+      access == 'limit';
+    }
+
+    ApiResponse response = await addCoOwners(widget.coname, widget.coaddress, widget.cocontact,
+        widget.password, access, '${prefs.getString('token')}');
+
+    if (response.error == null) {
+      await successDialog(context, '${response.data}');
+      Navigator.pop(context);
+      if (mounted) {
+        Navigator.popUntil(context, (route) => route.isFirst);
+      }
+    } else {
+      await errorDialog(context, '${response.error}');
+      print(response.error);
+      Navigator.pop(context);
+    }
+  }
+
+  Future<void> otpDisplay() async{/*widget.contact*/
+    await otpVerification(widget.cocontact);
+
+  }
+
+  Future<void> addCoowner() async{
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    ApiResponse response = await addCoOwners(
+        widget.coname, widget.coaddress,
+        widget.cocontact, widget.password,
+        widget.access, '${prefs.getString('token')}');
+
+    if(response.error == null){
+      await successDialog(context, '${response.data}');
+      Navigator.popUntil(context, (route) => route.isFirst);
+    }else{
+      print(response.error);
+    }
+  }
+
+  @override
+  void initState(){
+    super.initState();
+
+  }
+
+  final defaultPinTheme = PinTheme(
+      width: 56,
+      height: 60,
+      textStyle: const TextStyle(
+          fontSize: 22,
+          color: Colors.black
+      ),
+      decoration: RegistrationStyle.otpInput
+  );
+
+  bool showTimer = true;
+  bool? isVerified;
+  String otp = '';
+
+  Future<void> inputCodeCheck() async{
+    ApiResponse response = await otpCheck(otp);
+
+    if(response.error == null){
+      regForm();
+    }else{
+      warningTextDialog(context, 'Invalid OTP', '${response.error}');
+    }
+  }
+
+
+  @override
+  Widget build(BuildContext context) {
+    print(widget.coname);
+    return SafeArea(
+        child: Scaffold(
+          body: SingleChildScrollView(
+              padding: const EdgeInsets.all(15),
+              child: SizedBox(
+                width: double.infinity,
+                child: Column(
+                  children: [
+                    const Text(
+                      'Verification',
+                      style: TextStyle(
+                          color: Colors.black,
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold
+                      ),
+                    ),
+                    Container(
+                      margin: const EdgeInsets.symmetric(vertical: 40),
+                      child: const Text(
+                        'Enter the code sent to your number.',
+                        style: TextStyle(
+                            color: Colors.grey,
+                            fontSize: 18
+                        ),
+                      ),
+                    ),
+                    Container(
+                      margin: const EdgeInsets.only(bottom: 40),
+                      child: Text(
+                        widget.cocontact,
+                        style: const TextStyle(
+                            color: Colors.black,
+                            fontSize: 18
+                        ),
+                      ),
+                    ),
+                    Pinput(
+                      validator: (value){
+                        otp = value!;
+                      },
+                      length: 4,
+                      defaultPinTheme: defaultPinTheme,
+                      focusedPinTheme: defaultPinTheme.copyWith(
+                          decoration: defaultPinTheme.decoration!.copyWith(
+                              border: Border.all(color: ColorStyle.tertiary)
+                          )
+                      ),
+                    ),
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: Container(
+                          margin: const EdgeInsets.only(left:40, top: 5),
+                          child: Row(
+                            children: [
+                              const Text("Didn't get the code?  "),
+                              showTimer
+                                  ? TimerCountdown(
+                                format: CountDownTimerFormat.minutesSeconds,
+                                enableDescriptions: false,
+                                spacerWidth: 0,
+                                timeTextStyle: const TextStyle(
+                                    fontSize: 15
+                                ),
+                                endTime: DateTime.now().add(const Duration(minutes: 5)),
+                                onEnd: () {
+                                  setState(() {
+                                    showTimer = false;
+                                  });
+                                },
+                              )
+                                  : Container(
+                                  margin: const EdgeInsets.all(0),
+                                  padding: const EdgeInsets.all(0),
+                                  child: InkWell(
+                                    onTap: (){
+                                      setState(() {
+                                        showTimer = true;
+                                      });
+                                      otpDisplay();
+                                    },
+                                    child: const Text(
+                                      'Resend',
+                                      style: RegistrationStyle.resendButton,
+                                    ),
+                                  )
+                              ),
+                            ],
+                          )
+                      ),
+                    ),
+                    const SizedBox(height: 20,),
+                    ElevatedButton(
+                        style: RegistrationStyle.signButton(),
+                        onPressed: (){
+                          inputCodeCheck();
+                        },
+                        child: const Text(
+                          'Submit',
+                          style: TextStyle(
+                              fontSize: 15,
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold
+                          ),
+                        )
+                    )
+                  ],
+                ),
+              )
+          ),
+        )
+    );
+  }
+}
+
+class EditCoOwnerScreen extends StatefulWidget {
+  final String coname; final String coaddress; final String cocontact;
+  final String access; final String coid;
+  const EditCoOwnerScreen({super.key, required this.coname, required this.coaddress, required this.cocontact, required this.access, required this.coid});
+
+  @override
+  State<EditCoOwnerScreen> createState() => _EditCoOwnerScreenState();
+}
+
+class _EditCoOwnerScreenState extends State<EditCoOwnerScreen> {
+  final TextEditingController _coName = TextEditingController();
+  final TextEditingController _coAddress = TextEditingController();
+  final TextEditingController _coContact = TextEditingController();
+  final TextEditingController _coPassword = TextEditingController();
+  String selectedAccess = ''; bool exist = false; bool isHidden =true; String selectedAcc = ''; int selIndex = 0;
+  String editContact = '';
+
+  bool validatePassword(String password){
+    final regex = RegExp(r'^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$');
+
+    return regex.hasMatch(password);
+  }
+
+
+  Future<void> editCoDetails() async{
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    String access = '';
+    if(selectedAccess == 'Full Access'){
+      setState(() {
+        access = 'full';
+      });
+    }else{
+      setState(() {
+        access = 'limit';
+      });
+    }
+    ApiResponse response = await editCoOwners(
+        _coName.text, _coAddress.text, editContact, widget.coid, widget.cocontact,
+        selectedAccess.isEmpty ? widget.access : access, '${prefs.getString('token')}');
+
+    if(response.error == null){
+      await successDialog(context, '${response.data}');
+        Navigator.pop(context,true);
+    }else{
+      await warningDialog(context, '${response.error}');
+    }
+  }
+
+
+  @override
+  void initState() {
+   _coName.text = widget.coname;
+   _coAddress.text = widget.coaddress;
+   editContact = widget.cocontact;
+   selectedAcc = widget.access;
+    super.initState();
+  }
+  
+  @override
+  Widget build(BuildContext context) {
+
+    if(widget.access == 'full' || selectedAccess == 'Full Access'){
+
+        selIndex = 0;
+
+    }else if(widget.access == 'limit' || selectedAccess == 'Limited Access'){
+
+        selIndex = 1;
+
+    }
+    GroupButtonController _controller = GroupButtonController(
+      selectedIndex: selIndex,
+    );
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Edit Co-Owners Account'),
+        titleTextStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        leading: IconButton(
+          onPressed: (){
+            Navigator.pop(context,true);
+          },
+          icon: const Icon(CupertinoIcons.chevron_left,color: Colors.white,),
+        ),
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(8),
+        child: Column(
+          children: [
+            Container(
+              width: double.infinity,
+              decoration: const BoxDecoration(
+                  color: ColorStyle.tertiary,
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(5))
+              ),
+              padding: const EdgeInsets.all(4),
+              child: const Text('Co-Owner Name',style: TextStyle(color: Colors.white,fontWeight: FontWeight.bold),),
+            ),
+            TextField(
+              controller: _coName,
+              decoration: const InputDecoration(
+                  filled: true,
+                  fillColor: Colors.white,
+                  focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.vertical(bottom: Radius.circular(5)),
+                      borderSide: BorderSide(
+                          color: Colors.grey
+                      )
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.vertical(bottom: Radius.circular(5))
+                  )
+              ),
+            ),
+            const SizedBox(height: 10,),
+
+            Container(
+              width: double.infinity,
+              decoration: const BoxDecoration(
+                  color: ColorStyle.tertiary,
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(5))
+              ),
+              padding: const EdgeInsets.all(4),
+              child: const Text('Co-Owner Address',style: TextStyle(color: Colors.white,fontWeight: FontWeight.bold),),
+            ),
+            TextField(
+              controller: _coAddress,
+              decoration: const InputDecoration(
+                  filled: true,
+                  fillColor: Colors.white,
+                  focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.vertical(bottom: Radius.circular(5)),
+                      borderSide: BorderSide(
+                          color: Colors.grey
+                      )
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.vertical(bottom: Radius.circular(5))
+                  )
+              ),
+            ),
+            const SizedBox(height: 10,),
+
+            Container(
+              width: double.infinity,
+              decoration: const BoxDecoration(
+                  color: ColorStyle.tertiary,
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(5))
+              ),
+              padding: const EdgeInsets.all(4),
+              child: const Text('Co-Owner Contact Number',style: TextStyle(color: Colors.white,fontWeight: FontWeight.bold),),
+            ),
+            OutlinedButton(
+                style: OutlinedButton.styleFrom(
+                  fixedSize: Size(MediaQuery.of(context).size.width, 50),
+                  backgroundColor: Colors.white,
+                  shape: const RoundedRectangleBorder(
+                    borderRadius: BorderRadius.zero
+                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 10)
+                ),
+                onPressed: ()async{
+                  final response = await Navigator.push(context, MaterialPageRoute(builder: (context)
+                  => const NumberChangeScreen()));
+
+                  if(response != null){
+                    setState(() {
+                      editContact = response;
+                    });
+                  }
+                },
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(widget.cocontact,style: TextStyle(color: Colors.grey.shade700,fontSize: 16)),
+                )
+            ),
+            const SizedBox(height: 10,),
+
+            Container(
+              width: double.infinity,
+              decoration: const BoxDecoration(
+                  color: ColorStyle.tertiary,
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(5))
+              ),
+              padding: const EdgeInsets.all(4),
+              child: const Text('Access Privilege',style: TextStyle(color: Colors.white,fontWeight: FontWeight.bold),),
+            ),
+            Container(
+              width: double.infinity,
+              decoration: const BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.vertical(bottom: Radius.circular(5))
+              ),
+              padding: const EdgeInsets.all(8),
+              child: Column(
+                children: [
+                  GroupButton(
+                    controller: _controller,
+                    isRadio: true,
+                    options: const GroupButtonOptions(
+                      selectedColor: Colors.blue,
+                      unselectedColor: Colors.grey,
+                      selectedTextStyle: TextStyle(color: Colors.white),
+                    ),
+                    onSelected: (selected, index, isSelected) {
+                      print('$selected button is selected');
+                      setState(() {
+                        selectedAccess = selected;
+                        selIndex = index;
+                      });
+
+                    },
+                    buttons: const ["Full Access", "Limited Access"],
+                    buttonBuilder: (selected, value, context) {
+                      print(value);
+                      return Container(
+                        width: 100,
+                        height: 100,
+                        decoration: BoxDecoration(
+                            color: selected ? ColorStyle.tertiary : Colors.white,
+                            borderRadius: BorderRadius.circular(5),
+                            border: Border.all(
+                                color: ColorStyle.tertiary,
+                                width: 2
+                            )
+                        ),
+                        padding: const EdgeInsets.all(8),
+                        child: Column(
+                          children: [
+                            Icon(
+                              value == 'Full Access' ? Icons.verified : Icons.report,
+                              color: selected ? Colors.white : ColorStyle.tertiary,
+                              size: 32,
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              value,
+                              style: TextStyle(
+                                  color: selected ? Colors.white : ColorStyle.tertiary,
+                                  fontWeight: FontWeight.bold
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 20,),
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      selectedAccess.isEmpty
+                          ? selectedAcc == 'full'
+                          ? 'Full Access' : 'Limited Access'
+                          : selectedAccess,
+                      style: TextStyle(
+                          color: selectedAccess.isEmpty
+                              ? selectedAcc == 'full'
+                              ? Colors.green : Colors.orange
+                              : selectedAccess == 'Full Access'
+                              ? Colors.green : Colors.orange,
+                          fontWeight: FontWeight.bold
+                      ),
+                    ),
+                  ),
+                  selectedAccess.isEmpty ?
+                  Align(
+                    alignment: Alignment.center,
+                    child: Text(
+                      selectedAcc == 'full' ?
+                      'Giving your co-owner this privilege will grant them full control of your shop\'s details.'
+                          ' This includes viewing, updating, and deleting any information provided of your shop as well as manipulating'
+                          ' transactions happening within.' :
+                      'Giving your co-owner this privilege will only grant them limited access of your shop\'s '
+                          'information and transaction. Specifically, they can only view the activity happening.',
+                      style: const TextStyle(
+                          fontWeight: FontWeight.bold
+                      ),
+                    ),
+                  )
+                      : Text(
+                    selectedAccess == 'Full Access' ? 'Giving your co-owner this privilege will grant them full control of your shop\'s details.'
+                        ' This includes viewing, updating, and deleting any information provided of your shop as well as manipulating'
+                        ' transactions happening within.' :
+                    'Giving your co-owner this privilege will only grant them limited access of your shop\'s '
+                        'information and transaction. Specifically, they can only view the activity happening.',
+                    style: const TextStyle(
+
+                    ),
+                    textAlign: TextAlign.justify,
+                  )
+                ],
+              ),
+            ),
+            const SizedBox(height: 10,),
+
+          ],
+        ),
+      ),
+      bottomNavigationBar: Container(
+        margin: const EdgeInsets.all(4),
+        child: ElevatedButton(
+          style: ElevatedButton.styleFrom(
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(5)
+              ),
+              backgroundColor: ColorStyle.tertiary
+          ),
+          onPressed: (){
+              editCoDetails();
+          },
+          child: const Text('Edit Details',style: TextStyle(color: Colors.white),),
+        ),
+      ),
+    );
+  }
+}
+
+class NumberChangeScreen extends StatefulWidget {
+  const NumberChangeScreen({super.key});
+
+  @override
+  State<NumberChangeScreen> createState() => _NumberChangeScreenState();
+}
+
+class _NumberChangeScreenState extends State<NumberChangeScreen> {
+  final TextEditingController _newContact = TextEditingController();
+  bool exist = false;
+  bool validateNumber(String contactNumber) {
+    final regex = RegExp(r'^(09|\+639)\d{9}$');
+
+    return regex.hasMatch(contactNumber);
+  }
+
+
+  Future<bool> isNumberExists() async{
+    ApiResponse response = await numberExist(_newContact.text);
+
+    if(response.error == null){
+      return exist = response.data as bool;
+    }else{
+      throw ('');
+    }
+  }
+
+  Future<void> otpDisplay() async{/*widget.contact*/
+    await otpVerification(_newContact.text);
+  }
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Change Number'),
+        titleTextStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        leading: IconButton(
+          onPressed: (){
+            Navigator.pop(context,true);
+          },
+          icon: const Icon(CupertinoIcons.chevron_left,color: Colors.white,),
+        ),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(4.0),
+        child: Column(
+          children: [
+            TextField(
+              controller: _newContact,
+              decoration: const InputDecoration(
+                  filled: true,
+                  fillColor: Colors.white,
+                  focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(5)),
+                      borderSide: BorderSide(
+                          color: Colors.grey
+                      )
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(5))
+                  )
+              ),
+            ),
+            ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: ColorStyle.tertiary,
+                  foregroundColor: Colors.white,
+                  fixedSize: Size(MediaQuery.of(context).size.width, 30),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(5)
+                  )
+                ),
+                onPressed: ()async{
+                  await isNumberExists();
+                  if(exist == true){
+                    warningTextDialog(context, 'Invalid Contact Number',
+                        'Contact number already existed. Please input another number.');
+                  }else if(!validateNumber(_newContact.text)){
+                    warningTextDialog(context, 'Invalid Contact Number',
+                        'Please input a valid contact number.\n'
+                            'e.g. 09123456789');
+                  }
+                  else{
+                    final response = await Navigator.push(context, MaterialPageRoute(builder: (context) => ValidateNewContactOTP(contact: _newContact.text)));
+                    otpDisplay();
+
+                    Navigator.pop(context,response);
+                  }
+                },
+                child: const Text('Edit Contact')
+            )
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+
+class ValidateNewContactOTP extends StatefulWidget {
+  final String contact;
+  const ValidateNewContactOTP({super.key, required this.contact, });
+
+  @override
+  State<ValidateNewContactOTP> createState() => _ValidateNewContactOTPState();
+}
+
+class _ValidateNewContactOTPState extends State<ValidateNewContactOTP> {
+
+
+  Future<void> otpDisplay() async{/*widget.contact*/
+    await otpVerification(widget.contact);
+  }
+
+  @override
+  void initState(){
+    super.initState();
+
+  }
+
+  final defaultPinTheme = PinTheme(
+      width: 56,
+      height: 60,
+      textStyle: const TextStyle(
+          fontSize: 22,
+          color: Colors.black
+      ),
+      decoration: RegistrationStyle.otpInput
+  );
+
+  bool showTimer = true;
+  bool? isVerified;
+  String otp = '';
+
+  Future<void> inputCodeCheck() async{
+    ApiResponse response = await otpCheck(otp);
+
+    if(response.error == null){
+      Navigator.pop(context, widget.contact);
+    }else{
+      warningTextDialog(context, 'Invalid OTP', '${response.error}');
+    }
+  }
+
+
+  @override
+  Widget build(BuildContext context) {
+    print(otp);
+    return SafeArea(
+        child: Scaffold(
+          body: SingleChildScrollView(
+              padding: const EdgeInsets.all(15),
+              child: SizedBox(
+                width: double.infinity,
+                child: Column(
+                  children: [
+                    const Text(
+                      'Verification',
+                      style: TextStyle(
+                          color: Colors.black,
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold
+                      ),
+                    ),
+                    Container(
+                      margin: const EdgeInsets.symmetric(vertical: 40),
+                      child: const Text(
+                        'Enter the code sent to your number.',
+                        style: TextStyle(
+                            color: Colors.grey,
+                            fontSize: 18
+                        ),
+                      ),
+                    ),
+                    Container(
+                      margin: const EdgeInsets.only(bottom: 40),
+                      child: Text(
+                        widget.contact,
+                        style: const TextStyle(
+                            color: Colors.black,
+                            fontSize: 18
+                        ),
+                      ),
+                    ),
+                    Pinput(
+                      validator: (value){
+                        otp = value!;
+                      },
+                      length: 4,
+                      defaultPinTheme: defaultPinTheme,
+                      focusedPinTheme: defaultPinTheme.copyWith(
+                          decoration: defaultPinTheme.decoration!.copyWith(
+                              border: Border.all(color: ColorStyle.tertiary)
+                          )
+                      ),
+                    ),
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: Container(
+                          margin: const EdgeInsets.only(left:40, top: 5),
+                          child: Row(
+                            children: [
+                              const Text("Didn't get the code?  "),
+                              showTimer
+                                  ? TimerCountdown(
+                                format: CountDownTimerFormat.minutesSeconds,
+                                enableDescriptions: false,
+                                spacerWidth: 0,
+                                timeTextStyle: const TextStyle(
+                                    fontSize: 15
+                                ),
+                                endTime: DateTime.now().add(const Duration(minutes: 5)),
+                                onEnd: () {
+                                  setState(() {
+                                    showTimer = false;
+                                  });
+                                },
+                              )
+                                  : Container(
+                                  margin: const EdgeInsets.all(0),
+                                  padding: const EdgeInsets.all(0),
+                                  child: InkWell(
+                                    onTap: (){
+                                      setState(() {
+                                        showTimer = true;
+                                      });
+                                      otpDisplay();
+                                    },
+                                    child: const Text(
+                                      'Resend',
+                                      style: RegistrationStyle.resendButton,
+                                    ),
+                                  )
+                              ),
+                            ],
+                          )
+                      ),
+                    ),
+                    const SizedBox(height: 20,),
+                    ElevatedButton(
+                        style: RegistrationStyle.signButton(),
+                        onPressed: ()async{
+                          await inputCodeCheck();
+                        },
+                        child: const Text(
+                          'Submit',
+                          style: TextStyle(
+                              fontSize: 15,
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold
+                          ),
+                        )
+                    )
+                  ],
+                ),
+              )
+          ),
+        )
+    );
+  }
+}

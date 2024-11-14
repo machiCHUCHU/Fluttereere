@@ -5,6 +5,7 @@ import 'package:calendar_date_picker2/calendar_date_picker2.dart';
 import 'package:capstone/api_response.dart';
 import 'package:capstone/brandnew/dialogs.dart';
 import 'package:capstone/connect/laravel.dart';
+import 'package:capstone/services/servicesadd.dart';
 import 'package:capstone/services/thirdparty.dart';
 import 'package:capstone/testPage.dart';
 import 'package:flutter/material.dart';
@@ -47,6 +48,20 @@ class _testScreenState extends State<testScreen> {
 
 
   }
+  List<Map<String, dynamic>> records = [
+    {
+      'name': 'Value 1'
+    },
+  ];
+
+  Future<void> addName() async{
+    ApiResponse response = await testing(records);
+    if(response.error == null){
+      successDialog(context, 'sige');
+    }else{
+      errorDialog(context, '${response.error}');
+    }
+}
 
 
   @override
@@ -75,6 +90,14 @@ class _testScreenState extends State<testScreen> {
 
                   },
                   child: const Text('Get Location')
+              ),
+              TextButton(
+                  onPressed: (){
+                    print(jsonEncode(records));
+
+                   addName();
+                  },
+                  child: Text('Add record')
               )
             ],
           ),

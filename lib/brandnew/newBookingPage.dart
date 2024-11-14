@@ -22,16 +22,18 @@ class NewBookingScreen extends StatefulWidget {
 }
 
 class _NewBookingScreenState extends State<NewBookingScreen> {
-  String? token;
-  int? userid;
-  int? shopid;
-  Map home = {};
-  Map appbar = {};
-  bool hasWalkin = false;
-  bool hasBook = false;
-  bool isLoading = true;
+  String? token;int? userid;int? shopid;Map home = {};Map appbar = {};
+  bool hasWalkin = false;bool hasBook = false;bool isLoading = true;
   final TextEditingController _finalWeight = TextEditingController();
-  String _finalCost = '';
+  String _finalCost = '';String? usertype;String? access;
+
+  void getUser() async{
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      usertype = prefs.getString('usertype');
+      access = prefs.getString('accesstype');
+    });
+  }
 
   List<dynamic> bookings = [];
   List<dynamic> walkins = [];
@@ -109,7 +111,7 @@ class _NewBookingScreenState extends State<NewBookingScreen> {
   void _bottomModalBookings(
       String name, String contact, String load, String total, String date,
       String payment, String service, String bookingId, String customerImage, String customerAddress
-      ,String loadprice, String loadweight) {
+      ,String loadprice, String loadweight, String servicetype) {
     _finalWeight.text = load;
     int multiplier = 0;
 
@@ -166,7 +168,7 @@ class _NewBookingScreenState extends State<NewBookingScreen> {
                           children: [
                             const Text(
                               'Address',
-                              style: TextStyle(color: Colors.grey),
+                              style: TextStyle(color: Colors.grey,fontSize: 12),
                             ),
                             Text(
                               customerAddress,
@@ -179,7 +181,7 @@ class _NewBookingScreenState extends State<NewBookingScreen> {
                                 children: [
                                   const Text(
                                     'Contact Information',
-                                    style: TextStyle(color: Colors.grey),
+                                    style: TextStyle(color: Colors.grey,fontSize: 12),
                                   ),
                                   Text(
                                     contact,
@@ -192,7 +194,7 @@ class _NewBookingScreenState extends State<NewBookingScreen> {
                                 children: [
                                   const Text(
                                     'Date Requested',
-                                    style: TextStyle(color: Colors.grey),
+                                    style: TextStyle(color: Colors.grey,fontSize: 12),
                                   ),
                                   Text(
                                     date,
@@ -216,7 +218,7 @@ class _NewBookingScreenState extends State<NewBookingScreen> {
                                 children: [
                                   const Text(
                                     'Service Availed',
-                                    style: TextStyle(color: Colors.grey),
+                                    style: TextStyle(color: Colors.grey,fontSize: 12),
                                   ),
                                   Text(
                                     service,
@@ -228,25 +230,45 @@ class _NewBookingScreenState extends State<NewBookingScreen> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   const Text(
-                                    'Payment Status',
-                                    style: TextStyle(color: Colors.grey),
+                                    'Service Type      ',
+                                    style: TextStyle(color: Colors.grey,fontSize: 12),
                                   ),
                                   Text(
-                                    payment,
+                                    servicetype == 'full' ? 'Full Service':'Self Service',
                                     style: const TextStyle(fontWeight: FontWeight.bold),
                                   ),
                                 ],
                               ),
                             ),
                             const SizedBox(height: 5),
-                            const Text(
-                              'Total Payment',
-                              style: TextStyle(color: Colors.grey),
-                            ),
-                            Text(
-                              '₱$total.00',
-                              style: const TextStyle(fontWeight: FontWeight.bold),
-                            ),
+                            RowItem(
+                                title: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const Text(
+                                      'Total Payment',
+                                      style: TextStyle(color: Colors.grey,fontSize: 12),
+                                    ),
+                                    Text(
+                                      '₱$total',
+                                      style: const TextStyle(fontWeight: FontWeight.bold),
+                                    ),
+                                  ],
+                                ),
+                                description: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const Text(
+                                      'Payment Status',
+                                      style: TextStyle(color: Colors.grey,fontSize: 12),
+                                    ),
+                                    Text(
+                                      payment,
+                                      style: const TextStyle(fontWeight: FontWeight.bold),
+                                    ),
+                                  ],
+                                ),
+                            )
                           ],
                         ),
                       ),
@@ -290,8 +312,9 @@ class _NewBookingScreenState extends State<NewBookingScreen> {
                         Size(MediaQuery.of(context).size.width * .42, 30),
                       ),
                       onPressed: () {
-                        bookingUpdate('2',
-                            bookingId);
+                        usertype == 'owner' ? bookingUpdate('2', bookingId)
+                            : access == 'full' ? bookingUpdate('2', bookingId)
+                            : warningTextDialog(context, 'Access Denied', 'Sorry you don\'t have permission to update laundry status');
                       },
                       child: const Text('Decline'),
                     ),
@@ -310,8 +333,9 @@ class _NewBookingScreenState extends State<NewBookingScreen> {
                           multiplier = (int.parse(_finalWeight.text) / int.parse(loadweight)).ceil();
                           _finalCost = (multiplier * int.parse(loadprice)).toString();
                         }
-                        bookingUpdate('1',
-                            bookingId);
+                        usertype == 'owner' ? bookingUpdate('1', bookingId)
+                            : access == 'full' ? bookingUpdate('1', bookingId)
+                            : warningTextDialog(context, 'Access Denied', 'Sorry you don\'t have permission to update laundry status');
                       },
                       child: const Text('Proceed'),
                     ),
@@ -328,7 +352,7 @@ class _NewBookingScreenState extends State<NewBookingScreen> {
 
   void _bottomModalWalkins(
       String contact, String load, String total, String date, String payment,
-      String service, String walkinId) {
+      String service, String walkinId, String servicetype) {
     showMaterialModalBottomSheet(
         context: context,
         shape: const RoundedRectangleBorder(
@@ -371,7 +395,7 @@ class _NewBookingScreenState extends State<NewBookingScreen> {
                                     children: [
                                       const Text(
                                         'Contact Information',
-                                        style: TextStyle(color: Colors.grey),
+                                        style: TextStyle(color: Colors.grey,fontSize: 12),
                                       ),
                                       Text(
                                         contact,
@@ -384,7 +408,7 @@ class _NewBookingScreenState extends State<NewBookingScreen> {
                                     children: [
                                       const Text(
                                         'Date Requested',
-                                        style: TextStyle(color: Colors.grey),
+                                        style: TextStyle(color: Colors.grey,fontSize: 12),
                                       ),
                                       Text(
                                         date,
@@ -408,7 +432,7 @@ class _NewBookingScreenState extends State<NewBookingScreen> {
                                     children: [
                                       const Text(
                                         'Service Availed',
-                                        style: TextStyle(color: Colors.grey),
+                                        style: TextStyle(color: Colors.grey,fontSize: 12),
                                       ),
                                       Text(
                                         service,
@@ -420,8 +444,24 @@ class _NewBookingScreenState extends State<NewBookingScreen> {
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
                                       const Text(
+                                        'Service Type      ',
+                                        style: TextStyle(color: Colors.grey,fontSize: 12),
+                                      ),
+                                      Text(
+                                        servicetype,
+                                        style: const TextStyle(fontWeight: FontWeight.bold),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(height: 5),
+                                RowItem(
+                                  title: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      const Text(
                                         'Payment Status',
-                                        style: TextStyle(color: Colors.grey),
+                                        style: TextStyle(color: Colors.grey,fontSize: 12),
                                       ),
                                       Text(
                                         payment,
@@ -429,16 +469,22 @@ class _NewBookingScreenState extends State<NewBookingScreen> {
                                       ),
                                     ],
                                   ),
+                                  description: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      const Text(
+                                        'Total Payment   ',
+                                        style: TextStyle(color: Colors.grey,fontSize: 12),
+                                      ),
+                                      Text(
+                                        '₱$total',
+                                        style: const TextStyle(fontWeight: FontWeight.bold),
+                                      ),
+
+                                    ],
+                                  ),
                                 ),
-                                const SizedBox(height: 5),
-                                const Text(
-                                  'Total Payment',
-                                  style: TextStyle(color: Colors.grey),
-                                ),
-                                Text(
-                                  '₱$total.00',
-                                  style: const TextStyle(fontWeight: FontWeight.bold),
-                                ),
+
                               ],
                             ),
                           ),
@@ -463,7 +509,10 @@ class _NewBookingScreenState extends State<NewBookingScreen> {
                             Size(MediaQuery.of(context).size.width * .42, 30),
                           ),
                           onPressed: () {
-                            walkinUpdate('2', walkinId);
+                            usertype == 'owner' ? walkinUpdate('2', walkinId)
+                                : access == 'full' ? walkinUpdate('2', walkinId)
+                                : warningTextDialog(context, 'Access Denied', 'Sorry you don\'t have permission to update laundry status');
+
                           },
                           child: const Text('Decline'),
                         ),
@@ -478,7 +527,9 @@ class _NewBookingScreenState extends State<NewBookingScreen> {
                             Size(MediaQuery.of(context).size.width * .42, 30),
                           ),
                           onPressed: () {
-                            walkinUpdate('1', walkinId);
+                            usertype == 'owner' ? walkinUpdate('1', walkinId)
+                                : access == 'full' ? walkinUpdate('1', walkinId)
+                                : warningTextDialog(context, 'Access Denied', 'Sorry you don\'t have permission to update laundry status');
                           },
                           child: const Text('Proceed'),
                         ),
@@ -494,6 +545,7 @@ class _NewBookingScreenState extends State<NewBookingScreen> {
   @override
   void initState() {
     super.initState();
+    getUser();
     bookingsDisplay();
     walkinDisplay();
   }
@@ -529,12 +581,7 @@ class _NewBookingScreenState extends State<NewBookingScreen> {
                   ),
                 )
               ),
-              body: isLoading ? Center(
-                child: LoadingAnimationWidget.staggeredDotsWave(
-                  color: Colors.black,
-                  size: 50,
-                ),
-              ) : TabBarView(
+              body: isLoading ? loading() : TabBarView(
                 children: [
                   hasBook
                       ? SingleChildScrollView(
@@ -606,7 +653,8 @@ class _NewBookingScreenState extends State<NewBookingScreen> {
                                         '${book['CustomerImage']}',
                                         '${book['CustomerAddress']}',
                                         '${book['LoadPrice']}',
-                                        '${book['LoadWeight']}');
+                                        '${book['LoadWeight']}',
+                                        '${book['ServiceType']}');
                                   },
                                   child: Ink(
                                     color: Colors.white,
@@ -722,7 +770,8 @@ class _NewBookingScreenState extends State<NewBookingScreen> {
                                         '${walk['DateIssued']}',
                                         '${walk['PaymentStatus']}',
                                         '${walk['ServiceName']}',
-                                        '${walk['WalkinID']}',);
+                                        '${walk['WalkinID']}',
+                                         '${walk['ServiceType']}',);
                                   },
                                   child: Ink(
                                     color: Colors.white,
@@ -787,24 +836,16 @@ class NewWashScreen extends StatefulWidget {
 }
 
 class _NewWashScreenState extends State<NewWashScreen> {
-  String? token;
-  int? userid;
-  int? shopid;
-  Map home = {};
-  Map appbar = {};
-  bool hasWalkin = false;
-  bool hasBook = false;
-  bool isLoading = true;
-
-  List<dynamic> bookings = [];
-  List<dynamic> walkins = [];
+  String? token; int? userid; int? shopid; Map home = {}; Map appbar = {};
+  bool hasWalkin = false; bool hasBook = false; bool isLoading = true;
+  List<dynamic> bookings = []; List<dynamic> walkins = []; String? usertype;String? access;
 
   void getUser() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
       setState(() {
         token = prefs.getString('token');
-        userid = prefs.getInt('userid');
-        shopid = prefs.getInt('shopid');
+        usertype = prefs.getString('usertype');
+        access = prefs.getString('accesstype');
       });
     washDisplay();
   }
@@ -852,182 +893,6 @@ class _NewWashScreenState extends State<NewWashScreen> {
       await errorDialog(context, '${response.error}');
     }
   }
-
-
-
-  /*void _bottomModalBookings(
-      String name, String contact, String load, String total, String date,
-      String payment, String service, String bookingId, bool isCancelled) {
-    showMaterialModalBottomSheet(
-        context: context,
-        shape: const RoundedRectangleBorder(
-            borderRadius: BorderRadius.vertical(top: Radius.circular(25))),
-        builder: (context) {
-          bool isPaid = payment == 'paid';
-          return SizedBox(
-              height: MediaQuery.of(context).size.height * .5,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 15),
-                child: Column(
-                  children: [
-                    const SizedBox(
-                      height: 20,
-                    ),
-                    Text(
-                      'Booking ID: $bookingId',
-                      style: LoginStyle.modalTitle,
-                    ),
-                    const SizedBox(
-                      height: 20,
-                    ),
-                    Expanded(
-                        child: Align(
-                            alignment: Alignment.topLeft,
-                            child: SingleChildScrollView(
-                              child: Column(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  RowItem(
-                                      title: const Row(
-                                        children: [
-                                          Icon(Icons.calendar_month,
-                                              color: ColorStyle.tertiary),
-                                          Text(
-                                            'Date',
-                                          )
-                                        ],
-                                      ),
-                                      description: Text(
-                                        date,
-                                        style: const TextStyle(
-                                            fontWeight: FontWeight.bold),
-                                      )),
-                                  const SizedBox(height: 10),
-                                  RowItem(
-                                      title: const Row(
-                                        children: [
-                                          Icon(Icons.person,
-                                              color: ColorStyle.tertiary),
-                                          Text(
-                                            'Name',
-                                          )
-                                        ],
-                                      ),
-                                      description: Text(
-                                        name,
-                                        style: const TextStyle(
-                                            fontWeight: FontWeight.bold),
-                                      )),
-                                  const SizedBox(height: 10),
-                                  RowItem(
-                                      title: const Row(
-                                        children: [
-                                          Icon(Icons.call,
-                                              color: ColorStyle.tertiary),
-                                          Text(
-                                            'Contact Number',
-                                          )
-                                        ],
-                                      ),
-                                      description: Text(
-                                        contact,
-                                        style: const TextStyle(
-                                            fontWeight: FontWeight.bold),
-                                      )),
-                                  const SizedBox(height: 10),
-                                  RowItem(
-                                      title: const Row(
-                                        children: [
-                                          Icon(Icons.monitor_weight,
-                                              color: ColorStyle.tertiary),
-                                          Text(
-                                            'Load',
-                                          )
-                                        ],
-                                      ),
-                                      description: Text(
-                                        '$load kg/s',
-                                        style: const TextStyle(
-                                            fontWeight: FontWeight.bold),
-                                      )),
-                                  const SizedBox(height: 10),
-                                  RowItem(
-                                      title: const Row(
-                                        children: [
-                                          Icon(Icons.local_laundry_service,
-                                              color: ColorStyle.tertiary),
-                                          Text(
-                                            'Service',
-                                          )
-                                        ],
-                                      ),
-                                      description: Text(
-                                        service,
-                                        style: const TextStyle(
-                                            fontWeight: FontWeight.bold),
-                                      )),
-                                  const SizedBox(height: 10),
-                                  RowItem(
-                                      title: const Row(
-                                        children: [
-                                          Icon(Icons.attach_money,
-                                              color: ColorStyle.tertiary),
-                                          Text(
-                                            'Total Cost',
-                                          )
-                                        ],
-                                      ),
-                                      description: Text(
-                                        total,
-                                        style: const TextStyle(
-                                            fontWeight: FontWeight.bold),
-                                      )),
-                                  const SizedBox(height: 10),
-                                  RowItem(
-                                      title: const Row(
-                                        children: [
-                                          Icon(Icons.person,
-                                              color: ColorStyle.tertiary),
-                                          Text(
-                                            'Payment Status',
-                                          )
-                                        ],
-                                      ),
-                                      description: Text(
-                                        payment,
-                                        style: const TextStyle(
-                                            fontWeight: FontWeight.bold),
-                                      )),
-                                  const SizedBox(height: 10),
-                                ],
-                              ),
-                            ))),
-                    isPaid || isCancelled
-                        ? const SizedBox.shrink()
-                        : Align(
-                            alignment: Alignment.bottomCenter,
-                            child: ElevatedButton(
-                                style: ElevatedButton.styleFrom(
-                                    backgroundColor: ColorStyle.tertiary,
-                                    shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(5)),
-                                    fixedSize: Size(
-                                        MediaQuery.of(context).size.width, 20)),
-                                onPressed: () {
-                                  paymentUpdate('booking', bookingId);
-                                },
-                                child: const Text(
-                                  'Paid',
-                                  style: TextStyle(color: Colors.white),
-                                )),
-                          )
-                  ],
-                ),
-              ));
-        });
-  }*/
 
   void _bottomModalBookings(
       String name, String contact, String load, String total, String date,
@@ -1086,7 +951,7 @@ class _NewWashScreenState extends State<NewWashScreen> {
                           children: [
                             const Text(
                               'Address',
-                              style: TextStyle(color: Colors.grey),
+                              style: TextStyle(color: Colors.grey,fontSize: 12),
                             ),
                             Text(
                               customerAddress,
@@ -1099,7 +964,7 @@ class _NewWashScreenState extends State<NewWashScreen> {
                                 children: [
                                   const Text(
                                     'Contact Information',
-                                    style: TextStyle(color: Colors.grey),
+                                    style: TextStyle(color: Colors.grey,fontSize: 12),
                                   ),
                                   Text(
                                     contact,
@@ -1112,7 +977,7 @@ class _NewWashScreenState extends State<NewWashScreen> {
                                 children: [
                                   const Text(
                                     'Date Requested',
-                                    style: TextStyle(color: Colors.grey),
+                                    style: TextStyle(color: Colors.grey,fontSize: 12),
                                   ),
                                   Text(
                                     date,
@@ -1136,7 +1001,7 @@ class _NewWashScreenState extends State<NewWashScreen> {
                                 children: [
                                   const Text(
                                     'Service Availed',
-                                    style: TextStyle(color: Colors.grey),
+                                    style: TextStyle(color: Colors.grey,fontSize: 12),
                                   ),
                                   Text(
                                     service,
@@ -1149,7 +1014,7 @@ class _NewWashScreenState extends State<NewWashScreen> {
                                 children: [
                                   const Text(
                                     'Payment Status',
-                                    style: TextStyle(color: Colors.grey),
+                                    style: TextStyle(color: Colors.grey,fontSize: 12),
                                   ),
                                   Text(
                                     payment,
@@ -1165,10 +1030,10 @@ class _NewWashScreenState extends State<NewWashScreen> {
                                   children: [
                                     Text(
                                       'Total Payment',
-                                      style: TextStyle(color: Colors.grey),
+                                      style: TextStyle(color: Colors.grey,fontSize: 12),
                                     ),
                                     Text(
-                                      '₱$total.00',
+                                      '₱$total',
                                       style: const TextStyle(fontWeight: FontWeight.bold),
                                     ),
                                   ],
@@ -1178,7 +1043,7 @@ class _NewWashScreenState extends State<NewWashScreen> {
                                   children: [
                                     Text(
                                       'Laundry Weight',
-                                      style: TextStyle(color: Colors.grey),
+                                      style: TextStyle(color: Colors.grey,fontSize: 12),
                                     ),
                                     Text(
                                       '$load kg/s',
@@ -1198,20 +1063,23 @@ class _NewWashScreenState extends State<NewWashScreen> {
                   ? const SizedBox.shrink()
                   : Align(
                 alignment: Alignment.bottomCenter,
-                child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                        backgroundColor: ColorStyle.tertiary,
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(5)),
-                        fixedSize: Size(
-                            MediaQuery.of(context).size.width, 20)),
-                    onPressed: () {
-                      paymentUpdate('booking', bookingId);
-                    },
-                    child: const Text(
-                      'Paid',
-                      style: TextStyle(color: Colors.white),
-                    )),
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                          backgroundColor: ColorStyle.tertiary,
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(5)),
+                          fixedSize: Size(
+                              MediaQuery.of(context).size.width, 20)),
+                      onPressed: () {
+                        paymentUpdate('booking', bookingId);
+                      },
+                      child: const Text(
+                        'Paid',
+                        style: TextStyle(color: Colors.white),
+                      )),
+                ),
               )
             ],
           ),
@@ -1335,7 +1203,7 @@ class _NewWashScreenState extends State<NewWashScreen> {
                                         style: TextStyle(color: Colors.grey),
                                       ),
                                       Text(
-                                        '₱$total.00',
+                                        '₱$total',
                                         style: const TextStyle(fontWeight: FontWeight.bold),
                                       ),
                                     ],
@@ -1376,7 +1244,10 @@ class _NewWashScreenState extends State<NewWashScreen> {
                             fixedSize: Size(
                                 MediaQuery.of(context).size.width, 20)),
                         onPressed: () {
-                          paymentUpdate('walkin', walkinId);
+                          usertype == 'owner'
+                              ? paymentUpdate('walkin', walkinId)
+                              : access == 'full' ? paymentUpdate('walkin', walkinId)
+                              : warningTextDialog(context, 'Access Denied', 'Sorry you don\'t have permission to update laundry status');
                         },
                         child: const Text(
                           'Paid',
@@ -1888,24 +1759,17 @@ class NewDryScreen extends StatefulWidget {
 }
 
 class _NewDryScreenState extends State<NewDryScreen> {
-  String? token;
-  int? userid;
-  int? shopid;
-  Map home = {};
-  Map appbar = {};
-  bool hasWalkin = false;
-  bool hasBook = false;
-  bool isLoading = true;
-
-  List<dynamic> bookings = [];
-  List<dynamic> walkins = [];
+  String? token;int? userid;int? shopid;Map home = {};Map appbar = {};
+  bool hasWalkin = false;bool hasBook = false;bool isLoading = true;
+  List<dynamic> bookings = [];List<dynamic> walkins = []; String? usertype;
+  String? access;
 
   void getUser() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
       setState(() {
         token = prefs.getString('token');
-        userid = prefs.getInt('userid');
-        shopid = prefs.getInt('shopid');
+        usertype = prefs.getString('usertype');
+        access = prefs.getString('access');
       });
     dryDisplay();
   }
@@ -2013,7 +1877,7 @@ class _NewDryScreenState extends State<NewDryScreen> {
                           children: [
                             const Text(
                               'Address',
-                              style: TextStyle(color: Colors.grey),
+                              style: TextStyle(color: Colors.grey,fontSize: 12),
                             ),
                             Text(
                               customerAddress,
@@ -2026,7 +1890,7 @@ class _NewDryScreenState extends State<NewDryScreen> {
                                 children: [
                                   const Text(
                                     'Contact Information',
-                                    style: TextStyle(color: Colors.grey),
+                                    style: TextStyle(color: Colors.grey,fontSize: 12),
                                   ),
                                   Text(
                                     contact,
@@ -2039,7 +1903,7 @@ class _NewDryScreenState extends State<NewDryScreen> {
                                 children: [
                                   const Text(
                                     'Date Requested',
-                                    style: TextStyle(color: Colors.grey),
+                                    style: TextStyle(color: Colors.grey,fontSize: 12),
                                   ),
                                   Text(
                                     date,
@@ -2063,7 +1927,7 @@ class _NewDryScreenState extends State<NewDryScreen> {
                                 children: [
                                   const Text(
                                     'Service Availed',
-                                    style: TextStyle(color: Colors.grey),
+                                    style: TextStyle(color: Colors.grey,fontSize: 12),
                                   ),
                                   Text(
                                     service,
@@ -2076,7 +1940,7 @@ class _NewDryScreenState extends State<NewDryScreen> {
                                 children: [
                                   const Text(
                                     'Payment Status',
-                                    style: TextStyle(color: Colors.grey),
+                                    style: TextStyle(color: Colors.grey,fontSize: 12),
                                   ),
                                   Text(
                                     payment,
@@ -2092,10 +1956,10 @@ class _NewDryScreenState extends State<NewDryScreen> {
                                   children: [
                                     Text(
                                       'Total Payment',
-                                      style: TextStyle(color: Colors.grey),
+                                      style: TextStyle(color: Colors.grey,fontSize: 12),
                                     ),
                                     Text(
-                                      '₱$total.00',
+                                      '₱$total',
                                       style: const TextStyle(fontWeight: FontWeight.bold),
                                     ),
                                   ],
@@ -2105,7 +1969,7 @@ class _NewDryScreenState extends State<NewDryScreen> {
                                   children: [
                                     Text(
                                       'Laundry Weight',
-                                      style: TextStyle(color: Colors.grey),
+                                      style: TextStyle(color: Colors.grey,fontSize: 12),
                                     ),
                                     Text(
                                       '$load kg/s',
@@ -2262,7 +2126,7 @@ class _NewDryScreenState extends State<NewDryScreen> {
                                         style: TextStyle(color: Colors.grey),
                                       ),
                                       Text(
-                                        '₱$total.00',
+                                        '₱$total',
                                         style: const TextStyle(fontWeight: FontWeight.bold),
                                       ),
                                     ],
@@ -2467,7 +2331,7 @@ class _NewDryScreenState extends State<NewDryScreen> {
                                         '${book['CustomerName']}',
                                         '${book['CustomerContactNumber']}',
                                         '${book['LoadWeight']}',
-                                        '${book['CustomerLoad']}',
+                                        '${book['LoadCost']}',
                                         '${book['Schedule']}',
                                         '${book['PaymentStatus']}',
                                         '${book['ServiceName']}',
@@ -2870,7 +2734,7 @@ class _NewFoldScreenState extends State<NewFoldScreen> {
                               style: TextStyle(color: Colors.grey),
                             ),
                             Text(
-                              '₱$total.00',
+                              '₱$total',
                               style: const TextStyle(fontWeight: FontWeight.bold),
                             ),
                           ],
@@ -3017,7 +2881,7 @@ class _NewFoldScreenState extends State<NewFoldScreen> {
                                 style: TextStyle(color: Colors.grey),
                               ),
                               Text(
-                                '₱$total.00',
+                                '₱$total',
                                 style: const TextStyle(fontWeight: FontWeight.bold),
                               ),
                             ],
@@ -3412,6 +3276,8 @@ class _NewPickupScreenState extends State<NewPickupScreen> {
   bool hasWalkin = false;
   bool hasBook = false;
   bool isLoading = true;
+  String? usertype;
+  String? access;
 
   List<dynamic> bookings = [];
   List<dynamic> walkins = [];
@@ -3421,8 +3287,8 @@ class _NewPickupScreenState extends State<NewPickupScreen> {
 
       setState(() {
         token = prefs.getString('token');
-        userid = prefs.getInt('userid');
-        shopid = prefs.getInt('shopid');
+        usertype = prefs.getString('usertype');
+        access = prefs.getString('accesstype');
       });
 
     pickDisplay();
@@ -3971,7 +3837,7 @@ class _NewPickupScreenState extends State<NewPickupScreen> {
                           children: [
                             const Text(
                               'Address',
-                              style: TextStyle(color: Colors.grey),
+                              style: TextStyle(color: Colors.grey,fontSize: 12),
                             ),
                             Text(
                               customerAddress,
@@ -3984,7 +3850,7 @@ class _NewPickupScreenState extends State<NewPickupScreen> {
                                 children: [
                                   const Text(
                                     'Contact Information',
-                                    style: TextStyle(color: Colors.grey),
+                                    style: TextStyle(color: Colors.grey,fontSize: 12),
                                   ),
                                   Text(
                                     contact,
@@ -3997,7 +3863,7 @@ class _NewPickupScreenState extends State<NewPickupScreen> {
                                 children: [
                                   const Text(
                                     'Date Requested',
-                                    style: TextStyle(color: Colors.grey),
+                                    style: TextStyle(color: Colors.grey,fontSize: 12),
                                   ),
                                   Text(
                                     date,
@@ -4021,7 +3887,7 @@ class _NewPickupScreenState extends State<NewPickupScreen> {
                                 children: [
                                   const Text(
                                     'Service Availed',
-                                    style: TextStyle(color: Colors.grey),
+                                    style: TextStyle(color: Colors.grey,fontSize: 12),
                                   ),
                                   Text(
                                     service,
@@ -4034,7 +3900,7 @@ class _NewPickupScreenState extends State<NewPickupScreen> {
                                 children: [
                                   const Text(
                                     'Payment Status',
-                                    style: TextStyle(color: Colors.grey),
+                                    style: TextStyle(color: Colors.grey,fontSize: 12),
                                   ),
                                   Text(
                                     payment,
@@ -4050,10 +3916,10 @@ class _NewPickupScreenState extends State<NewPickupScreen> {
                                   children: [
                                     Text(
                                       'Total Payment',
-                                      style: TextStyle(color: Colors.grey),
+                                      style: TextStyle(color: Colors.grey,fontSize: 12),
                                     ),
                                     Text(
-                                      '₱$total.00',
+                                      '₱$total',
                                       style: const TextStyle(fontWeight: FontWeight.bold),
                                     ),
                                   ],
@@ -4063,7 +3929,7 @@ class _NewPickupScreenState extends State<NewPickupScreen> {
                                   children: [
                                     Text(
                                       'Laundry Weight',
-                                      style: TextStyle(color: Colors.grey),
+                                      style: TextStyle(color: Colors.grey,fontSize: 12),
                                     ),
                                     Text(
                                       '$load kg/s',
@@ -4095,8 +3961,9 @@ class _NewPickupScreenState extends State<NewPickupScreen> {
                                 MediaQuery.of(context).size.width,
                                 20)),
                         onPressed: () {
-                          completeUpdate(
-                              'booking', bookingId, 'paid');
+                          usertype == 'owner' ? completeUpdate('booking', bookingId, 'paid')
+                              : access == 'full' ? completeUpdate('booking', bookingId, 'paid')
+                              : warningTextDialog(context, 'Access Denied', 'You don\'t have permission to update laundry status');
                         },
                         child: const Text(
                           'Complete',
@@ -4118,7 +3985,10 @@ class _NewPickupScreenState extends State<NewPickupScreen> {
                                   .40,
                               20)),
                       onPressed: () {
-                        paymentUpdate('booking', bookingId);
+                        usertype == 'owner' ? paymentUpdate('booking', bookingId)
+                            : access == 'full' ? paymentUpdate('booking', bookingId)
+                            : warningTextDialog(context, 'Access Denied', 'You don\'t have permission to update laundry status');
+
                       },
                       child: const Text(
                         'Paid',
@@ -4266,7 +4136,7 @@ class _NewPickupScreenState extends State<NewPickupScreen> {
                                         style: TextStyle(color: Colors.grey),
                                       ),
                                       Text(
-                                        '₱$total.00',
+                                        '₱$total',
                                         style: const TextStyle(fontWeight: FontWeight.bold),
                                       ),
                                     ],
@@ -4309,8 +4179,9 @@ class _NewPickupScreenState extends State<NewPickupScreen> {
                                   MediaQuery.of(context).size.width,
                                   20)),
                           onPressed: () {
-                            completeUpdate(
-                                'walkin', walkinId, 'paid');
+                            usertype == 'owner' ? completeUpdate('walkin', walkinId, 'paid')
+                                : access == 'full' ? completeUpdate('walkin', walkinId, 'paid')
+                                : warningTextDialog(context, 'Access Denied', 'You don\'t have permission to update laundry status');
                           },
                           child: const Text(
                             'Complete',
@@ -4349,8 +4220,10 @@ class _NewPickupScreenState extends State<NewPickupScreen> {
                                     .40,
                                 20)),
                         onPressed: () {
-                          completeUpdate(
-                              'walkin', walkinId, 'notpaid');
+                          usertype == 'owner' ? completeUpdate('walkin', walkinId, 'notpaid')
+                              : access == 'full' ? completeUpdate('walkin', walkinId, 'notpaid')
+                              : warningTextDialog(context, 'Access Denied', 'You don\'t have permission to update laundry status');
+
                         },
                         child: const Text(
                           'Complete',
@@ -4515,7 +4388,7 @@ class _NewPickupScreenState extends State<NewPickupScreen> {
                                         '${book['CustomerName']}',
                                         '${book['CustomerContactNumber']}',
                                         '${book['LoadWeight']}',
-                                        '${book['CustomerLoad']}',
+                                        '${book['LoadCost']}',
                                         '${book['Schedule']}',
                                         '${book['PaymentStatus']}',
                                         '${book['ServiceName']}',
@@ -4926,7 +4799,7 @@ class _NewCompleteScreenState extends State<NewCompleteScreen> {
                                       style: TextStyle(color: Colors.grey),
                                     ),
                                     Text(
-                                      '₱$total.00',
+                                      '₱$total',
                                       style: const TextStyle(fontWeight: FontWeight.bold),
                                     ),
                                   ],
@@ -5074,7 +4947,7 @@ class _NewCompleteScreenState extends State<NewCompleteScreen> {
                                         style: TextStyle(color: Colors.grey),
                                       ),
                                       Text(
-                                        '₱$total.00',
+                                        '₱$total',
                                         style: const TextStyle(fontWeight: FontWeight.bold),
                                       ),
                                     ],

@@ -79,6 +79,11 @@ dependencies:
   map_location_picker: ^1.2.7
   flutter_profile_picture: ^2.0.0
   date_picker_timeline: ^1.2.6
+  toggle_switch: ^2.3.0
+  group_button: ^5.3.4
+  carousel_slider: ^5.0.0
+  timelines_plus: ^1.0.3
+  change_app_package_name: ^1.4.0
 
 dev_dependencies:
   flutter_test:
@@ -107,17 +112,19 @@ flutter:
 
 flutter_native_splash:
   color: "#34abed"
-  image: assets/LMateLogo.png
+  image: assets/lmate.png
   android_12:
     color: "#34abed"
-    image: assets/LMateLogo.png
+    image: assets/lmate.png
     icon_background_color: "#ffffff"
 
 flutter_launcher_icons:
   android: "launcher_icon"
   ios: true
   image_path: "assets/LMateLogo.png"
-  min_sdk_android: 21 # android min sdk min:16, default 21
+  min_sdk_android: 16 # android min sdk min:16, default 21
+  adaptive_icon_background: "#ffffff"
+  adaptive_icon_foreground: "assets/LMateLogo.png"
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware

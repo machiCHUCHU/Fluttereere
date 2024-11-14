@@ -37,6 +37,7 @@ class _NewShopInfoScreenState extends State<NewShopInfoScreen> {
   String isValued = '';
   String shopStat = '';
   String warningDesc = '';
+  String opening = '';
 
   Future<void> displayShopInfo() async{
     final SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -106,6 +107,18 @@ class _NewShopInfoScreenState extends State<NewShopInfoScreen> {
         break;
     }
 
+    switch(info['WorkDay']){
+      case 'weekdays':
+        opening = 'Mon - Fri';
+        break;
+      case 'weekend':
+        opening = 'Sat - Sun';
+        break;
+      default:
+        opening = 'Mon - Sun';
+        break;
+    }
+
     if(isLoading){
       return Scaffold(
           appBar: AppBar(
@@ -118,12 +131,7 @@ class _NewShopInfoScreenState extends State<NewShopInfoScreen> {
               icon: const Icon(CupertinoIcons.chevron_left,color: Colors.white,),
             ),
           ),
-          body: Center(
-            child: LoadingAnimationWidget.staggeredDotsWave(
-              color: Colors.black,
-              size: 50,
-            ),
-          )
+          body: loading()
       );
     }
     return Scaffold(
@@ -209,16 +217,16 @@ class _NewShopInfoScreenState extends State<NewShopInfoScreen> {
                                   title: const Row(
                                     children: [
                                       Icon(Icons.circle, color: ColorStyle.tertiary,),
-                                      Text(' Day Open')
+                                      Text(' Business Days')
                                     ],
                                   ),
-                                  description: Text('${info['WorkDay']}',style: const TextStyle(fontWeight: FontWeight.bold),textAlign: TextAlign.end,)
+                                  description: Text(opening,style: const TextStyle(fontWeight: FontWeight.bold),textAlign: TextAlign.end,)
                               ),
                               RowItem(
                                   title: const Row(
                                     children: [
                                       Icon(Icons.circle, color: ColorStyle.tertiary,),
-                                      Text(' Opening Time')
+                                      Text(' Business Hours')
                                     ],
                                   ),
                                   description: Text('${info['WorkHour']}',style: const TextStyle(fontWeight: FontWeight.bold),textAlign: TextAlign.end,)
@@ -262,21 +270,16 @@ class _NewShopInfoScreenState extends State<NewShopInfoScreen> {
                           child: ListView.builder(
                               shrinkWrap: true,
                               itemCount: services.length,
-                              physics: const NeverScrollableScrollPhysics(),
                               itemBuilder: (context, index){
                                 Map serve = services[index] as Map;
-                                List icon = [
-                                  'assets/sport-wear.png',
-                                  'assets/jacket.png',
-                                  'assets/bed-sheets.png'
-                                ];
+
                                 return Padding(
                                   padding: const EdgeInsets.symmetric(vertical: 8.0),
                                   child: RowItem(
                                       title: Row(
                                         children: [
-                                          Image.asset(icon[index],height: 25,width: 25,color: ColorStyle.tertiary,),
-                                          Text('${serve['ServiceName']}')
+                                          Icon(Icons.local_laundry_service,color: ColorStyle.tertiary,),
+                                          Expanded(child: Text('${serve['ServiceName']}',overflow: TextOverflow.clip,))
                                         ],
                                       ),
                                       description: Text('₱ ${serve['LoadPrice']}.00',style: const TextStyle(fontWeight: FontWeight.bold),)
@@ -289,7 +292,7 @@ class _NewShopInfoScreenState extends State<NewShopInfoScreen> {
                       Center(
                         child: ElevatedButton(
                           style: ElevatedButton.styleFrom(
-                              backgroundColor: info['RemainingLoad'] == 0 || info['ShopStatus'] == 'closed' ? Colors.grey : btnColor,
+                              backgroundColor: info['RemainingLoad'] == 0 || info['ShopStatus'] == 'closed' ? Colors.grey : ColorStyle.tertiary,
                               shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(5)
                               )
@@ -297,20 +300,8 @@ class _NewShopInfoScreenState extends State<NewShopInfoScreen> {
                           onPressed: info['RemainingLoad'] == 0 || info['ShopStatus'] == 'closed' || info['ShopStatus'] == 'full'
                               ? null
                               : (){
-                            switch(message){
-                              case '0':
-                                statusRequest();
-                                break;
-                              case '1':
-                                pushWithoutNavBar(context, MaterialPageRoute(builder: (context) =>
+                            pushWithoutNavBar(context, MaterialPageRoute(builder: (context) =>
                                 NewServiceBookingScreen(shopId: '${info['ShopID']}')));
-                                break;
-                              case '2':
-                                statusRequest();
-                                break;
-                              default:
-                                statusRequest();
-                            }
                           },
                           child: const Text(
                             'Avail Service',

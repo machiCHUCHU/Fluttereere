@@ -167,8 +167,8 @@ Future<ApiResponse> changePassword(String contact, String password) async{
 
 Future<ApiResponse> shopInfoRegister(
     String shopName, String shopAdd, String maxLoad, String washerQty, String washerTime,String dryerQty,
-    String dryerTime, String lightWeight, String heavyWeight, String comfWeight, String lightCost,
-    String heavyCost, String comfCost, String workHour, String workDay, String foldTime, String shopimage, String token
+    String dryerTime, String servicename, String servicetype,String serviceoffer, String loadweight, String loadprice,
+    String loadtype, String description,String workHour, String workDay, String foldTime, String shopimage, String token
     ) async {
 
   ApiResponse apiResponse = ApiResponse();
@@ -193,12 +193,13 @@ Future<ApiResponse> shopInfoRegister(
           'WorkHour':workHour,
           'WorkDay':workDay,
           'FoldingTime':foldTime,
-          'LightWeight':lightWeight,
-          'LightPrice':lightCost,
-          'HeavyWeight':heavyWeight,
-          'HeavyPrice': heavyCost,
-          'ComfWeight': comfWeight,
-          'ComfPrice':comfCost
+          'servicename':servicename,
+          'servicetype':servicetype,
+          'serviceoffer':serviceoffer,
+          'loadweight':loadweight,
+          'loadprice':loadprice,
+          'loadtype':loadtype,
+          'description':description
         }
     );
 
@@ -410,7 +411,7 @@ Future<ApiResponse> deleteInventory(String id, String token) async{
         apiResponse.error = jsonDecode(response.body)['message'];
         break;
       default:
-        apiResponse.error = "Something went wrong.";
+        apiResponse.error = jsonDecode(response.body);
         break;
     }
   }catch(e){
@@ -693,17 +694,20 @@ Future<ApiResponse> updateUserProfile(String id, String name, String add, String
   return apiResponse;
 }
 
-Future<ApiResponse> getRating(String token) async{
+Future<ApiResponse> getRating(String index,String token) async{
   ApiResponse apiResponse = ApiResponse();
 
   try {
 
-    final response = await http.get(
+    final response = await http.post(
         Uri.parse('$ipaddress/rating'),
         headers: {
           'Accept': 'application/json',
           'Authorization': 'Bearer $token'
-        }
+        },
+      body: {
+          'index':index
+      }
     );
 
     switch(response.statusCode){
@@ -1099,7 +1103,8 @@ Future<ApiResponse> getInfos(String token) async {
   return apiResponse;
 }
 
-Future<ApiResponse> updateOwnerProfile(String id, String name, String sex, String address, String contact, String image, String token) async{
+Future<ApiResponse> updateOwnerProfile(String id, String name, String sex, String address,
+    String contact, String image, String token) async{
   ApiResponse apiResponse = ApiResponse();
 
   try{
@@ -1219,7 +1224,7 @@ Future<ApiResponse> getWalkin(String token) async{
   return apiResponse;
 }
 
-Future<ApiResponse> getReport(String startDate, String endDate, String service, String type, String token) async{
+Future<ApiResponse> getReport(String page, String token) async{
   ApiResponse apiResponse = ApiResponse();
 
   try {
@@ -1231,18 +1236,15 @@ Future<ApiResponse> getReport(String startDate, String endDate, String service, 
           'Authorization': 'Bearer $token'
         },
         body: {
-          'start': startDate,
-          'end': endDate,
-          'service': service,
-          'type': type
+          'page':page
         }
     );
 
     switch(response.statusCode){
       case 200:
         apiResponse.data = jsonDecode(response.body)['data'];
-        apiResponse.count = jsonDecode(response.body)['servicecount'];
-        apiResponse.tot = jsonDecode(response.body)['loadcount'];
+        // apiResponse.count = jsonDecode(response.body)['servicecount'];
+        // apiResponse.tot = jsonDecode(response.body)['loadcount'];
         break;
       case 422:
         final errors = jsonDecode(response.body)['message'];
@@ -2036,23 +2038,20 @@ Future<ApiResponse> selectService(String shopId, String token) async{
   return apiResponse;
 }
 
-Future<ApiResponse> availService(String load, String cost, String sched, String shopid, String serviceid, String token) async{
+Future<ApiResponse> availService(List<Map<String,dynamic>> records,String token) async{
   ApiResponse apiResponse = ApiResponse();
 
   try{
     final response = await http.post(
       Uri.parse('$ipaddress/laundry-service/avail'),
       headers: {
+        'Content-Type': 'application/json',
         'Accept': 'application/json',
         'Authorization': 'Bearer $token'
       },
-      body: {
-        'load': load,
-        'cost': cost,
-        'sched': sched,
-        'shopid': shopid,
-        'serviceid': serviceid
-      }
+      body: jsonEncode({
+        'records':records
+      })
     );
 
     switch(response.statusCode){
@@ -2331,6 +2330,40 @@ Future<ApiResponse> updateCustomerProfile(
       default:
         final errors = jsonDecode(response.body)['message'];
         apiResponse.error = errors;
+        break;
+    }
+  }catch(e){
+    apiResponse.error = '$e';
+  }
+
+  return apiResponse;
+}
+
+
+Future<ApiResponse> accessType(String token) async{
+  ApiResponse apiResponse = ApiResponse();
+
+  try{
+    final response = await http.get(
+      Uri.parse('$ipaddress/access-type'),
+      headers: {
+        'Authorization': 'Bearer $token'
+      },
+    );
+
+    switch(response.statusCode){
+      case 200:
+        apiResponse.data = jsonDecode(response.body)['message'];
+        break;
+      case 422:
+        final errors = jsonDecode(response.body)['message'];
+        apiResponse.error = errors;
+        break;
+      case 403:
+        apiResponse.error = jsonDecode(response.body)['message'];
+        break;
+      default:
+        apiResponse.error = jsonDecode(response.body)['message'];
         break;
     }
   }catch(e){

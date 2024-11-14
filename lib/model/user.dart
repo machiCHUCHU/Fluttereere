@@ -10,6 +10,7 @@ class User {
   String? contact;
   String? image;
   String? token;
+  int? cusid;
 
   User({
     this.userid,
@@ -20,7 +21,8 @@ class User {
     this.name,
     this.contact,
     this.image,
-    this.token
+    this.token,
+    this.cusid
   });
 
   factory User.fromJson(Map<String, dynamic> json){
@@ -30,7 +32,8 @@ class User {
         username: json['user']['username'],
         usertype: json['user']['usertype'],
         testid: json['shopid'],
-        token: json['token']
+        token: json['token'],
+        cusid: json['cusId']
     );
   }
 }

@@ -112,6 +112,16 @@ class _SetupInformationScreenState extends State<SetupInformationScreen> {
   final TextEditingController _comforterCost = TextEditingController();
   Uint8List? _pickedImageBytes;
 
+  final TextEditingController _servicename = TextEditingController();
+  String _servicetype = ''; String _serviceoffer = ''; String _loadtype = '';
+  final TextEditingController _weight = TextEditingController();
+  final TextEditingController _price = TextEditingController();
+  final TextEditingController _desc = TextEditingController();
+
+  List<String> servicetype = ['Full Service','Self Service'];
+  List<String> serviceoffer = ['Full Service','Wash Only','Dry Only','Wash-Dry'];
+  List<String> loadtype = ['Light Load','Heavy Load','Comforter'];
+
   String _shopTime = ''; String? _workDays;
 
   TimeOfDay selectedTime = TimeOfDay.now();
@@ -194,11 +204,10 @@ class _SetupInformationScreenState extends State<SetupInformationScreen> {
   Future<void> addSetup() async{
     final SharedPreferences prefs = await SharedPreferences.getInstance();
 
-    ApiResponse response = await shopInfoRegister(
-        _shopName.text, _shopAddress.text, _maxLoad.text, _washerQty.text, _washerTime.text,
-        _dryerQty.text, _dryerTime.text, _lightLoad.text, _heavyLoad.text, _comforterLoad.text,
-        _lightCost.text, _heavyCost.text, _comforterCost.text, _shopTime, _workDays ?? '', _foldingTime.text,
-        base64Encode(_pickedImageBytes ?? Uint8List(0)),
+    ApiResponse response = await shopInfoRegister(_shopName.text, _shopAddress.text,
+        _maxLoad.text, _washerQty.text, _washerTime.text, _dryerQty.text, _dryerTime.text,
+        _servicename.text, _servicetype, _serviceoffer, _weight.text, _price.text, _loadtype, 
+        _desc.text, _shopTime, _workDays ?? '', _foldingTime.text, base64Encode(_pickedImageBytes ?? Uint8List(0)), 
         '${prefs.getString('token')}');
 
     if(response.error == null){
@@ -214,483 +223,579 @@ class _SetupInformationScreenState extends State<SetupInformationScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: Scaffold(
-          body: Padding(
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Setup Shop Information'),
+        titleTextStyle: const TextStyle(color: Colors.white,fontSize: 18,fontWeight: FontWeight.bold),
+        automaticallyImplyLeading: false,
+      ),
+          body: SingleChildScrollView(
             padding: const EdgeInsets.all(8),
-            child: Column(
-              children: [
-                const Align(
-                  alignment: Alignment.topLeft,
-                  child: Text(
-                    'Setup your Shop \nInformation',
-                    style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 24
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 20,),
-                Expanded(
-                  child: SingleChildScrollView(
-                    child: Form(
-                      key: _formKey,
-                      child: Column(
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(5)
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(4),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Center(child: SizedBox(
+                        height: 130,
+                        width: 100,
+                        child: Stack(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(2),
+                              decoration: const BoxDecoration(
+                                  color: ColorStyle.tertiary,
+                                  shape: BoxShape.circle
+                              ),
+                              child: CircleAvatar(
+                                backgroundColor: Colors.white,
+
+                                backgroundImage: _pickedImageBytes == null
+                                    ? AssetImage('assets/shop.png')
+                                    : MemoryImage(_pickedImageBytes!) as ImageProvider,
+                                radius: 50,
+                              ),
+                            ),
+                            Positioned(
+                                top: 70,
+                                left: 70,
+                                child: Container(
+                                    height: 30,
+                                    width: 30,
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(50),
+                                      color: ColorStyle.tertiary,
+                                    ),
+                                    child: IconButton(
+                                      onPressed: () {
+                                        _pickAndUploadImage();
+                                      },
+                                      icon: const Icon(
+                                        Icons.camera_alt,
+                                        color: Colors.white,
+                                        size: 15,
+                                        weight: 50,
+                                      ),
+                                    )))
+                          ],
+                        ),
+                      ),),
+                      const Text(
+                        'Shop\'s Name',
+                        style: SignupStyle.formTitle,
+                      ),
+                      const SizedBox(height: 5,),
+                      TextFormField(
+                        controller: _shopName,
+                        decoration: SignupStyle.allForm,
+                        autovalidateMode: AutovalidateMode.onUserInteraction,
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'This field is required.';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 15,),
+
+                      const Text(
+                        'Shop\'s Address',
+                        style: SignupStyle.formTitle,
+                      ),
+                      const SizedBox(height: 5,),
+                      TextFormField(
+                        controller: _shopAddress,
+                        decoration: SignupStyle.allForm,
+                        autovalidateMode: AutovalidateMode.onUserInteraction,
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'This field is required.';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 15,),
+
+                      const Text(
+                        'Max Laundry Load Per Day (Laundry Request)',
+                        style: SignupStyle.formTitle,
+                      ),
+                      const SizedBox(height: 5,),
+                      TextFormField(
+                        keyboardType: TextInputType.number,
+                        controller: _maxLoad,
+                        decoration: SignupStyle.allForm,
+                        autovalidateMode: AutovalidateMode.onUserInteraction,
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'This field is required.';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 15,),
+
+                      const Text(
+                        'Washing Machine Quantity',
+                        style: SignupStyle.formTitle,
+                      ),
+                      const SizedBox(height: 5,),
+                      TextFormField(
+                        keyboardType: TextInputType.number,
+                        controller: _washerQty,
+                        decoration: SignupStyle.allForm,
+                        autovalidateMode: AutovalidateMode.onUserInteraction,
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'This field is required.';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 15,),
+
+                      const Text(
+                        'Washing Cycle Time (Duration in Minutes)',
+                        style: SignupStyle.formTitle,
+                      ),
+                      const SizedBox(height: 5,),
+                      TextFormField(
+                        keyboardType: TextInputType.number,
+                        controller: _washerTime,
+                        decoration: SignupStyle.allForm,
+                        autovalidateMode: AutovalidateMode.onUserInteraction,
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'This field is required.';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 15,),
+
+                      const Text(
+                        'Drying Machine Quantity',
+                        style: SignupStyle.formTitle,
+                      ),
+                      const SizedBox(height: 5,),
+                      TextFormField(
+                        keyboardType: TextInputType.number,
+                        controller: _dryerQty,
+                        decoration: SignupStyle.allForm,
+                        autovalidateMode: AutovalidateMode.onUserInteraction,
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'This field is required.';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 15,),
+
+                      const Text(
+                        'Drying Cycle Time (Duration in Minutes)',
+                        style: SignupStyle.formTitle,
+                      ),
+                      const SizedBox(height: 5,),
+                      TextFormField(
+                        keyboardType: TextInputType.number,
+                        controller: _dryerTime,
+                        decoration: SignupStyle.allForm,
+                        autovalidateMode: AutovalidateMode.onUserInteraction,
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'This field is required.';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 15),
+
+                      const Text(
+                        'Clothes Folding Time (Duration in Minutes)',
+                        style: SignupStyle.formTitle,
+                      ),
+                      const SizedBox(height: 5,),
+                      TextFormField(
+                        keyboardType: TextInputType.number,
+                        controller: _foldingTime,
+                        decoration: SignupStyle.allForm,
+                        autovalidateMode: AutovalidateMode.onUserInteraction,
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'This field is required.';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 15,),
+
+                      const Text(
+                        'Business Days',
+                        style: SignupStyle.formTitle,
+                      ),
+                      const SizedBox(height: 5,),
+                      DropdownButtonFormField<String>(
+                        decoration: SignupStyle.allForm,
+                        hint: const Text('Select'),
+                        value: _workDays,
+                        items: ['weekend', 'weekdays', 'weekly'].map((String value) {
+                          return DropdownMenuItem<String>(
+                            value: value,
+                            child: Text(value),
+                          );
+                        }).toList(),
+                        onChanged: (newValue) {
+                          setState(() {
+                            _workDays = newValue;
+                          });
+                        },
+                        validator: (String? value) {
+                          if (value == null || value.isEmpty) {
+                            return 'This field is required.';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 15,),
+
+                      const Text(
+                        'Business Hours',
+                        style: SignupStyle.formTitle,
+                      ),
+                      const SizedBox(height: 5,),
+                      OutlinedButton(
+                          style: OutlinedButton.styleFrom(
+                              fixedSize: Size(MediaQuery.of(context).size.width, 55),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.vertical(bottom: Radius.circular(5)),
+                              ),
+                              side: BorderSide(style: BorderStyle.solid, width: 1),
+                              padding: EdgeInsets.symmetric(horizontal: 8),
+                              backgroundColor: Colors.white
+                          ),
+                          onPressed: (){
+                            TimeRangePicker.show(
+                                context: (context),
+                                onSubmitted: (TimeRangeValue value) {
+                                  setState(() {
+                                    _shopTime = '${value.startTime?.format(context)} - ${value.endTime?.format(context)}';
+                                  });
+                                }
+                            );
+                          },
+                          child: Align(alignment: Alignment.centerLeft,
+                            child: Text(_shopTime.isEmpty ? 'Select' : _shopTime, style: TextStyle(fontSize: 16, color: Colors.black54),),)
+                      ),
+                      const SizedBox(height: 15,),
+
+                      Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Center(child: SizedBox(
-                            height: 130,
-                            width: 100,
-                            child: Stack(
-                              children: [
-                                Container(
-                                  padding: const EdgeInsets.all(2),
-                                  decoration: const BoxDecoration(
-                                      color: ColorStyle.tertiary,
-                                      shape: BoxShape.circle
-                                  ),
-                                  child: CircleAvatar(
-                                    backgroundColor: Colors.white,
-                                    backgroundImage: _pickedImageBytes == null
-                                        ? AssetImage('assets/user.png')
-                                        : MemoryImage(_pickedImageBytes!) as ImageProvider,
-                                    radius: 50,
-                                  ),
-                                ),
-                                Positioned(
-                                    top: 70,
-                                    left: 70,
-                                    child: Container(
-                                        height: 30,
-                                        width: 30,
-                                        decoration: BoxDecoration(
-                                          borderRadius: BorderRadius.circular(50),
-                                          color: ColorStyle.tertiary,
-                                        ),
-                                        child: IconButton(
-                                          onPressed: () {
-                                            _pickAndUploadImage();
-                                          },
-                                          icon: const Icon(
-                                            Icons.camera_alt,
-                                            color: Colors.white,
-                                            size: 15,
-                                            weight: 50,
-                                          ),
-                                        )))
-                              ],
-                            ),
-                          ),),
                           const Text(
-                            'Shop Name',
+                            'Laundry Service Name',
                             style: SignupStyle.formTitle,
                           ),
                           const SizedBox(height: 5,),
-                          TextFormField(
-                            controller: _shopName,
-                            decoration: SignupStyle.allForm,
-                            autovalidateMode: AutovalidateMode.onUserInteraction,
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return 'This field is required.';
-                              }
-                              return null;
-                            },
-                          ),
-                          const SizedBox(height: 15,),
-
-                          const Text(
-                            'Shop Address',
-                            style: SignupStyle.formTitle,
-                          ),
-                          const SizedBox(height: 5,),
-                          TextFormField(
-                            controller: _shopAddress,
-                            decoration: SignupStyle.allForm,
-                            autovalidateMode: AutovalidateMode.onUserInteraction,
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return 'This field is required.';
-                              }
-                              return null;
-                            },
-                          ),
-                          const SizedBox(height: 15,),
-
-                          const Text(
-                            'Maximum Load Cater Daily',
-                            style: SignupStyle.formTitle,
-                          ),
-                          const SizedBox(height: 5,),
-                          TextFormField(
-                            keyboardType: TextInputType.number,
-                            controller: _maxLoad,
-                            decoration: SignupStyle.allForm,
-                            autovalidateMode: AutovalidateMode.onUserInteraction,
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return 'This field is required.';
-                              }
-                              return null;
-                            },
-                          ),
-                          const SizedBox(height: 15,),
-
-                          const Text(
-                            'Washing Machine Quantity',
-                            style: SignupStyle.formTitle,
-                          ),
-                          const SizedBox(height: 5,),
-                          TextFormField(
-                            keyboardType: TextInputType.number,
-                            controller: _washerQty,
-                            decoration: SignupStyle.allForm,
-                            autovalidateMode: AutovalidateMode.onUserInteraction,
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return 'This field is required.';
-                              }
-                              return null;
-                            },
-                          ),
-                          const SizedBox(height: 15,),
-
-                          const Text(
-                            'Washing Duration (In Minutes)',
-                            style: SignupStyle.formTitle,
-                          ),
-                          const SizedBox(height: 5,),
-                          TextFormField(
-                            keyboardType: TextInputType.number,
-                            controller: _washerTime,
-                            decoration: SignupStyle.allForm,
-                            autovalidateMode: AutovalidateMode.onUserInteraction,
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return 'This field is required.';
-                              }
-                              return null;
-                            },
-                          ),
-                          const SizedBox(height: 15,),
-
-                          const Text(
-                            'Drying Machine Quantity',
-                            style: SignupStyle.formTitle,
-                          ),
-                          const SizedBox(height: 5,),
-                          TextFormField(
-                            keyboardType: TextInputType.number,
-                            controller: _dryerQty,
-                            decoration: SignupStyle.allForm,
-                            autovalidateMode: AutovalidateMode.onUserInteraction,
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return 'This field is required.';
-                              }
-                              return null;
-                            },
-                          ),
-                          const SizedBox(height: 15,),
-
-                          const Text(
-                            'Drying Duration (In Minutes)',
-                            style: SignupStyle.formTitle,
-                          ),
-                          const SizedBox(height: 5,),
-                          TextFormField(
-                            keyboardType: TextInputType.number,
-                            controller: _dryerTime,
-                            decoration: SignupStyle.allForm,
-                            autovalidateMode: AutovalidateMode.onUserInteraction,
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return 'This field is required.';
-                              }
-                              return null;
-                            },
-                          ),
-                          const SizedBox(height: 15),
-
-                          const Text(
-                            'Folding Clothes Duration (In Minutes)',
-                            style: SignupStyle.formTitle,
-                          ),
-                          const SizedBox(height: 5,),
-                          TextFormField(
-                            keyboardType: TextInputType.number,
-                            controller: _foldingTime,
-                            decoration: SignupStyle.allForm,
-                            autovalidateMode: AutovalidateMode.onUserInteraction,
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return 'This field is required.';
-                              }
-                              return null;
-                            },
-                          ),
-                          const SizedBox(height: 15,),
-
-                          const Text(
-                            'Working Days',
-                            style: SignupStyle.formTitle,
-                          ),
-                          const SizedBox(height: 5,),
-                          DropdownButtonFormField<String>(
-                            decoration: SignupStyle.allForm,
-                            hint: const Text('Select'),
-                            value: _workDays,
-                            items: ['weekend', 'weekdays', 'weekly'].map((String value) {
-                              return DropdownMenuItem<String>(
-                                value: value,
-                                child: Text(value),
-                              );
-                            }).toList(),
-                            onChanged: (newValue) {
-                              setState(() {
-                                _workDays = newValue;
-                              });
-                            },
-                            validator: (String? value) {
-                              if (value == null || value.isEmpty) {
-                                return 'This field is required.';
-                              }
-                              return null;
-                            },
-                          ),
-                          const SizedBox(height: 15,),
-
-                          const Text(
-                            'Working Hours',
-                            style: SignupStyle.formTitle,
-                          ),
-                          const SizedBox(height: 5,),
-                          OutlinedButton(
-                              style: OutlinedButton.styleFrom(
-                                  fixedSize: Size(MediaQuery.of(context).size.width, 55),
-                                  shape: RoundedRectangleBorder(
+                          TextField(
+                            controller: _servicename,
+                            decoration: const InputDecoration(
+                                filled: true,
+                                fillColor: Colors.white,
+                                hintText: 'Comforter',
+                                focusedBorder: OutlineInputBorder(
                                     borderRadius: BorderRadius.vertical(bottom: Radius.circular(5)),
+                                    borderSide: BorderSide(
+                                        color: Colors.grey
+                                    )
+                                ),
+                                enabledBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.vertical(bottom: Radius.circular(5))
+                                )
+                            ),
+                          ),
+                          const SizedBox(height: 10,),
+
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text(
+                                    'Laundry Service Type',
+                                    style: SignupStyle.formTitle,
                                   ),
-                                  side: BorderSide(style: BorderStyle.solid, width: 1),
-                                  padding: EdgeInsets.symmetric(horizontal: 8),
-                                  backgroundColor: Colors.white
+                                  const SizedBox(height: 5,),
+                                  SizedBox(
+                                      width: MediaQuery.of(context).size.width *.45,
+                                      child: DropdownButtonFormField(
+                                          decoration: const InputDecoration(
+                                              filled: true,
+                                              fillColor: Colors.white,
+                                              focusedBorder: OutlineInputBorder(
+                                                  borderRadius: BorderRadius.vertical(bottom: Radius.circular(5)),
+                                                  borderSide: BorderSide(
+                                                      color: Colors.grey
+                                                  )
+                                              ),
+                                              enabledBorder: OutlineInputBorder(
+                                                  borderRadius: BorderRadius.vertical(bottom: Radius.circular(5))
+                                              )
+                                          ),
+                                          items: serviceoffer.map((value){
+                                            return DropdownMenuItem(
+                                                value: value,
+                                                child: Text(value)
+                                            );
+                                          }).toList(),
+                                          onChanged: (newValue){
+                                            switch(newValue){
+                                              case 'Full Service':
+                                                _serviceoffer = 'full';
+                                                break;
+                                              case 'Wash Only':
+                                                _serviceoffer = 'wash';
+                                                break;
+                                              case 'Dry Only':
+                                                _serviceoffer = 'dry';
+                                                break;
+                                              default:
+                                                _serviceoffer = 'wash-dry';
+                                                break;
+                                            }
+                                            print(_serviceoffer);
+                                          }
+                                      )
+                                  )
+                                ],
                               ),
-                              onPressed: (){
-                                TimeRangePicker.show(
-                                    context: (context),
-                                    onSubmitted: (TimeRangeValue value) {
-                                      setState(() {
-                                        _shopTime = '${value.startTime?.format(context)} - ${value.endTime?.format(context)}';
-                                      });
-                                    }
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text(
+                                    'Service Option',
+                                    style: SignupStyle.formTitle,
+                                  ),
+                                  const SizedBox(height: 5,),
+                                  SizedBox(
+                                    width: MediaQuery.of(context).size.width *.45,
+                                    child: DropdownButtonFormField(
+                                        decoration: const InputDecoration(
+                                            filled: true,
+                                            fillColor: Colors.white,
+                                            focusedBorder: OutlineInputBorder(
+                                                borderRadius: BorderRadius.vertical(bottom: Radius.circular(5)),
+                                                borderSide: BorderSide(
+                                                    color: Colors.grey
+                                                )
+                                            ),
+                                            enabledBorder: OutlineInputBorder(
+                                                borderRadius: BorderRadius.vertical(bottom: Radius.circular(5))
+                                            )
+                                        ),
+                                        items: servicetype.map((value){
+                                          return DropdownMenuItem(
+                                              value: value,
+                                              child: Text(value)
+                                          );
+                                        }).toList(),
+                                        onChanged: (newValue){
+                                          if(newValue == 'Self Service'){
+                                            _servicetype = 'self';
+                                          }else{
+                                            _servicetype = 'full';
+                                          }
+                                          print(_servicetype);
+                                        }
+                                    ),
+                                  )
+                                ],
+                              )
+                            ],
+                          ),
+                          const SizedBox(height: 10,),
+
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text(
+                                    'Max Weight per Load',
+                                    style: SignupStyle.formTitle,
+                                  ),
+                                  const SizedBox(height: 5,),
+                                  SizedBox(
+                                    width: MediaQuery.of(context).size.width *.45,
+                                    child: TextField(
+                                      controller: _weight,
+                                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                                      decoration: const InputDecoration(
+                                          filled: true,
+                                          fillColor: Colors.white,
+                                          hintText: '1 kg',
+                                          focusedBorder: OutlineInputBorder(
+                                              borderRadius: BorderRadius.vertical(bottom: Radius.circular(5)),
+                                              borderSide: BorderSide(
+                                                  color: Colors.grey
+                                              )
+                                          ),
+                                          enabledBorder: OutlineInputBorder(
+                                              borderRadius: BorderRadius.vertical(bottom: Radius.circular(5))
+                                          )
+                                      ),
+                                    ),
+                                  )
+                                ],
+                              ),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text(
+                                    'Service Price',
+                                    style: SignupStyle.formTitle,
+                                  ),
+                                  const SizedBox(height: 5,),
+                                  SizedBox(
+                                    width: MediaQuery.of(context).size.width *.45,
+                                    child: TextField(
+                                      controller: _price,
+                                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                                      decoration: const InputDecoration(
+                                          filled: true,
+                                          fillColor: Colors.white,
+                                          hintText: '100',
+                                          focusedBorder: OutlineInputBorder(
+                                              borderRadius: BorderRadius.vertical(bottom: Radius.circular(5)),
+                                              borderSide: BorderSide(
+                                                  color: Colors.grey
+                                              )
+                                          ),
+                                          enabledBorder: OutlineInputBorder(
+                                              borderRadius: BorderRadius.vertical(bottom: Radius.circular(5))
+                                          )
+                                      ),
+                                    ),
+                                  )
+                                ],
+                              )
+                            ],
+                          ),
+                          const SizedBox(height: 10,),
+
+                          const Text(
+                            'Laundry Load Type',
+                            style: SignupStyle.formTitle,
+                          ),
+                          const SizedBox(height: 5,),
+                          DropdownButtonFormField(
+                              decoration: const InputDecoration(
+                                  filled: true,
+                                  fillColor: Colors.white,
+                                  focusedBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.vertical(bottom: Radius.circular(5)),
+                                      borderSide: BorderSide(
+                                          color: Colors.grey
+                                      )
+                                  ),
+                                  enabledBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.vertical(bottom: Radius.circular(5))
+                                  )
+                              ),
+                              items: loadtype.map((value){
+                                return DropdownMenuItem(
+                                    value: value,
+                                    child: Text(value)
                                 );
-                              },
-                              child: Align(alignment: Alignment.centerLeft,
-                                child: Text(_shopTime.isEmpty ? 'Select' : _shopTime, style: TextStyle(fontSize: 16, color: Colors.black54),),)
-                          ),
-                          const SizedBox(height: 15,),
-
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  const Text(
-                                    'Light Load (kg)',
-                                    style: SignupStyle.formTitle,
-                                  ),
-                                  const SizedBox(height: 5,),
-                                  SizedBox(
-                                    width: MediaQuery.of(context).size.width *.45,
-                                    child: TextFormField(
-                                      keyboardType: TextInputType.number,
-                                      controller: _lightLoad,
-                                      decoration: SignupStyle.allForm,
-                                      autovalidateMode: AutovalidateMode.onUserInteraction,
-                                      validator: (value) {
-                                        if (value == null || value.isEmpty) {
-                                          return 'This field is required.';
-                                        }
-                                        return null;
-                                      },
-                                    ),
-                                  ),
-                                  const SizedBox(height: 15,),
-                                ],
-                              ),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  const Text(
-                                    'Light Cost',
-                                    style: SignupStyle.formTitle,
-                                  ),
-                                  const SizedBox(height: 5,),
-                                  SizedBox(
-                                    width: MediaQuery.of(context).size.width *.45,
-                                    child: TextFormField(
-                                      keyboardType: TextInputType.number,
-                                      controller: _lightCost,
-                                      decoration: SignupStyle.allForm,
-                                      autovalidateMode: AutovalidateMode.onUserInteraction,
-                                      validator: (value) {
-                                        if (value == null || value.isEmpty) {
-                                          return 'This field is required.';
-                                        }
-                                        return null;
-                                      },
-                                    ),
-                                  ),
-                                  const SizedBox(height: 15,),
-                                ],
-                              )
-                            ],
-                          ),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  const Text(
-                                    'Heavy Load (kg)',
-                                    style: SignupStyle.formTitle,
-                                  ),
-                                  const SizedBox(height: 5,),
-                                  SizedBox(
-                                    width: MediaQuery.of(context).size.width *.45,
-                                    child: TextFormField(
-                                      keyboardType: TextInputType.number,
-                                      controller: _heavyLoad,
-                                      decoration: SignupStyle.allForm,
-                                      autovalidateMode: AutovalidateMode.onUserInteraction,
-                                      validator: (value) {
-                                        if (value == null || value.isEmpty) {
-                                          return 'This field is required.';
-                                        }
-                                        return null;
-                                      },
-                                    ),
-                                  ),
-                                  const SizedBox(height: 15,),
-                                ],
-                              ),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  const Text(
-                                    'Heavy Cost',
-                                    style: SignupStyle.formTitle,
-                                  ),
-                                  const SizedBox(height: 5,),
-                                  SizedBox(
-                                    width: MediaQuery.of(context).size.width *.45,
-                                    child: TextFormField(
-                                      keyboardType: TextInputType.number,
-                                      controller: _heavyCost,
-                                      decoration: SignupStyle.allForm,
-                                      autovalidateMode: AutovalidateMode.onUserInteraction,
-                                      validator: (value) {
-                                        if (value == null || value.isEmpty) {
-                                          return 'This field is required.';
-                                        }
-                                        return null;
-                                      },
-                                    ),
-                                  ),
-                                  const SizedBox(height: 15,),
-                                ],
-                              )
-                            ],
-                          ),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  const Text(
-                                    'Comforter Load (kg)',
-                                    style: SignupStyle.formTitle,
-                                  ),
-                                  const SizedBox(height: 5,),
-                                  SizedBox(
-                                    width: MediaQuery.of(context).size.width *.45,
-                                    child: TextFormField(
-                                      keyboardType: TextInputType.number,
-                                      controller: _comforterLoad,
-                                      decoration: SignupStyle.allForm,
-                                      autovalidateMode: AutovalidateMode.onUserInteraction,
-                                      validator: (value) {
-                                        if (value == null || value.isEmpty) {
-                                          return 'This field is required.';
-                                        }
-                                        return null;
-                                      },
-                                    ),
-                                  ),
-                                  const SizedBox(height: 15,),
-                                ],
-                              ),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  const Text(
-                                    'Comforter Cost',
-                                    style: SignupStyle.formTitle,
-                                  ),
-                                  const SizedBox(height: 5,),
-                                  SizedBox(
-                                    width: MediaQuery.of(context).size.width *.45,
-                                    child: TextFormField(
-                                      keyboardType: TextInputType.number,
-                                      controller: _comforterCost,
-                                      decoration: SignupStyle.allForm,
-                                      autovalidateMode: AutovalidateMode.onUserInteraction,
-                                      validator: (value) {
-                                        if (value == null || value.isEmpty) {
-                                          return 'This field is required.';
-                                        }
-                                        return null;
-                                      },
-                                    ),
-                                  ),
-                                  const SizedBox(height: 15,),
-                                ],
-                              )
-                            ],
-                          ),
-
-                          ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: ColorStyle.tertiary,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(5)
-                                ),
-                                fixedSize: Size(MediaQuery.of(context).size.width, 30)
-                              ),
-                              onPressed: (){
-                                if(_formKey.currentState!.validate()){
-                                  addSetup();
+                              }).toList(),
+                              onChanged: (newValue){
+                                switch(newValue){
+                                  case 'Light Load':
+                                    _loadtype = 'light';
+                                    break;
+                                  case 'Heavy Load':
+                                    _loadtype = 'heavy';
+                                    break;
+                                  default:
+                                    _loadtype = 'comforter';
+                                    break;
                                 }
-                              },
-                              child: const Text(
-                                'Submit',
-                                style: TextStyle(
-                                  color: Colors.white
+                                print(_loadtype);
+                              }
+                          ),
+                          const SizedBox(height: 10,),
+
+                          const Text(
+                            'Description (Accepted clothes for this service)',
+                            style: SignupStyle.formTitle,
+                          ),
+                          const SizedBox(height: 5,),
+                          TextField(
+                            controller: _desc,
+                            maxLines: null,
+                            minLines: 1,
+                            decoration: const InputDecoration(
+                                filled: true,
+                                fillColor: Colors.white,
+                                focusedBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.vertical(bottom: Radius.circular(5)),
+                                    borderSide: BorderSide(
+                                        color: Colors.grey
+                                    )
                                 ),
-                              )
-                          )
+                                enabledBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.vertical(bottom: Radius.circular(5))
+                                )
+                            ),
+                          ),
                         ],
                       ),
-                    ),
+
+                      const Text(
+                        'You can add more laundry services later.',
+                        textAlign: TextAlign.justify,
+                        style: TextStyle(
+                          fontStyle: FontStyle.italic,
+                          color: ColorStyle.tertiary
+                        ),
+                      ),
+                      const SizedBox(height: 10,),
+
+                      ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                              backgroundColor: ColorStyle.tertiary,
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(5)
+                              ),
+                              fixedSize: Size(MediaQuery.of(context).size.width, 30)
+                          ),
+                          onPressed: (){
+                            if(_formKey.currentState!.validate()){
+                              addSetup();
+                            }
+                          },
+                          child: const Text(
+                            'Submit',
+                            style: TextStyle(
+                                color: Colors.white
+                            ),
+                          )
+                      )
+                    ],
                   ),
-                )
-              ],
+                ),
+              ),
             ),
           )
-      ),
     );
   }
 }
