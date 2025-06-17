@@ -240,16 +240,16 @@ class _HomeScreenState extends State<HomeScreen> {
                               name: '${req['ShopName']}',
                               radius: 25,
                               fontsize: 16,
-                              img: req['ShopImage'] == '' ? null : '$picaddress/${req['ShopImage']}',
+                              img: req['ShopImage'] == '' || req['ShopImage'] == null ? null : '$picaddress/${req['ShopImage']}',
                             )
                           ],
                         ),
                         title: Row(
                           children: [
-                            Text('${req['ShopName']} ',
+                            Expanded(child: Text('${req['ShopName']} ',
                               style: const TextStyle(fontWeight: FontWeight.bold,color: ColorStyle.tertiary),
-                              overflow: TextOverflow.ellipsis,
-                            ),
+                              overflow: TextOverflow.clip,
+                            ),)
                           ],
                         ),
                         subtitle: Text('${req['ShopAddress']}',style: const TextStyle(fontSize: 10),),
@@ -443,8 +443,8 @@ class _TrackScreenState extends State<TrackScreen> {
                               decoration: BoxDecoration(
                                   borderRadius: BorderRadius.circular(5),
                                   color: Colors.white,
-                                  boxShadow: [
-                                    const BoxShadow(
+                                  boxShadow: const [
+                                    BoxShadow(
                                         blurRadius: 1,
                                         color: Colors.grey
                                     )
@@ -460,7 +460,8 @@ class _TrackScreenState extends State<TrackScreen> {
                                         title: Row(
                                           children: [
                                             const Icon(Icons.store,color: ColorStyle.tertiary,),
-                                            Text('${laun['ShopName']}', style: const TextStyle(fontWeight: FontWeight.bold),)
+                                            Expanded(child: Text('${laun['ShopName']}', style: const TextStyle(fontWeight: FontWeight.bold),
+                                              overflow: TextOverflow.ellipsis,))
                                           ],
                                         ),
                                         description: Text(
@@ -480,7 +481,8 @@ class _TrackScreenState extends State<TrackScreen> {
                                           mainAxisAlignment: MainAxisAlignment.end,
                                           children: [
                                             const Text('Total Cost: '),
-                                            Text('₱${laun['LoadCost']}', style: const TextStyle(fontWeight: FontWeight.bold,fontSize: 19),)
+                                            Flexible(child: Text('₱${laun['LoadCost']}', style: const TextStyle(fontWeight: FontWeight.bold,fontSize: 19),
+                                              overflow: TextOverflow.ellipsis,))
                                           ],
                                         )
                                     ),
@@ -610,8 +612,8 @@ class _TrackScreenState extends State<TrackScreen> {
                               decoration: BoxDecoration(
                                   borderRadius: BorderRadius.circular(5),
                                   color: Colors.white,
-                                  boxShadow: [
-                                    const BoxShadow(
+                                  boxShadow: const [
+                                    BoxShadow(
                                         blurRadius: 1,
                                         color: Colors.grey
                                     )
@@ -628,7 +630,8 @@ class _TrackScreenState extends State<TrackScreen> {
                                         title: Row(
                                           children: [
                                             const Icon(Icons.store,color: ColorStyle.tertiary,),
-                                            Text('${laun['ShopName']}', style: const TextStyle(fontWeight: FontWeight.bold),)
+                                            Expanded(child: Text('${laun['ShopName']}', style: const TextStyle(fontWeight: FontWeight.bold),
+                                            overflow: TextOverflow.ellipsis,))
                                           ],
                                         ),
                                         description: Text(
@@ -741,8 +744,8 @@ class _TrackScreenState extends State<TrackScreen> {
                               decoration: BoxDecoration(
                                   borderRadius: BorderRadius.circular(5),
                                   color: Colors.white,
-                                  boxShadow: [
-                                    const BoxShadow(
+                                  boxShadow: const [
+                                    BoxShadow(
                                         blurRadius: 1,
                                         color: Colors.grey
                                     )
@@ -759,7 +762,8 @@ class _TrackScreenState extends State<TrackScreen> {
                                         title: Row(
                                           children: [
                                             const Icon(Icons.store,color: ColorStyle.tertiary,),
-                                            Text('${laun['ShopName']}', style: const TextStyle(fontWeight: FontWeight.bold),)
+                                            Expanded(child: Text('${laun['ShopName']}', style: const TextStyle(fontWeight: FontWeight.bold),
+                                              overflow: TextOverflow.ellipsis,))
                                           ],
                                         ),
                                         description: Text(
@@ -886,7 +890,8 @@ class _TrackScreenState extends State<TrackScreen> {
                                         title: Row(
                                           children: [
                                             const Icon(Icons.store,color: ColorStyle.tertiary,),
-                                            Text('${laun['ShopName']}', style: const TextStyle(fontWeight: FontWeight.bold),)
+                                            Expanded(child: Text('${laun['ShopName']}', style: const TextStyle(fontWeight: FontWeight.bold),
+                                              overflow: TextOverflow.ellipsis,))
                                           ],
                                         ),
                                         description: Text(
@@ -1038,13 +1043,15 @@ class _NotificationScreenState extends State<NotificationScreen> {
                     itemBuilder: (context,index){
                       Map notif = notification[index] as Map;
                       notifId = '${notif['NotifID']}';
+
+                      print(notifId);
                       return Column(
                         children: [
                           InkWell(
                             onTap: () async {
                               notifRead();
                               final response = await pushWithoutNavBar(context, MaterialPageRoute(builder: (context) =>
-                                  NewNotificationInfoScreen(bookId: '${notif['BookingID']}', title: notif['Title'])));
+                                  NewNotificationInfoScreen(bookId: '${notif['BookingID']}', title: notif['Title'], notifid: notifId,)));
 
                               if(response == true){
                                 setState(() {
@@ -1092,6 +1099,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
                     itemCount: timelinenotif.length,
                     itemBuilder: (context,index){
                       Map notif = timelinenotif[index] as Map;
+
                       return Column(
                         children: [
                           InkWell(

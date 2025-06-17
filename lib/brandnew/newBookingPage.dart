@@ -1028,7 +1028,7 @@ class _NewWashScreenState extends State<NewWashScreen> {
                                 title: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Text(
+                                    const Text(
                                       'Total Payment',
                                       style: TextStyle(color: Colors.grey,fontSize: 12),
                                     ),
@@ -1041,7 +1041,7 @@ class _NewWashScreenState extends State<NewWashScreen> {
                                 description: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Text(
+                                    const Text(
                                       'Laundry Weight',
                                       style: TextStyle(color: Colors.grey,fontSize: 12),
                                     ),
@@ -1059,7 +1059,7 @@ class _NewWashScreenState extends State<NewWashScreen> {
                   ),
                 ),
               ),
-              isPaid
+              /*isPaid
                   ? const SizedBox.shrink()
                   : Align(
                 alignment: Alignment.bottomCenter,
@@ -1080,7 +1080,7 @@ class _NewWashScreenState extends State<NewWashScreen> {
                         style: TextStyle(color: Colors.white),
                       )),
                 ),
-              )
+              )*/
             ],
           ),
         );
@@ -1198,7 +1198,7 @@ class _NewWashScreenState extends State<NewWashScreen> {
                                   title: Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
-                                      Text(
+                                      const Text(
                                         'Total Payment',
                                         style: TextStyle(color: Colors.grey),
                                       ),
@@ -1211,7 +1211,7 @@ class _NewWashScreenState extends State<NewWashScreen> {
                                   description: Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
-                                      Text(
+                                      const Text(
                                         'Laundry Weight',
                                         style: TextStyle(color: Colors.grey),
                                       ),
@@ -1230,7 +1230,7 @@ class _NewWashScreenState extends State<NewWashScreen> {
                     ),
                   ),
                 ),
-                isPaid
+                /*isPaid
                     ? const SizedBox.shrink()
                     : Align(
                   alignment: Alignment.bottomCenter,
@@ -1254,7 +1254,7 @@ class _NewWashScreenState extends State<NewWashScreen> {
                           style: TextStyle(color: Colors.white),
                         )),
                   ),
-                )
+                )*/
               ],
             ),
           );
@@ -1954,7 +1954,7 @@ class _NewDryScreenState extends State<NewDryScreen> {
                                 title: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Text(
+                                    const Text(
                                       'Total Payment',
                                       style: TextStyle(color: Colors.grey,fontSize: 12),
                                     ),
@@ -1967,7 +1967,7 @@ class _NewDryScreenState extends State<NewDryScreen> {
                                 description: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Text(
+                                    const Text(
                                       'Laundry Weight',
                                       style: TextStyle(color: Colors.grey,fontSize: 12),
                                     ),
@@ -1985,7 +1985,7 @@ class _NewDryScreenState extends State<NewDryScreen> {
                   ),
                 ),
               ),
-              isPaid
+              /*isPaid
                   ? const SizedBox.shrink()
                   : Align(
                 alignment: Alignment.bottomCenter,
@@ -2003,7 +2003,7 @@ class _NewDryScreenState extends State<NewDryScreen> {
                       'Paid',
                       style: TextStyle(color: Colors.white),
                     )),
-              )
+              )*/
             ],
           ),
         );
@@ -2121,7 +2121,7 @@ class _NewDryScreenState extends State<NewDryScreen> {
                                   title: Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
-                                      Text(
+                                      const Text(
                                         'Total Payment',
                                         style: TextStyle(color: Colors.grey),
                                       ),
@@ -2134,7 +2134,7 @@ class _NewDryScreenState extends State<NewDryScreen> {
                                   description: Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
-                                      Text(
+                                      const Text(
                                         'Laundry Weight',
                                         style: TextStyle(color: Colors.grey),
                                       ),
@@ -2153,7 +2153,7 @@ class _NewDryScreenState extends State<NewDryScreen> {
                     ),
                   ),
                 ),
-                isPaid
+                /*isPaid
                     ? const SizedBox.shrink()
                     : Align(
                   alignment: Alignment.bottomCenter,
@@ -2174,7 +2174,7 @@ class _NewDryScreenState extends State<NewDryScreen> {
                           style: TextStyle(color: Colors.white),
                         )),
                   ),
-                )
+                )*/
               ],
             ),
           );
@@ -2744,7 +2744,7 @@ class _NewFoldScreenState extends State<NewFoldScreen> {
                   ),
                 ),
               ),
-              isPaid
+              /*isPaid
                   ? const SizedBox.shrink()
                   : Align(
                 alignment: Alignment.bottomCenter,
@@ -2762,7 +2762,7 @@ class _NewFoldScreenState extends State<NewFoldScreen> {
                       'Paid',
                       style: TextStyle(color: Colors.white),
                     )),
-              )
+              )*/
             ],
           ),
         );
@@ -2892,7 +2892,7 @@ class _NewFoldScreenState extends State<NewFoldScreen> {
                     ),
                   ),
                 ),
-                isPaid
+               /* isPaid
                     ? const SizedBox.shrink()
                     : Align(
                   alignment: Alignment.bottomCenter,
@@ -2913,7 +2913,7 @@ class _NewFoldScreenState extends State<NewFoldScreen> {
                           style: TextStyle(color: Colors.white),
                         )),
                   ),
-                )
+                )*/
               ],
             ),
           );
@@ -3914,7 +3914,7 @@ class _NewPickupScreenState extends State<NewPickupScreen> {
                                 title: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Text(
+                                    const Text(
                                       'Total Payment',
                                       style: TextStyle(color: Colors.grey,fontSize: 12),
                                     ),
@@ -3927,7 +3927,7 @@ class _NewPickupScreenState extends State<NewPickupScreen> {
                                 description: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Text(
+                                    const Text(
                                       'Laundry Weight',
                                       style: TextStyle(color: Colors.grey,fontSize: 12),
                                     ),
@@ -4131,7 +4131,7 @@ class _NewPickupScreenState extends State<NewPickupScreen> {
                                   title: Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
-                                      Text(
+                                      const Text(
                                         'Total Payment',
                                         style: TextStyle(color: Colors.grey),
                                       ),
@@ -4144,7 +4144,7 @@ class _NewPickupScreenState extends State<NewPickupScreen> {
                                   description: Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
-                                      Text(
+                                      const Text(
                                         'Laundry Weight',
                                         style: TextStyle(color: Colors.grey),
                                       ),
@@ -4794,7 +4794,7 @@ class _NewCompleteScreenState extends State<NewCompleteScreen> {
                                 title: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Text(
+                                    const Text(
                                       'Total Payment',
                                       style: TextStyle(color: Colors.grey),
                                     ),
@@ -4807,7 +4807,7 @@ class _NewCompleteScreenState extends State<NewCompleteScreen> {
                                 description: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Text(
+                                    const Text(
                                       'Laundry Weight',
                                       style: TextStyle(color: Colors.grey),
                                     ),
@@ -4942,7 +4942,7 @@ class _NewCompleteScreenState extends State<NewCompleteScreen> {
                                   title: Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
-                                      Text(
+                                      const Text(
                                         'Total Payment',
                                         style: TextStyle(color: Colors.grey),
                                       ),
@@ -4955,7 +4955,7 @@ class _NewCompleteScreenState extends State<NewCompleteScreen> {
                                   description: Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
-                                      Text(
+                                      const Text(
                                         'Laundry Weight',
                                         style: TextStyle(color: Colors.grey),
                                       ),

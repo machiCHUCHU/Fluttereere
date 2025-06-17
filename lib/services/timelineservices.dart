@@ -104,7 +104,7 @@ Future<ApiResponse> confirmationNotif(String token) async{
   return apiResponse;
 }
 
-Future<ApiResponse> confirmLaundry(String bookid,String confirm,String token) async{
+Future<ApiResponse>   confirmLaundry(String bookid,String confirm,String notifid,String token) async{
   ApiResponse apiResponse = ApiResponse();
 
   final response = await http.post(
@@ -115,6 +115,7 @@ Future<ApiResponse> confirmLaundry(String bookid,String confirm,String token) as
       },
       body: {
         'bookid':bookid,
+        'notifid':notifid,
         'confirm':confirm
       }
   );

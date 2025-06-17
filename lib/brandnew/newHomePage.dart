@@ -1,11 +1,9 @@
 
 import 'dart:async';
-
 import 'package:capstone/api_response.dart';
 import 'package:capstone/brandnew/dialogs.dart';
 import 'package:capstone/brandnew/newBookingPage.dart';
 import 'package:capstone/brandnew/newBookingService.dart';
-import 'package:capstone/brandnew/newChartPage.dart';
 import 'package:capstone/brandnew/newCustomerPage.dart';
 import 'package:capstone/brandnew/newInventoryPage.dart';
 import 'package:capstone/brandnew/newLoginPage.dart';
@@ -13,19 +11,15 @@ import 'package:capstone/brandnew/newReportPage.dart';
 import 'package:capstone/brandnew/newReviewPage.dart';
 import 'package:capstone/brandnew/newSettings.dart';
 import 'package:capstone/brandnew/newUpcomingTaskScreen.dart';
-import 'package:capstone/connect/laravel.dart';
 import 'package:capstone/services/services.dart';
 import 'package:capstone/styles/loginStyle.dart';
 import 'package:capstone/styles/mainColorStyle.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/painting.dart';
-import 'package:flutter_profile_picture/flutter_profile_picture.dart';
 import 'package:intl/intl.dart';
 import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
-import 'package:row_item/row_item.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:syncfusion_flutter_charts/charts.dart';
 
 class NewHomeScreen extends StatefulWidget {
   const NewHomeScreen({super.key});

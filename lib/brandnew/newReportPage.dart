@@ -521,12 +521,13 @@ class _ServiceListScreenState extends State<ServiceListScreen> {
                     itemCount: report.length,
                     itemBuilder: (context, index){
                       Map rep = report[index] as Map;
+                      print(rep);
 
                       return Column(
                         children: [
                           InkWell(
                             onTap: (){
-                              print('wrwe');
+
                             },
                             child: Padding(
                               padding: const EdgeInsets.all(8.0),

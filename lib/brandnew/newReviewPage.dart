@@ -217,7 +217,8 @@ class _NewReviewPageState extends State<NewReviewPage> {
                                       child: Text(
                                         value,
                                         style: TextStyle(
-                                            color: selected ? ColorStyle.tertiary : Colors.black
+                                            color: selected ? ColorStyle.tertiary : Colors.black,
+                                          fontSize: 8
                                         ),
                                         textAlign: TextAlign.center,
                                       ),

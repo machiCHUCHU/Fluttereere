@@ -1,18 +1,17 @@
-import 'dart:ui';
+
 
 import 'package:capstone/api_response.dart';
 import 'package:capstone/brandnew/dialogs.dart';
 import 'package:capstone/services/services.dart';
 import 'package:capstone/services/servicesadd.dart';
 import 'package:capstone/styles/mainColorStyle.dart';
+import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_profile_picture/flutter_profile_picture.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
-import 'package:percent_indicator/linear_percent_indicator.dart';
 import 'package:row_item/row_item.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:syncfusion_flutter_charts/charts.dart';
 
 class NewReportRatingScreen extends StatefulWidget {
   const NewReportRatingScreen({super.key});
@@ -71,6 +70,49 @@ class _NewReportRatingScreenState extends State<NewReportRatingScreen> {
       });
     }
   }
+
+  List<PieChartSectionData> getRatingChart(String fiveStar, String fourStar, String threeStar,
+      String twoStar, String oneStar) {
+    return [
+      PieChartSectionData(
+        color: Colors.green,
+        value: double.tryParse(fiveStar) ?? 0,
+        title: fiveStar,
+        radius: 25,
+        titleStyle: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)
+      ),
+      PieChartSectionData(
+        color: Colors.lightGreen,
+        value: double.tryParse(fourStar) ?? 0,
+        title: fourStar,
+        radius: 25,
+        titleStyle: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)
+      ),
+      PieChartSectionData(
+        color: Colors.yellow,
+        value: double.tryParse(threeStar) ?? 0,
+        title: threeStar,
+        radius: 25,
+        titleStyle: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)
+      ),
+      PieChartSectionData(
+        color: Colors.orange,
+        value: double.tryParse(twoStar) ?? 0,
+        title: twoStar,
+        radius: 25,
+        titleStyle: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)
+      ),
+      PieChartSectionData(
+        color: Colors.red,
+        value: double.tryParse(oneStar) ?? 0,
+        title: oneStar,
+        radius: 25,
+        titleStyle: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)
+      ),
+    ];
+  }
+
+  int touchedIndex = -1;
   @override
   void initState() {
     reviewsDisplay();
@@ -81,6 +123,7 @@ class _NewReportRatingScreenState extends State<NewReportRatingScreen> {
 
   @override
   Widget build(BuildContext context) {
+
     double totRate = (perf['total_raters'] ?? 0) > 0
         ? double.tryParse('${((perf['sumrating'] ?? 0) / (perf['total_raters'] ?? 0)).toStringAsFixed(1)}') ?? 0
         : 0;
@@ -221,32 +264,18 @@ class _NewReportRatingScreenState extends State<NewReportRatingScreen> {
                     SizedBox(
                       height: 175,
                       width: 175,
-                      child: SfCircularChart(
-                        tooltipBehavior: TooltipBehavior(enable: true),
-                        series: <CircularSeries<_DoughnutChart, String>>[
-                          DoughnutSeries<_DoughnutChart, String>(
-                            dataSource: [
-                              _DoughnutChart('5 star', double.tryParse('${ratings['five_star']}') ?? 0, Colors.green),
-                              _DoughnutChart('4 star', double.tryParse('${ratings['four_star']}') ?? 0,Colors.lime),
-                              _DoughnutChart('3 star', double.tryParse('${ratings['three_star']}') ?? 0,Colors.yellow),
-                              _DoughnutChart('2 star', double.tryParse('${ratings['two_star']}') ?? 0,Colors.orangeAccent),
-                              _DoughnutChart('5 star', double.tryParse('${ratings['one_star']}') ?? 0,Colors.redAccent),
-                            ],
-                            xValueMapper: (_DoughnutChart data, _) => data.x,
-                            yValueMapper: (_DoughnutChart data, _) => data.y,
-                            pointColorMapper: (_DoughnutChart data, _) => data.color,
-                            explode: true,
-                            explodeAll: true,
-                            dataLabelSettings: const DataLabelSettings(
-                              isVisible: true,
-                              textStyle: TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 14,
-                              ),
-                            ),
-                          )
-                        ],
+                      child: PieChart(
+                        PieChartData(
+                          sections: getRatingChart(
+                              '${ratings['five_star']}',
+                              '${ratings['four_star']}',
+                              '${ratings['three_star']}',
+                              '${ratings['two_star']}',
+                              '${ratings['one_star']}'
+                          ),
+                          centerSpaceRadius: 50,  // Adjust inner space
+                          sectionsSpace: 2,        // Space between sections
+                        ),
                       ),
                     ),
                     // Star Ratings
@@ -439,6 +468,8 @@ class _NewReportRatingScreenState extends State<NewReportRatingScreen> {
       ),
     );
   }
+
+
 }
 
 class ReviewData {
@@ -462,3 +493,4 @@ List<Color> donutColors = [
   Colors.orange,
   Colors.red,
 ];
+

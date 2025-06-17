@@ -1,3 +1,3 @@
-  const ipaddress = 'https://production.matelaundry.com/api';
+const ipaddress = 'https://production.matelaundry.com/api';
 
-  const picaddress = 'https://production.matelaundry.com/';
+const picaddress = 'https://production.matelaundry.com/images/';

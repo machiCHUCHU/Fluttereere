@@ -160,7 +160,7 @@ class _NewShopInfoScreenState extends State<NewShopInfoScreen> {
                         name: '${info['ShopName']}',
                         radius: 46,
                         fontsize: 24,
-                        img: info['ShopImage'] == '' ? null : '$picaddress/${info['ShopImage']}',
+                        img: info['ShopImage'] == '' || info['ShopImage'] == null ? null : '$picaddress/${info['ShopImage']}',
                     )
                   ],
                 ),

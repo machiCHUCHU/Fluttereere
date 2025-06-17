@@ -12,7 +12,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 class NewNotificationInfoScreen extends StatefulWidget {
   final String bookId;
   final String title;
-  const NewNotificationInfoScreen({super.key, required this.bookId, required this.title});
+  final String notifid;
+  const NewNotificationInfoScreen({super.key, required this.bookId, required this.title, required this.notifid});
 
   @override
   State<NewNotificationInfoScreen> createState() => _NewNotificationInfoScreenState();
@@ -39,7 +40,7 @@ class _NewNotificationInfoScreenState extends State<NewNotificationInfoScreen> {
 
   Future<void> laundryConfirmation(String confirm) async{
      final SharedPreferences prefs = await SharedPreferences.getInstance();
-     ApiResponse response = await confirmLaundry(widget.bookId, confirm, '${prefs.getString('token')}');
+     ApiResponse response = await confirmLaundry(widget.bookId, confirm, widget.notifid,'${prefs.getString('token')}');
 
      if(response.error == null){
        if(confirm == '1'){
