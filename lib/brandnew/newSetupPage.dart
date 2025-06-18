@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:ui';
 
 import 'package:capstone/api_response.dart';
 import 'package:capstone/brandnew/dialogs.dart';
@@ -7,12 +6,8 @@ import 'package:capstone/brandnew/newHomePage.dart';
 import 'package:capstone/services/services.dart';
 import 'package:capstone/styles/mainColorStyle.dart';
 import 'package:capstone/styles/signupStyle.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/painting.dart';
-import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter/widgets.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -104,12 +99,6 @@ class _SetupInformationScreenState extends State<SetupInformationScreen> {
   final TextEditingController _dryerTime = TextEditingController();
   final TextEditingController _foldingTime = TextEditingController();
   final TextEditingController _maxLoad = TextEditingController();
-  final TextEditingController _lightLoad = TextEditingController();
-  final TextEditingController _lightCost = TextEditingController();
-  final TextEditingController _heavyLoad = TextEditingController();
-  final TextEditingController _heavyCost = TextEditingController();
-  final TextEditingController _comforterLoad = TextEditingController();
-  final TextEditingController _comforterCost = TextEditingController();
   Uint8List? _pickedImageBytes;
 
   final TextEditingController _servicename = TextEditingController();
@@ -258,7 +247,7 @@ class _SetupInformationScreenState extends State<SetupInformationScreen> {
                                 backgroundColor: Colors.white,
 
                                 backgroundImage: _pickedImageBytes == null
-                                    ? AssetImage('assets/shop.png')
+                                    ? const AssetImage('assets/shop.png')
                                     : MemoryImage(_pickedImageBytes!) as ImageProvider,
                                 radius: 50,
                               ),
@@ -474,11 +463,11 @@ class _SetupInformationScreenState extends State<SetupInformationScreen> {
                       OutlinedButton(
                           style: OutlinedButton.styleFrom(
                               fixedSize: Size(MediaQuery.of(context).size.width, 55),
-                              shape: RoundedRectangleBorder(
+                              shape: const RoundedRectangleBorder(
                                 borderRadius: BorderRadius.vertical(bottom: Radius.circular(5)),
                               ),
-                              side: BorderSide(style: BorderStyle.solid, width: 1),
-                              padding: EdgeInsets.symmetric(horizontal: 8),
+                              side: const BorderSide(style: BorderStyle.solid, width: 1),
+                              padding: const EdgeInsets.symmetric(horizontal: 8),
                               backgroundColor: Colors.white
                           ),
                           onPressed: (){
@@ -492,7 +481,7 @@ class _SetupInformationScreenState extends State<SetupInformationScreen> {
                             );
                           },
                           child: Align(alignment: Alignment.centerLeft,
-                            child: Text(_shopTime.isEmpty ? 'Select' : _shopTime, style: TextStyle(fontSize: 16, color: Colors.black54),),)
+                            child: Text(_shopTime.isEmpty ? 'Select' : _shopTime, style: const TextStyle(fontSize: 16, color: Colors.black54),),)
                       ),
                       const SizedBox(height: 15,),
 
@@ -571,7 +560,6 @@ class _SetupInformationScreenState extends State<SetupInformationScreen> {
                                                 _serviceoffer = 'wash-dry';
                                                 break;
                                             }
-                                            print(_serviceoffer);
                                           }
                                       )
                                   )
@@ -613,7 +601,6 @@ class _SetupInformationScreenState extends State<SetupInformationScreen> {
                                           }else{
                                             _servicetype = 'full';
                                           }
-                                          print(_servicetype);
                                         }
                                     ),
                                   )
@@ -729,7 +716,6 @@ class _SetupInformationScreenState extends State<SetupInformationScreen> {
                                     _loadtype = 'comforter';
                                     break;
                                 }
-                                print(_loadtype);
                               }
                           ),
                           const SizedBox(height: 10,),

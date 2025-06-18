@@ -64,7 +64,6 @@ dependencies:
   calendar_date_picker2: ^1.1.6
   dropdown_button2: ^2.3.8
   data_table_2: ^2.5.15
-  syncfusion_flutter_charts: ^26.2.12
   intl_phone_field: ^3.1.0
   persistent_bottom_nav_bar: ^6.2.1
   persistent_bottom_nav_bar_v2: ^5.3.0

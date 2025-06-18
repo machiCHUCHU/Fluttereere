@@ -7,9 +7,6 @@ import 'package:capstone/styles/mainColorStyle.dart';
 import 'package:easy_stepper/easy_stepper.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
-import 'package:loading_animation_widget/loading_animation_widget.dart';
-import 'package:row_item/row_item.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:timelines_plus/timelines_plus.dart';
 import 'newLaundryStatement.dart';
@@ -79,7 +76,6 @@ class _NewServiceSummaryScreenState extends State<NewServiceSummaryScreen> {
        stat = 'Laundry Finished';
      }
    }
-   print(stat);
     return Scaffold(
       appBar: AppBar(
         title: const Text('Summary'),
@@ -104,8 +100,8 @@ class _NewServiceSummaryScreenState extends State<NewServiceSummaryScreen> {
                    decoration: BoxDecoration(
                        color: Colors.white,
                        borderRadius: BorderRadius.circular(5),
-                       boxShadow: [
-                         const BoxShadow(
+                       boxShadow: const [
+                         BoxShadow(
                              blurRadius: 1,
                              color: Colors.grey
                          )
@@ -153,8 +149,8 @@ class _NewServiceSummaryScreenState extends State<NewServiceSummaryScreen> {
                    decoration: BoxDecoration(
                        borderRadius: BorderRadius.circular(5),
                        color: Colors.white,
-                       boxShadow: [
-                         const BoxShadow(
+                       boxShadow: const [
+                         BoxShadow(
                              blurRadius: 1,
                              color: Colors.grey
                          )
@@ -187,8 +183,8 @@ class _NewServiceSummaryScreenState extends State<NewServiceSummaryScreen> {
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(5),
-                  boxShadow: [
-                    const BoxShadow(
+                  boxShadow: const [
+                    BoxShadow(
                       blurRadius: 1,
                       color: Colors.grey
                     )

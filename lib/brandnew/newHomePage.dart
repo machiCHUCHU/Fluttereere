@@ -219,35 +219,10 @@ class _NewHomeScreenState extends State<NewHomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    print(token);
     return Scaffold(
       appBar: AppBar(
         title: const Text('Laundry Mate'),
-        titleTextStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-        /*actions: [
-          Text('${profile['shopname'] ?? '...'}', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),overflow: TextOverflow.ellipsis,),
-          const SizedBox(width: 5,),
-          InkWell(
-            onTap: (){
-              logoutDialog(context, logoutState);
-            },
-            child: Stack(
-              children: [
-                const CircleAvatar(
-                  backgroundColor: Colors.white,
-                  radius: 22,
-                ),
-                ProfilePicture(
-                  name: '${profile['shopname']}',
-                  radius: 22,
-                  fontsize: 14,
-                  img: profile['pic'] == '' || profile['pic'] == 'null' ? null : '$picaddress/${profile['pic']}'
-                )
-              ],
-            ),
-          ),
-          const SizedBox(width: 5,),
-        ],*/
+        titleTextStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(8),
@@ -635,11 +610,5 @@ class _NewHomeScreenState extends State<NewHomeScreen> {
     );
 
   }
-}
-
-class SalesData {
-  SalesData(this.year, this.sales);
-  final String year;
-  final double sales;
 }
 

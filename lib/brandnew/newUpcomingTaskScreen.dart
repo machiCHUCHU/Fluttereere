@@ -33,7 +33,6 @@ class _NewUpcomingTaskScreenState extends State<NewUpcomingTaskScreen> {
         isLoading = false;
       });
     }else{
-      print(response.error);
     }
   }
 
@@ -79,7 +78,7 @@ class _NewUpcomingTaskScreenState extends State<NewUpcomingTaskScreen> {
                           name: name,
                           fontsize: 14,
                           radius: 18,
-                          img: customerImage == 'null' || customerImage == null
+                          img: customerImage == 'null'
                               ? null
                               : '$picaddress/$customerImage',
                         ),
@@ -255,7 +254,7 @@ class _NewUpcomingTaskScreenState extends State<NewUpcomingTaskScreen> {
               ),
             ),
             isLoading ? loading() : upTask.isEmpty
-                ? Center(child: const Text('No booking for this day'))
+                ? const Center(child: Text('No booking for this day'))
                 : ListView.builder(
                 shrinkWrap: true,
                 itemCount: upTask.length,
@@ -310,11 +309,11 @@ class _NewUpcomingTaskScreenState extends State<NewUpcomingTaskScreen> {
                               color: ColorStyle.tertiary,
                               borderRadius: BorderRadius.circular(5)
                           ),
-                          child: Icon(Icons.local_laundry_service,size: 38,color: Colors.white,),
+                          child: const Icon(Icons.local_laundry_service,size: 38,color: Colors.white,),
                         ),
                       ),
-                      title: Text('${task['CustomerName']}',style: TextStyle(color: ColorStyle.tertiary),),
-                      subtitle: Text('${task['CustomerContactNumber']}',style: TextStyle(fontSize: 12),),
+                      title: Text('${task['CustomerName']}',style: const TextStyle(color: ColorStyle.tertiary),),
+                      subtitle: Text('${task['CustomerContactNumber']}',style: const TextStyle(fontSize: 12),),
                     ),
                   );
                 }

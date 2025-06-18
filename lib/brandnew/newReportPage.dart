@@ -415,7 +415,6 @@ class _ServiceListScreenState extends State<ServiceListScreen> {
         isloading = false;
       });
     }else{
-      print(response.error);
     }
   }
 
@@ -458,13 +457,13 @@ class _ServiceListScreenState extends State<ServiceListScreen> {
               minHeight: 30,
               animationDuration: 800,
               cornerRadius: 5.0,
-              activeBgColors: [[ColorStyle.tertiary], [ColorStyle.tertiary]],
+              activeBgColors: const [[ColorStyle.tertiary], [ColorStyle.tertiary]],
               activeFgColor: Colors.white,
               inactiveBgColor: Colors.white,
               inactiveFgColor: ColorStyle.tertiary,
               initialLabelIndex: page == '' ? 0 : int.parse(page),
               totalSwitches: 2,
-              labels: ['Bookings', 'Walk-in'],
+              labels: const ['Bookings', 'Walk-in'],
               customTextStyles: const [
                 TextStyle(
                     fontWeight: FontWeight.bold),
@@ -521,7 +520,6 @@ class _ServiceListScreenState extends State<ServiceListScreen> {
                     itemCount: report.length,
                     itemBuilder: (context, index){
                       Map rep = report[index] as Map;
-                      print(rep);
 
                       return Column(
                         children: [

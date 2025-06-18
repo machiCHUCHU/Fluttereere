@@ -3,19 +3,15 @@ import 'package:calendar_date_picker2/calendar_date_picker2.dart';
 import 'package:capstone/api_response.dart';
 import 'package:capstone/brandnew/dialogs.dart';
 import 'package:capstone/services/services.dart';
-import 'package:capstone/services/timelineservices.dart';
 import 'package:capstone/styles/mainColorStyle.dart';
-import 'package:carousel_slider/carousel_slider.dart';
 import 'package:date_picker_plus/date_picker_plus.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:group_button/group_button.dart';
 import 'package:intl/intl.dart';
-import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 import 'package:row_item/row_item.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:collection/collection.dart';
 
 class NewServiceBookingScreen extends StatefulWidget {
   final String shopId;
@@ -27,7 +23,7 @@ class NewServiceBookingScreen extends StatefulWidget {
 
 class _NewServiceBookingScreenState extends State<NewServiceBookingScreen> {
   List<dynamic> services = []; int selectedIndex = 0; int totalPrice = 0;
-  int? serviceId; List<DateTime?> _dates = [];
+  int? serviceId;
   String pickedDate = ''; String pickedDateDisp = ''; List<DateTime?> date = []; String chosenDate = '';
   DateTime? dateSelected; String schedule = ''; String time = ''; String timeformatted = '';
   bool isLoading = true;
@@ -315,7 +311,6 @@ class _NewServiceBookingScreenState extends State<NewServiceBookingScreen> {
           timeformatted = selectedTime.format(context);
         });
       } else {
-        print("No time selected");
       }
     });
   }
@@ -329,7 +324,6 @@ class _NewServiceBookingScreenState extends State<NewServiceBookingScreen> {
 
   @override
   Widget build(BuildContext context) {
-    print(records);
     return Scaffold(
       appBar: AppBar(
         title: const Text('Avail Service'),
@@ -541,7 +535,7 @@ class _NewServiceBookingScreenState extends State<NewServiceBookingScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             const Text('Total: ',style: TextStyle(fontSize: 14,color: ColorStyle.tertiary,fontWeight: FontWeight.bold),),
-                            Text('₱${totalPrice}',
+                            Text('₱$totalPrice',
                               style: const TextStyle(fontSize: 20,color: ColorStyle.tertiary,fontWeight: FontWeight.bold),),
                           ],
                         ),
@@ -571,7 +565,7 @@ class _NewServiceBookingScreenState extends State<NewServiceBookingScreen> {
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(5),
-                  boxShadow: [
+                  boxShadow: const [
                     BoxShadow(
                       blurRadius: 1,
                       color: Colors.grey

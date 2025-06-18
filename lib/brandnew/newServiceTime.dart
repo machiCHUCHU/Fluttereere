@@ -1,4 +1,3 @@
-import 'dart:ui';
 
 import 'package:capstone/api_response.dart';
 import 'package:capstone/brandnew/dialogs.dart';
@@ -40,7 +39,6 @@ class _NewServiceTimeScreenState extends State<NewServiceTimeScreen> {
         isLoading = false;
       });
     }else{
-      print(response.error);
     }
   }
 
@@ -75,8 +73,8 @@ class _NewServiceTimeScreenState extends State<NewServiceTimeScreen> {
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(5),
-                boxShadow: [
-                  const BoxShadow(
+                boxShadow: const [
+                  BoxShadow(
                     blurRadius: 1,
                     color: Colors.grey
                   )

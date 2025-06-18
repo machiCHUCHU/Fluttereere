@@ -112,7 +112,6 @@ class _NewProfileEditScreenState extends State<NewProfileEditScreen> {
 
     if(response.error == null){
     }else{
-      print(response.error);
     }
   }
 
@@ -183,7 +182,7 @@ class _NewProfileEditScreenState extends State<NewProfileEditScreen> {
               fontSize: 18,
               fontWeight: FontWeight.bold
             ),
-            content: Container(
+            content: SizedBox(
               height: 150,
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -224,7 +223,6 @@ class _NewProfileEditScreenState extends State<NewProfileEditScreen> {
 
   @override
   Widget build(BuildContext context) {
-    print(_image);
     return Scaffold(
       appBar: AppBar(
         title: const Text('Edit Information'),

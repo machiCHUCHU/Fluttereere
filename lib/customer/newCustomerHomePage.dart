@@ -145,7 +145,6 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  final GlobalKey<_HomeScreenState> _homeKey = GlobalKey<_HomeScreenState>();
   List<dynamic> shops = [];
   final TextEditingController _code = TextEditingController();
   bool isloading = true;
@@ -199,7 +198,6 @@ class _HomeScreenState extends State<HomeScreen> {
           itemBuilder: (context,index){
             Map req = shops[index] as Map;
             Color status;
-            String shopStat;
             switch(req['ShopStatus']){
               case 'open':
                 status = Colors.green;
@@ -600,7 +598,6 @@ class _TrackScreenState extends State<TrackScreen> {
                         bool isPickup = laun['Status'] == '4';
                         bool isCancelled = laun['deleted_at'] != null;
                         bool isPending = laun['Status'] == '0';
-                        bool isCurrent = int.parse(laun['Status']) > 0 || int.parse(laun['Status']) >= 4;
                         return Padding(
                           padding: const EdgeInsets.all(4.0),
                           child: InkWell(
@@ -730,9 +727,7 @@ class _TrackScreenState extends State<TrackScreen> {
                             statColor = Colors.green;
                             break;
                         }
-                        bool isPickup = laun['Status'] == '4';
                         bool isCancelled = laun['deleted_at'] != null;
-                        bool isPending = laun['Status'] == '0';
                         return Padding(
                           padding: const EdgeInsets.all(4.0),
                           child: InkWell(

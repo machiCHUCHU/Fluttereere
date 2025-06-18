@@ -1,8 +1,6 @@
-import 'dart:ui';
 
 import 'package:capstone/api_response.dart';
 import 'package:capstone/brandnew/dialogs.dart';
-import 'package:capstone/brandnew/newLaundryServicePage.dart';
 import 'package:capstone/services/services.dart';
 import 'package:capstone/services/servicesadd.dart';
 import 'package:capstone/services/validation.dart';
@@ -10,12 +8,9 @@ import 'package:capstone/styles/mainColorStyle.dart';
 import 'package:capstone/styles/registrationStyle.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/painting.dart';
-import 'package:flutter/rendering.dart';
 import 'package:flutter_profile_picture/flutter_profile_picture.dart';
 import 'package:flutter_timer_countdown/flutter_timer_countdown.dart';
 import 'package:group_button/group_button.dart';
-import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:pinput/pinput.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -94,8 +89,8 @@ class _NewCoOwnerScreenState extends State<NewCoOwnerScreen> {
                 decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(5),
-                    boxShadow: [
-                      const BoxShadow(
+                    boxShadow: const [
+                      BoxShadow(
                           blurRadius: 1,
                           color: Colors.grey
                       )
@@ -343,12 +338,11 @@ class _AddCoOwnerScreenState extends State<AddCoOwnerScreen> {
                       selectedTextStyle: TextStyle(color: Colors.white),
                     ),
                     onSelected: (selected, index, isSelected) {
-                      print('$selected button is selected');
                       setState(() {
                         selectedAccess = selected;
                       });
                     },
-                    buttons: ["Full Access", "Limited Access"],
+                    buttons: const ["Full Access", "Limited Access"],
                     buttonBuilder: (selected, value, context) {
                       return Container(
                         width: 100,
@@ -504,7 +498,6 @@ class _NewOTPScreenState extends State<NewOTPScreen> {
       }
     } else {
       await errorDialog(context, '${response.error}');
-      print(response.error);
       Navigator.pop(context);
     }
   }
@@ -525,7 +518,6 @@ class _NewOTPScreenState extends State<NewOTPScreen> {
       await successDialog(context, '${response.data}');
       Navigator.popUntil(context, (route) => route.isFirst);
     }else{
-      print(response.error);
     }
   }
 
@@ -562,7 +554,6 @@ class _NewOTPScreenState extends State<NewOTPScreen> {
 
   @override
   Widget build(BuildContext context) {
-    print(widget.coname);
     return SafeArea(
         child: Scaffold(
           body: SingleChildScrollView(
@@ -882,7 +873,6 @@ class _EditCoOwnerScreenState extends State<EditCoOwnerScreen> {
                       selectedTextStyle: TextStyle(color: Colors.white),
                     ),
                     onSelected: (selected, index, isSelected) {
-                      print('$selected button is selected');
                       setState(() {
                         selectedAccess = selected;
                         selIndex = index;
@@ -891,7 +881,6 @@ class _EditCoOwnerScreenState extends State<EditCoOwnerScreen> {
                     },
                     buttons: const ["Full Access", "Limited Access"],
                     buttonBuilder: (selected, value, context) {
-                      print(value);
                       return Container(
                         width: 100,
                         height: 100,
@@ -1143,7 +1132,6 @@ class _ValidateNewContactOTPState extends State<ValidateNewContactOTP> {
 
   @override
   Widget build(BuildContext context) {
-    print(otp);
     return SafeArea(
         child: Scaffold(
           body: SingleChildScrollView(

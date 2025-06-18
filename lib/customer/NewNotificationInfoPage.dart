@@ -5,7 +5,6 @@ import 'package:capstone/services/timelineservices.dart';
 import 'package:capstone/styles/mainColorStyle.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:row_item/row_item.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -64,7 +63,6 @@ class _NewNotificationInfoScreenState extends State<NewNotificationInfoScreen> {
 
   @override
   Widget build(BuildContext context) {
-     print(summ['IsConfirmed']);
     return Scaffold(
       appBar: AppBar(
         title: const Text('Laundry Details'),
@@ -185,7 +183,7 @@ class _NewNotificationInfoScreenState extends State<NewNotificationInfoScreen> {
                               borderRadius: BorderRadius.circular(5)
                           ),
                           foregroundColor: ColorStyle.tertiary,
-                          side: BorderSide(color: ColorStyle.tertiary)
+                          side: const BorderSide(color: ColorStyle.tertiary)
                       ),
                       onPressed: (){
                         laundryConfirmation('0');
@@ -250,7 +248,6 @@ class _LaundryUpdatesScreenState extends State<LaundryUpdatesScreen> {
 
   @override
   Widget build(BuildContext context) {
-    print(widget.bookId);
     return Scaffold(
       appBar: AppBar(
         title: const Text('Laundry Details'),

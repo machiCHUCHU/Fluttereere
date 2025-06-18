@@ -3,7 +3,6 @@ import 'package:capstone/brandnew/newCoOwnerPage.dart';
 import 'package:capstone/brandnew/newLoginPage.dart';
 import 'package:capstone/services/services.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 
 Future<void> successDialog(BuildContext context, String title) async {
@@ -95,7 +94,7 @@ void inputDialog(BuildContext context, Function callback, TextEditingController 
             decoration: InputDecoration(
                 border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(5),
-                    borderSide: BorderSide(
+                    borderSide: const BorderSide(
                         color: Colors.red,
                         width: 5
                     )
@@ -170,7 +169,7 @@ Future<void> reloginDialog(BuildContext context) async {
     dismissOnTouchOutside: false,
     dialogType: DialogType.warning,
     btnOkOnPress: (){
-      Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => NewLoginScreen()), (route) => false);
+      Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => const NewLoginScreen()), (route) => false);
     },
     title: 'Phone Number Changed',
     desc: 'Please login again!'
@@ -178,7 +177,7 @@ Future<void> reloginDialog(BuildContext context) async {
 }
 
 Future<void> resendOTPDialog(String contact,BuildContext context) async {
-  Future<void> otpDisplay() async{/*widget.contact*/
+  Future<void> otpDisplay() async{
     await otpVerification(contact);
   }
 
@@ -197,18 +196,6 @@ Future<void> resendOTPDialog(String contact,BuildContext context) async {
   ).show();
 }
 
-Future<void> tryDialog(BuildContext context) async{
-  await AwesomeDialog(
-      context: context,
-      animType: AnimType.topSlide,
-      dialogType: DialogType.warning,
-      autoHide: Duration(seconds: 2),
-      dismissOnTouchOutside: false,
-      dismissOnBackKeyPress: false,
-      title: 'Hello World',
-      desc: 'Testing Testing',
-  ).show();
-}
 
 Center loading(){
   return Center(

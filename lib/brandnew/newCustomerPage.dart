@@ -1,22 +1,10 @@
-import 'dart:convert';
-import 'dart:ui';
 
 import 'package:capstone/api_response.dart';
 import 'package:capstone/brandnew/dialogs.dart';
-import 'package:capstone/connect/laravel.dart';
-import 'package:capstone/services/services.dart';
 import 'package:capstone/services/servicesadd.dart';
 import 'package:capstone/styles/mainColorStyle.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/painting.dart';
-import 'package:flutter/rendering.dart';
-import 'package:flutter/services.dart';
-import 'package:flutter/widgets.dart';
-import 'package:flutter_profile_picture/flutter_profile_picture.dart';
-import 'package:loading_animation_widget/loading_animation_widget.dart';
-import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
-import 'package:row_item/row_item.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:toggle_switch/toggle_switch.dart';
 
@@ -32,146 +20,6 @@ class _NewCustomerScreenState extends State<NewCustomerScreen> {
   String? token;
   bool isLoading = true; String page = '';
 
-  void _bottomModal(String name, String address, String contact, String image,
-      bool hasPicture, String date, String valued, String id) {
-    showMaterialModalBottomSheet(
-      context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(10)),
-      ),
-      builder: (context) => Container(
-        height: MediaQuery.of(context).size.height * .5,
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(20),
-            topRight: Radius.circular(20),
-          ),
-        ),
-        child: Column(
-          children: [
-            Expanded(
-              child: SingleChildScrollView(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Padding(
-                      padding: EdgeInsets.symmetric(vertical: 16, horizontal: 16),
-                      child: Row(
-                        children: [
-                          Icon(
-                            CupertinoIcons.person_circle,
-                            size: 32,
-                            color: ColorStyle.tertiary,
-                          ),
-                          Text(
-                            ' Customer Information',
-                            style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const Divider(height: 0),
-                    ListTile(
-                      leading: ProfilePicture(
-                        name: name,
-                        fontsize: 16,
-                        radius: 18,
-                        img: hasPicture ? '$picaddress/$image' : null,
-                      ),
-                      title: Text(name),
-                    ),
-                    const Divider(height: 0),
-                    Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
-                            'Address',
-                            style: TextStyle(color: Colors.grey),
-                          ),
-                          Text(
-                            address,
-                            style: const TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                          const SizedBox(height: 5),
-                          RowItem(
-                              title: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  const Text(
-                                    'Contact Information',
-                                    style: TextStyle(color: Colors.grey),
-                                  ),
-                                  Text(
-                                    contact,
-                                    style: const TextStyle(fontWeight: FontWeight.bold),
-                                  ),
-                                ],
-                              ),
-                              description: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  const Text(
-                                    'Date Requested',
-                                    style: TextStyle(color: Colors.grey),
-                                  ),
-                                  Text(
-                                    date,
-                                    style: const TextStyle(fontWeight: FontWeight.bold),
-                                  ),
-                                ],
-                              )
-                          )
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            valued == '0' ? Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  OutlinedButton(
-                    style: OutlinedButton.styleFrom(
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(5),
-                      ),
-                      foregroundColor: ColorStyle.tertiary,
-                      side: const BorderSide(color: ColorStyle.tertiary),
-                      fixedSize: Size(MediaQuery.of(context).size.width * .42, 30),
-                    ),
-                    onPressed: () {
-
-                    },
-                    child: const Text('Decline'),
-                  ),
-                  ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(5),
-                      ),
-                      backgroundColor: ColorStyle.tertiary,
-                      foregroundColor: Colors.white,
-                      fixedSize: Size(MediaQuery.of(context).size.width * .42, 30),
-                    ),
-                    onPressed: () {
-
-                    },
-                    child: const Text('Mark Valued'),
-                  ),
-                ],
-              ),
-            ) : const SizedBox.shrink(),
-          ],
-        ),
-      ),
-    );
-  }
 
 
   List<dynamic> topCustomers = []; List<dynamic> restCustomers = [];
@@ -192,7 +40,6 @@ class _NewCustomerScreenState extends State<NewCustomerScreen> {
         hasData = true;
       });
     }else{
-      print(response.error);
     }
   }
 
@@ -203,7 +50,6 @@ class _NewCustomerScreenState extends State<NewCustomerScreen> {
 
 
 
-  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
   @override
   void initState() {
@@ -270,15 +116,15 @@ class _NewCustomerScreenState extends State<NewCustomerScreen> {
                   minHeight: 30,
                   animationDuration: 800,
                   cornerRadius: 5.0,
-                  activeBgColors: [[ColorStyle.tertiary], [ColorStyle.tertiary]],
+                  activeBgColors: const [[ColorStyle.tertiary], [ColorStyle.tertiary]],
                   activeFgColor: Colors.white,
                   inactiveBgColor: Colors.white,
                   inactiveFgColor: ColorStyle.tertiary,
                   initialLabelIndex: page == '' ? 0 : int.parse(page),
                   totalSwitches: 2,
-                  labels: ['Bookings', 'Walk-in'],
-                  customTextStyles: [
-                    const TextStyle(
+                  labels: const ['Bookings', 'Walk-in'],
+                  customTextStyles: const [
+                    TextStyle(
                         fontWeight: FontWeight.bold),
                   ],
                   radiusStyle: true,
@@ -353,8 +199,8 @@ class _NewCustomerScreenState extends State<NewCustomerScreen> {
                         decoration: BoxDecoration(
                             color: Colors.white,
                             borderRadius: BorderRadius.circular(5),
-                            boxShadow: [
-                              const BoxShadow(
+                            boxShadow: const [
+                              BoxShadow(
                                   blurRadius: 1,
                                   color: Colors.grey
                               )

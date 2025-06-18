@@ -37,7 +37,6 @@ class _NewLaundryServiceScreenState extends State<NewLaundryServiceScreen> {
         isLoading = false;
       });
     }else{
-      print(response.error);
     }
   }
 
@@ -355,7 +354,6 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
                                 _serviceoffer = 'wash-dry';
                                 break;
                             }
-                            print(_serviceoffer);
                           }
                       )
                     )
@@ -400,7 +398,6 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
                             }else{
                               _servicetype = 'full';
                             }
-                            print(_servicetype);
                           }
                       ),
                     )
@@ -526,7 +523,6 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
                       _loadtype = 'comforter';
                       break;
                   }
-                  print(_loadtype);
                 }
             ),
             const SizedBox(height: 10,),
@@ -667,7 +663,6 @@ class _EditServiceScreenState extends State<EditServiceScreen> {
 
   @override
   Widget build(BuildContext context) {
-    print(_servicetype);
     return Scaffold(
       appBar: AppBar(
         title: const Text('Laundry Services'),
@@ -748,7 +743,6 @@ class _EditServiceScreenState extends State<EditServiceScreen> {
                               );
                             }).toList(),
                             onChanged: (newValue){
-                              print(newValue);
                               switch(newValue){
                                 case 'Full Service':
                                   _serveOffer = 'full';

@@ -39,7 +39,6 @@ class _NewProfileScreenState extends State<NewProfileScreen> {
         isLoading = false;
       });
     }else{
-      print(response.error);
     }
   }
 
@@ -51,7 +50,6 @@ class _NewProfileScreenState extends State<NewProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
-    print(prof);
     return Scaffold(
       appBar: AppBar(
         title: const Text('Profile'),
@@ -72,7 +70,7 @@ class _NewProfileScreenState extends State<NewProfileScreen> {
           decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(5),
-              boxShadow: [
+              boxShadow: const [
                 BoxShadow(
                   blurRadius: 1,
                   color: Colors.grey
@@ -95,22 +93,22 @@ class _NewProfileScreenState extends State<NewProfileScreen> {
               const SizedBox(height: 10,),
               RowItem(
                   title: const Text('Name',style: TextStyle(fontSize: 12)),
-                  description: Text('${prof['OwnerName']}',style: TextStyle(fontSize: 12),textAlign: TextAlign.end,)
+                  description: Text('${prof['OwnerName']}',style: const TextStyle(fontSize: 12),textAlign: TextAlign.end,)
               ),
               const Divider(),
               RowItem(
                   title: const Text('Sex',style: TextStyle(fontSize: 12)),
-                  description: Text('${prof['OwnerSex']}',style: TextStyle(fontSize: 12),textAlign: TextAlign.end,)
+                  description: Text('${prof['OwnerSex']}',style: const TextStyle(fontSize: 12),textAlign: TextAlign.end,)
               ),
               const Divider(),
               RowItem(
                   title: const Text('Address',style: TextStyle(fontSize: 12)),
-                  description: Text('${prof['OwnerAddress']}',style: TextStyle(fontSize: 12),textAlign: TextAlign.end,)
+                  description: Text('${prof['OwnerAddress']}',style: const TextStyle(fontSize: 12),textAlign: TextAlign.end,)
               ),
               const Divider(),
               RowItem(
                   title: const Text('Contact Number',style: TextStyle(fontSize: 12)),
-                  description: Text('${prof['OwnerContactNumber']}',style: TextStyle(fontSize: 12),textAlign: TextAlign.end,)
+                  description: Text('${prof['OwnerContactNumber']}',style: const TextStyle(fontSize: 12),textAlign: TextAlign.end,)
               ),
               const Divider(),
               const SizedBox(height: 10,),
@@ -235,7 +233,6 @@ class _NewProfileEditScreenState extends State<NewProfileEditScreen> {
 
     if(response.error == null){
     }else{
-      print(response.error);
     }
   }
 
@@ -306,7 +303,7 @@ class _NewProfileEditScreenState extends State<NewProfileEditScreen> {
                 fontSize: 18,
                 fontWeight: FontWeight.bold
             ),
-            content: Container(
+            content: SizedBox(
               height: 150,
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -347,7 +344,6 @@ class _NewProfileEditScreenState extends State<NewProfileEditScreen> {
 
   @override
   Widget build(BuildContext context) {
-    print(_image);
     return Scaffold(
       appBar: AppBar(
         title: const Text('Edit Information'),

@@ -16,7 +16,6 @@ import 'package:capstone/styles/settingStyle.dart';
 import 'package:capstone/styles/signupStyle.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_profile_picture/flutter_profile_picture.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:row_item/row_item.dart';
@@ -83,7 +82,6 @@ class _NewSettingsScreenState extends State<NewSettingsScreen> {
         );
       }
     } else {
-      print(response.error);
     }
   }
 
@@ -135,12 +133,12 @@ class _NewSettingsScreenState extends State<NewSettingsScreen> {
                               borderRadius: BorderRadius.circular(10),
                             ),
                             padding: const EdgeInsets.all(8),
-                            child: Icon(Icons.person,color: Colors.white,),
+                            child: const Icon(Icons.person,color: Colors.white,),
                           ),
-                          Text(' Profile',style: TextStyle(fontSize: 14,fontWeight: FontWeight.bold),)
+                          const Text(' Profile',style: TextStyle(fontSize: 14,fontWeight: FontWeight.bold),)
                         ],
                       ),
-                      description: Icon(CupertinoIcons.chevron_forward)
+                      description: const Icon(CupertinoIcons.chevron_forward)
                   ),
                 ),
               ),
@@ -165,12 +163,12 @@ class _NewSettingsScreenState extends State<NewSettingsScreen> {
                               borderRadius: BorderRadius.circular(10),
                             ),
                             padding: const EdgeInsets.all(8),
-                            child: Icon(Icons.store,color: Colors.white,),
+                            child: const Icon(Icons.store,color: Colors.white,),
                           ),
-                          Text(' Shop Information',style: TextStyle(fontSize: 14,fontWeight: FontWeight.bold),)
+                          const Text(' Shop Information',style: TextStyle(fontSize: 14,fontWeight: FontWeight.bold),)
                         ],
                       ),
-                      description: Icon(CupertinoIcons.chevron_forward)
+                      description: const Icon(CupertinoIcons.chevron_forward)
                   ),
                 ),
               ),
@@ -195,12 +193,12 @@ class _NewSettingsScreenState extends State<NewSettingsScreen> {
                              borderRadius: BorderRadius.circular(10),
                            ),
                            padding: const EdgeInsets.all(8),
-                           child: Icon(Icons.local_laundry_service,color: Colors.white,),
+                           child: const Icon(Icons.local_laundry_service,color: Colors.white,),
                          ),
-                         Text(' Laundry Services',style: TextStyle(fontSize: 14,fontWeight: FontWeight.bold),)
+                         const Text(' Laundry Services',style: TextStyle(fontSize: 14,fontWeight: FontWeight.bold),)
                        ],
                      ),
-                     description: Icon(CupertinoIcons.chevron_forward)
+                     description: const Icon(CupertinoIcons.chevron_forward)
                  ),
                ),
              ),
@@ -225,12 +223,12 @@ class _NewSettingsScreenState extends State<NewSettingsScreen> {
                               borderRadius: BorderRadius.circular(10),
                             ),
                             padding: const EdgeInsets.all(8),
-                            child: Icon(Icons.timelapse_outlined,color: Colors.white,),
+                            child: const Icon(Icons.timelapse_outlined,color: Colors.white,),
                           ),
-                          Text(' Service Time',style: TextStyle(fontSize: 14,fontWeight: FontWeight.bold),)
+                          const Text(' Service Time',style: TextStyle(fontSize: 14,fontWeight: FontWeight.bold),)
                         ],
                       ),
-                      description: Icon(CupertinoIcons.chevron_forward)
+                      description: const Icon(CupertinoIcons.chevron_forward)
                   ),
                 ),
               ),
@@ -257,12 +255,12 @@ class _NewSettingsScreenState extends State<NewSettingsScreen> {
                              borderRadius: BorderRadius.circular(10),
                            ),
                            padding: const EdgeInsets.all(8),
-                           child: Icon(CupertinoIcons.person_3_fill,color: Colors.white,),
+                           child: const Icon(CupertinoIcons.person_3_fill,color: Colors.white,),
                          ),
-                         Text(' Co-Owners',style: TextStyle(fontSize: 14,fontWeight: FontWeight.bold),)
+                         const Text(' Co-Owners',style: TextStyle(fontSize: 14,fontWeight: FontWeight.bold),)
                        ],
                      ),
-                     description: Icon(CupertinoIcons.chevron_forward)
+                     description: const Icon(CupertinoIcons.chevron_forward)
                  ),
                ),
              ),
@@ -286,9 +284,9 @@ class _NewSettingsScreenState extends State<NewSettingsScreen> {
                           borderRadius: BorderRadius.circular(10),
                         ),
                         padding: const EdgeInsets.all(8),
-                        child: Icon(Icons.logout,color: Colors.white,),
+                        child: const Icon(Icons.logout,color: Colors.white,),
                       ),
-                      Text(' Logout ',style: TextStyle(fontSize: 14,fontWeight: FontWeight.bold),)
+                      const Text(' Logout ',style: TextStyle(fontSize: 14,fontWeight: FontWeight.bold),)
                     ],
                   ),
                 ),
@@ -682,9 +680,7 @@ class EditShopScreen extends StatefulWidget {
 }
 
 class _EditShopScreenState extends State<EditShopScreen> {
-  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final TextEditingController _shopName = TextEditingController();
-  String? _selectedGender;
   final TextEditingController _shopAddress = TextEditingController();
   final TextEditingController _lightLoad = TextEditingController();
   final TextEditingController _lightCost = TextEditingController();

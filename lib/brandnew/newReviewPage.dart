@@ -11,8 +11,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_profile_picture/flutter_profile_picture.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:group_button/group_button.dart';
-import 'package:loading_animation_widget/loading_animation_widget.dart';
-import 'package:percent_indicator/linear_percent_indicator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class NewReviewPage extends StatefulWidget {

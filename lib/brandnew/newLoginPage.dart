@@ -1,4 +1,3 @@
-import 'dart:ui';
 
 import 'package:capstone/api_response.dart';
 import 'package:capstone/brandnew/dialogs.dart';
@@ -9,11 +8,9 @@ import 'package:capstone/brandnew/newSignupPage.dart';
 import 'package:capstone/customer/newCustomerHomePage.dart';
 import 'package:capstone/model/user.dart';
 import 'package:capstone/services/services.dart';
-import 'package:capstone/testPage.dart';
 import 'package:flutter/material.dart';
 import 'package:capstone/styles/loginStyle.dart';
 import 'package:capstone/styles/mainColorStyle.dart';
-import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -29,35 +26,6 @@ class _NewLoginScreenState extends State<NewLoginScreen> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final TextEditingController _contactForm = TextEditingController();
   final TextEditingController _passForm = TextEditingController();
-
-  Future<void> testing() async{
-    showMaterialModalBottomSheet(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(5)
-        ),
-        context: context, 
-        builder: (context) {
-          String hehe = 'sfs';
-          return StatefulBuilder(builder: (BuildContext context, StateSetter setState){
-            return SizedBox(height: 200,
-            child: Column(
-              children: [
-                Text(hehe),
-                TextButton(
-                    onPressed: (){
-                      setState((){
-                        hehe = 'asdfafafas';
-                      });
-                    }, child: Text('sfs')
-                )
-              ],
-            ),
-            );
-          });
-        }
-    );
-
-  }
 
   bool isHidden = true;
   bool isloading = true;
@@ -84,7 +52,6 @@ class _NewLoginScreenState extends State<NewLoginScreen> {
         isloading = false;
       });
       Navigator.pop(context);
-      print('${response.error}');
       errorDialog(context, 'Invalid Credentials');
     }
   }
@@ -120,7 +87,7 @@ class _NewLoginScreenState extends State<NewLoginScreen> {
       await successDialog(context, 'Login Successfully');
 
       if(mounted){
-        Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => NewCustomerHomeScreen()), (route) => false);
+        Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => const NewCustomerHomeScreen()), (route) => false);
       }
     }
 
@@ -357,12 +324,7 @@ class _NewLoginScreenState extends State<NewLoginScreen> {
                                 ),
                               ],
                             ),
-                            /*TextButton(
-                                onPressed: (){
-                                  Navigator.push(context, MaterialPageRoute(builder: (context) => const SetupInformationScreen()));
-                                },
-                                child: const Text('test')
-                            )*/
+
                           ],
                         ),
                       )

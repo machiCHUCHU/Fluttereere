@@ -9,7 +9,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_profile_picture/flutter_profile_picture.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
-import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:persistent_bottom_nav_bar_v2/persistent_bottom_nav_bar_v2.dart';
 import 'package:row_item/row_item.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -278,7 +277,7 @@ class _NewShopInfoScreenState extends State<NewShopInfoScreen> {
                                   child: RowItem(
                                       title: Row(
                                         children: [
-                                          Icon(Icons.local_laundry_service,color: ColorStyle.tertiary,),
+                                          const Icon(Icons.local_laundry_service,color: ColorStyle.tertiary,),
                                           Expanded(child: Text('${serve['ServiceName']}',overflow: TextOverflow.clip,))
                                         ],
                                       ),
@@ -343,58 +342,54 @@ class _NewShopInfoScreenState extends State<NewShopInfoScreen> {
                             itemCount: ratings.length,
                             itemBuilder: (context,index){
                               Map rate = ratings[index] as Map;
-                              bool hasImage = rate['Image'] != null;
                               bool hasComment = rate['Comment'] != null;
-                              return Container(
-
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    const Divider(height: 0,),
-                                    Padding(
-                                        padding: const EdgeInsets.all( 8),
-                                        child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                          children: [
-                                            RowItem(
-                                                title: Row(
-                                                  children: [
-                                                    ProfilePicture(
-                                                        name: '${rate['CustomerName']}',
-                                                        radius: 14,
-                                                        fontsize: 12,
-                                                        img: rate['CustomerImage'] == 'null' || rate['CustomerImage'] == null ? null
-                                                              : '$picaddress/${rate['CustomerImage']}',
-                                                    ),
-                                                    Expanded(child: Text(' ${rate['CustomerName']}'),)
-                                                  ],
-                                                ),
-                                                description: Text('${rate['DateIssued']}')
-                                            ),
-
-                                            const SizedBox(height: 5,),
-                                            RatingBar.builder(
-                                              initialRating: double.tryParse('${rate['Rate']}') ?? 0,
-                                              direction: Axis.horizontal,
-                                              allowHalfRating: true,
-                                              itemCount: 5,
-                                              itemSize: 12,
-                                              ignoreGestures: true,
-                                              itemBuilder: (context, _) => Icon(
-                                                Icons.star,
-                                                color: Colors.orange.shade300,
+                              return Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Divider(height: 0,),
+                                  Padding(
+                                      padding: const EdgeInsets.all( 8),
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          RowItem(
+                                              title: Row(
+                                                children: [
+                                                  ProfilePicture(
+                                                      name: '${rate['CustomerName']}',
+                                                      radius: 14,
+                                                      fontsize: 12,
+                                                      img: rate['CustomerImage'] == 'null' || rate['CustomerImage'] == null ? null
+                                                            : '$picaddress/${rate['CustomerImage']}',
+                                                  ),
+                                                  Expanded(child: Text(' ${rate['CustomerName']}'),)
+                                                ],
                                               ),
-                                              onRatingUpdate: (rating) {},
+                                              description: Text('${rate['DateIssued']}')
+                                          ),
+
+                                          const SizedBox(height: 5,),
+                                          RatingBar.builder(
+                                            initialRating: double.tryParse('${rate['Rate']}') ?? 0,
+                                            direction: Axis.horizontal,
+                                            allowHalfRating: true,
+                                            itemCount: 5,
+                                            itemSize: 12,
+                                            ignoreGestures: true,
+                                            itemBuilder: (context, _) => Icon(
+                                              Icons.star,
+                                              color: Colors.orange.shade300,
                                             ),
-                                            const SizedBox(height: 5,),
-                                            hasComment
-                                                ? Text('${rate['Comment']}')
-                                                : const SizedBox.shrink()
-                                          ],
-                                        ),
-                                    )
-                                  ],
-                                ),
+                                            onRatingUpdate: (rating) {},
+                                          ),
+                                          const SizedBox(height: 5,),
+                                          hasComment
+                                              ? Text('${rate['Comment']}')
+                                              : const SizedBox.shrink()
+                                        ],
+                                      ),
+                                  )
+                                ],
                               );
                             }
                         )

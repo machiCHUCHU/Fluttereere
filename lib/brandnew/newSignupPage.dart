@@ -4,13 +4,11 @@ import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:capstone/api_response.dart';
 import 'package:capstone/brandnew/dialogs.dart';
 import 'package:capstone/brandnew/newLoginPage.dart';
-import 'package:capstone/brandnew/newSelectAddress.dart';
 import 'package:capstone/services/services.dart';
 import 'package:capstone/styles/registrationStyle.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:capstone/styles/mainColorStyle.dart';
-import 'package:capstone/styles/signupStyle.dart';
 import 'package:flutter_timer_countdown/flutter_timer_countdown.dart';
 import 'dart:typed_data';
 
@@ -112,7 +110,7 @@ class _NewSignupScreenState extends State<NewSignupScreen> {
                   splashColor: Colors.transparent,
                   highlightColor: Colors.transparent,
                 ),
-                Text(
+                const Text(
                   'Gallery',
                   style: RegistrationStyle.imagePick,
                 )
@@ -200,7 +198,7 @@ class _NewSignupScreenState extends State<NewSignupScreen> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text('${widget.usertype[0].toUpperCase()}${widget.usertype.substring(1)} Registration',
-                              style: TextStyle(
+                              style: const TextStyle(
                                 fontWeight: FontWeight.bold,
                                 color: Colors.grey
                               ),),
@@ -385,7 +383,7 @@ class _NewSignupScreenState extends State<NewSignupScreen> {
                               ),
                               const SizedBox(height: 20,),
 
-                              Text(
+                              const Text(
                                 'Password must consist of: \n- atleast 8 characters \n- 1 uppercase letter \n- 1 lowercase letter'
                                 '\n- 1 number \n- 1 special character',
                                 style: TextStyle(
@@ -499,7 +497,6 @@ class _NewOTPScreenState extends State<NewOTPScreen> {
         }
       } else {
         await errorDialog(context, '${apiResponse.error}');
-        print(apiResponse.error);
         Navigator.pop(context);
       }
     }
@@ -547,7 +544,6 @@ class _NewOTPScreenState extends State<NewOTPScreen> {
 
   @override
   Widget build(BuildContext context) {
-    print(otp);
     return SafeArea(
         child: Scaffold(
           body: SingleChildScrollView(

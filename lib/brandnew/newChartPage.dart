@@ -1,4 +1,3 @@
-import 'dart:ui';
 
 import 'package:capstone/api_response.dart';
 import 'package:capstone/services/services.dart';
@@ -8,7 +7,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:syncfusion_flutter_charts/charts.dart';
 import 'package:capstone/services/chart.dart';
 
 class NewChartScreen extends StatefulWidget {
@@ -50,7 +48,6 @@ class _NewChartScreenState extends State<NewChartScreen> {
 
       });
     }else{
-      print(response.error);
     }
   }
 
@@ -315,7 +312,7 @@ class _NewChartScreenState extends State<NewChartScreen> {
           color: colors[index],
           radius: 20,
           title: '${doughnut[index]['count']}',
-          titleStyle: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)
+          titleStyle: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)
       );
     });
   }
@@ -328,7 +325,6 @@ class _NewChartScreenState extends State<NewChartScreen> {
 
   @override
   Widget build(BuildContext context) {
-    print(doughnut);
     return Scaffold(
       appBar: AppBar(
         title: const Text('Dashboard'),
@@ -341,7 +337,7 @@ class _NewChartScreenState extends State<NewChartScreen> {
         ),
       ),
       body: isLoading
-          ? CircularProgressIndicator()
+          ? const CircularProgressIndicator()
           : SingleChildScrollView(
         padding: const EdgeInsets.all(8),
         child: Column(
@@ -512,7 +508,7 @@ class _NewChartScreenState extends State<NewChartScreen> {
                           ),
                         ),
                       ),
-                      SizedBox(width: 20),
+                      const SizedBox(width: 20),
 
 
                       Expanded(child: Column(
@@ -527,7 +523,7 @@ class _NewChartScreenState extends State<NewChartScreen> {
                                 const SizedBox(width: 8),
                                 Expanded(
                                     child: Text('${doughnut[index]['ServiceName']}',
-                                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold))
+                                        style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold))
                                 )
                               ],
                             ),

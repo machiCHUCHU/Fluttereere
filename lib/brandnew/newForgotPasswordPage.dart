@@ -40,7 +40,7 @@ class _NewForgotPasswordScreenState extends State<NewForgotPasswordScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Forgot Password'),
-        titleTextStyle: TextStyle(fontSize: 18,fontWeight: FontWeight.bold),
+        titleTextStyle: const TextStyle(fontSize: 18,fontWeight: FontWeight.bold),
         leading: IconButton(
           onPressed: (){
             Navigator.pop(context,true);
@@ -66,11 +66,11 @@ class _NewForgotPasswordScreenState extends State<NewForgotPasswordScreen> {
               decoration: InputDecoration(
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(5),
-                    borderSide: BorderSide(color: Colors.black)
+                    borderSide: const BorderSide(color: Colors.black)
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(5),
-                  borderSide: BorderSide(color: Colors.grey)
+                  borderSide: const BorderSide(color: Colors.grey)
                 )
               ),
               controller: _contact,
@@ -295,7 +295,7 @@ class _PasswordChangeScreenState extends State<PasswordChangeScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Change Password'),
-        titleTextStyle: TextStyle(fontSize: 18,fontWeight: FontWeight.bold),
+        titleTextStyle: const TextStyle(fontSize: 18,fontWeight: FontWeight.bold),
         automaticallyImplyLeading: false,
       ),
       body: SingleChildScrollView(
@@ -314,11 +314,11 @@ class _PasswordChangeScreenState extends State<PasswordChangeScreen> {
               decoration: InputDecoration(
                   border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(5),
-                      borderSide: BorderSide(color: Colors.black)
+                      borderSide: const BorderSide(color: Colors.black)
                   ),
                   focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(5),
-                      borderSide: BorderSide(color: Colors.grey)
+                      borderSide: const BorderSide(color: Colors.grey)
                   )
               ),
               controller: _newPass,
@@ -335,11 +335,11 @@ class _PasswordChangeScreenState extends State<PasswordChangeScreen> {
               decoration: InputDecoration(
                   border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(5),
-                      borderSide: BorderSide(color: Colors.black)
+                      borderSide: const BorderSide(color: Colors.black)
                   ),
                   focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(5),
-                      borderSide: BorderSide(color: Colors.grey)
+                      borderSide: const BorderSide(color: Colors.grey)
                   )
               ),
               controller: _confirmPass,

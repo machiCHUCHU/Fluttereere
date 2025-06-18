@@ -7,7 +7,6 @@ import 'package:capstone/styles/mainColorStyle.dart';
 import 'package:capstone/styles/signupStyle.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 import 'package:row_item/row_item.dart';
 import 'package:shared_preferences/shared_preferences.dart';

@@ -4,7 +4,6 @@ import 'package:capstone/api_response.dart';
 import 'package:capstone/brandnew/dialogs.dart';
 import 'package:capstone/connect/laravel.dart';
 import 'package:capstone/services/services.dart';
-import 'package:capstone/styles/loginStyle.dart';
 import 'package:capstone/styles/mainColorStyle.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -51,7 +50,6 @@ class _NewBookingScreenState extends State<NewBookingScreen> {
         });
     } else {
       isLoading = false;
-      print(response.error);
     }
   }
 
@@ -65,7 +63,6 @@ class _NewBookingScreenState extends State<NewBookingScreen> {
           hasWalkin = walkins.isNotEmpty;
         });
     } else {
-      print(response.error);
     }
   }
 
@@ -85,7 +82,6 @@ class _NewBookingScreenState extends State<NewBookingScreen> {
       walkinDisplay();
     } else {
       await errorDialog(context, '${response.error}');
-      print(response.error);
     }
   }
 
@@ -115,7 +111,6 @@ class _NewBookingScreenState extends State<NewBookingScreen> {
     _finalWeight.text = load;
     int multiplier = 0;
 
-    print(_finalWeight.text);
 
     showMaterialModalBottomSheet(
       context: context,
@@ -552,7 +547,6 @@ class _NewBookingScreenState extends State<NewBookingScreen> {
 
   @override
   Widget build(BuildContext context) {
-    print(hasWalkin);
       return DefaultTabController(
           length: 2,
           child: Scaffold(

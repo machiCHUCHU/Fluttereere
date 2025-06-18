@@ -1,4 +1,3 @@
-import 'dart:ui';
 
 import 'package:capstone/api_response.dart';
 import 'package:capstone/brandnew/dialogs.dart';
@@ -46,7 +45,7 @@ class _UserLogScreenState extends State<UserLogScreen> {
 
   @override
   Widget build(BuildContext context) {
-    print(useraudit);
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('User Log'),
@@ -72,14 +71,14 @@ class _UserLogScreenState extends State<UserLogScreen> {
               dividerMargin: 8,
               animationDuration: 800,
               cornerRadius: 5.0,
-              activeBgColors: [[ColorStyle.tertiary], [ColorStyle.tertiary]],
+              activeBgColors: const [[ColorStyle.tertiary], [ColorStyle.tertiary]],
               activeFgColor: Colors.white,
               inactiveBgColor: Colors.white,
               inactiveFgColor: ColorStyle.tertiary,
               initialLabelIndex: page == '' ? 0 : int.parse(page),
               totalSwitches: 2,
-              labels: ['Now', 'All'],
-              customTextStyles: [
+              labels: const ['Now', 'All'],
+              customTextStyles: const [
                 TextStyle(
                     fontWeight: FontWeight.bold),
               ],
@@ -92,21 +91,21 @@ class _UserLogScreenState extends State<UserLogScreen> {
             const SizedBox(height: 20,),
             Container(
               width: double.infinity,
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                   color: ColorStyle.tertiary,
                   borderRadius: BorderRadius.vertical(top: Radius.circular(5))
               ),
               padding: const EdgeInsets.all(4),
-              child: Text(page == '' || page == '0' ? 'Today\'s Activity' : 'All Activity',style: TextStyle(color: Colors.white,fontWeight: FontWeight.bold),),
+              child: Text(page == '' || page == '0' ? 'Today\'s Activity' : 'All Activity',style: const TextStyle(color: Colors.white,fontWeight: FontWeight.bold),),
             ),
 
             hasData
                 ? ConstrainedBox(
-              constraints: BoxConstraints(
+              constraints: const BoxConstraints(
                   maxHeight: 500
               ),
               child: Container(
-                decoration: BoxDecoration(
+                decoration: const BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.vertical(bottom: Radius.circular(5)),
                     boxShadow: [
@@ -120,7 +119,7 @@ class _UserLogScreenState extends State<UserLogScreen> {
                   children: [
                     Container(
                       padding: const EdgeInsets.all(4.0),
-                      decoration: BoxDecoration(
+                      decoration: const BoxDecoration(
                           color: Colors.white,
                           boxShadow: [
                             BoxShadow(
@@ -128,11 +127,11 @@ class _UserLogScreenState extends State<UserLogScreen> {
                             )
                           ]
                       ),
-                      child: Row(
+                      child: const Row(
                         children: [
-                          Expanded(child: const Text('User')),
-                          Expanded(child: const Text('Action')),
-                          Expanded(child: const Text('Timestamp',textAlign: TextAlign.end,))
+                          Expanded(child: Text('User')),
+                          Expanded(child: Text('Action')),
+                          Expanded(child: Text('Timestamp',textAlign: TextAlign.end,))
                         ],
                       ),
                     ),
@@ -165,7 +164,7 @@ class _UserLogScreenState extends State<UserLogScreen> {
             )
                 :  Container(
               width: double.infinity,
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.vertical(bottom: Radius.circular(5)),
                   boxShadow: [
@@ -211,7 +210,7 @@ class _InventoryLogScreenState extends State<InventoryLogScreen> {
       });
 
     }else{
-      print(response.data);
+
     }
   }
 
@@ -223,7 +222,6 @@ class _InventoryLogScreenState extends State<InventoryLogScreen> {
 
   @override
   Widget build(BuildContext context) {
-    print(page);
     return Scaffold(
       appBar: AppBar(
         title: const Text('Inventory Log'),
@@ -249,14 +247,14 @@ class _InventoryLogScreenState extends State<InventoryLogScreen> {
               dividerMargin: 8,
               animationDuration: 800,
               cornerRadius: 5.0,
-              activeBgColors: [[ColorStyle.tertiary], [ColorStyle.tertiary]],
+              activeBgColors: const [[ColorStyle.tertiary], [ColorStyle.tertiary]],
               activeFgColor: Colors.white,
               inactiveBgColor: Colors.white,
               inactiveFgColor: ColorStyle.tertiary,
               initialLabelIndex: page == '' ? 0 : int.parse(page),
               totalSwitches: 2,
-              labels: ['Now', 'All'],
-              customTextStyles: [
+              labels: const ['Now', 'All'],
+              customTextStyles: const [
                 TextStyle(
                     fontWeight: FontWeight.bold),
               ],
@@ -286,7 +284,7 @@ class _InventoryLogScreenState extends State<InventoryLogScreen> {
                           decoration: BoxDecoration(
                               color: Colors.white,
                               borderRadius: BorderRadius.circular(8),
-                              boxShadow: [
+                              boxShadow: const [
                                 BoxShadow(
                                     blurRadius: 1,
                                     color: Colors.grey
@@ -306,7 +304,7 @@ class _InventoryLogScreenState extends State<InventoryLogScreen> {
                                             borderRadius: BorderRadius.circular(20)
                                         ),
                                         padding: const EdgeInsets.all(8),
-                                        child: Text('Stock-in',style: TextStyle(color: Colors.white),)
+                                        child: const Text('Stock-in',style: TextStyle(color: Colors.white),)
                                     )
                                         : Container(
                                         decoration: BoxDecoration(
@@ -314,7 +312,7 @@ class _InventoryLogScreenState extends State<InventoryLogScreen> {
                                             borderRadius: BorderRadius.circular(20)
                                         ),
                                         padding: const EdgeInsets.all(8),
-                                        child: Text('Stock-out',style: TextStyle(color: Colors.white),)
+                                        child: const Text('Stock-out',style: TextStyle(color: Colors.white),)
                                     )
                                 ),
                               ),
@@ -325,7 +323,7 @@ class _InventoryLogScreenState extends State<InventoryLogScreen> {
                                   title: Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
-                                      Text('Modified By ',style: TextStyle(fontSize: 12,color: Colors.grey)),
+                                      const Text('Modified By ',style: TextStyle(fontSize: 12,color: Colors.grey)),
                                       Text('${now['ModifiedBy']}',overflow: TextOverflow.visible)
                                     ],
                                   ),
@@ -344,14 +342,14 @@ class _InventoryLogScreenState extends State<InventoryLogScreen> {
                                   title: Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
-                                      Text('Stock Available ',style: TextStyle(fontSize: 12,color: Colors.grey)),
+                                      const Text('Stock Available ',style: TextStyle(fontSize: 12,color: Colors.grey)),
                                       Text('${now['StockAvailable']} in-stock pcs',overflow: TextOverflow.visible)
                                     ],
                                   ),
                                   description: Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
-                                      Text(now['StockOut'] == 0 ? 'Stock-In      ': 'Stock-Out    ',style: TextStyle(fontSize: 12,color: Colors.grey)),
+                                      Text(now['StockOut'] == 0 ? 'Stock-In      ': 'Stock-Out    ',style: const TextStyle(fontSize: 12,color: Colors.grey)),
                                       Text(now['StockOut'] == 0 ? '${now['StockIn']} pcs' :'${now['StockOut']} pcs',)
                                     ],
                                   ),
@@ -369,7 +367,7 @@ class _InventoryLogScreenState extends State<InventoryLogScreen> {
               decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(5),
-                  boxShadow: [
+                  boxShadow: const [
                     BoxShadow(
                       blurRadius: 1,
                       color: Colors.grey

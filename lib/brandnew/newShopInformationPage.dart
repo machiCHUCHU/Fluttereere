@@ -47,7 +47,6 @@ class _NewShopInformationScreenState extends State<NewShopInformationScreen> {
         isLoading = false;
       });
     }else{
-      print(response.error);
     }
   }
 
@@ -102,7 +101,7 @@ class _NewShopInformationScreenState extends State<NewShopInformationScreen> {
           decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(5),
-              boxShadow: [
+              boxShadow: const [
                 BoxShadow(
                   blurRadius: 1,
                   color: Colors.grey
@@ -125,9 +124,7 @@ class _NewShopInformationScreenState extends State<NewShopInformationScreen> {
                     ),
                   ),
                   title: Text('${shop['ShopName']}'),
-                  subtitle: Container(
-                      child: Text('${shop['ShopStatus']}',style: TextStyle(color: statColor),)
-                  )
+                  subtitle: Text('${shop['ShopStatus']}',style: TextStyle(color: statColor),)
               ),
               const SizedBox(height: 10,),
               RowItem(
@@ -137,7 +134,7 @@ class _NewShopInformationScreenState extends State<NewShopInformationScreen> {
                       Text('Shop Address',style: TextStyle(fontSize: 12),)
                     ],
                   ),
-                  description: Text('${shop['ShopAddress']}',style: TextStyle(fontSize: 12))
+                  description: Text('${shop['ShopAddress']}',style: const TextStyle(fontSize: 12))
               ),
               const Divider(),
               RowItem(
@@ -147,7 +144,7 @@ class _NewShopInformationScreenState extends State<NewShopInformationScreen> {
                       Text('Business Days',style: TextStyle(fontSize: 12),)
                     ],
                   ),
-                  description: Text(days,style: TextStyle(fontSize: 12))
+                  description: Text(days,style: const TextStyle(fontSize: 12))
               ),
               const Divider(),
               RowItem(
@@ -157,7 +154,7 @@ class _NewShopInformationScreenState extends State<NewShopInformationScreen> {
                       Text('Business Hours',style: TextStyle(fontSize: 12),)
                     ],
                   ),
-                  description: Text('${shop['WorkHour']}',style: TextStyle(fontSize: 12))
+                  description: Text('${shop['WorkHour']}',style: const TextStyle(fontSize: 12))
               ),
               const Divider(),
               RowItem(
@@ -167,7 +164,7 @@ class _NewShopInformationScreenState extends State<NewShopInformationScreen> {
                       Text('Max Load Cater Daily',style: TextStyle(fontSize: 12),)
                     ],
                   ),
-                  description: Text('${shop['MaxLoad']} loads',style: TextStyle(fontSize: 12))
+                  description: Text('${shop['MaxLoad']} loads',style: const TextStyle(fontSize: 12))
               ),
               const Divider(),
               const SizedBox(height: 10,),
@@ -219,8 +216,8 @@ class _EditShopInformationScreenState extends State<EditShopInformationScreen> {
   final TextEditingController _shopaddress = TextEditingController();
   final TextEditingController _maxload = TextEditingController();
 
-  List<String> _openDay = ['weekly','weekdays','weekend'];
-  List<String> _shopStat = ['open','closed','full'];
+  final List<String> _openDay = ['weekly','weekdays','weekend'];
+  final List<String> _shopStat = ['open','closed','full'];
 
   Future<void> _pickAndUploadImage() async {
     final ImageSource? source = await showDialog<ImageSource>(
@@ -551,11 +548,11 @@ class _EditShopInformationScreenState extends State<EditShopInformationScreen> {
                       child: OutlinedButton(
                           style: OutlinedButton.styleFrom(
                               fixedSize: Size(MediaQuery.of(context).size.width, 55),
-                              shape: RoundedRectangleBorder(
+                              shape: const RoundedRectangleBorder(
                                 borderRadius: BorderRadius.vertical(bottom: Radius.circular(5)),
                               ),
-                              side: BorderSide(style: BorderStyle.solid, width: 1),
-                              padding: EdgeInsets.symmetric(horizontal: 8),
+                              side: const BorderSide(style: BorderStyle.solid, width: 1),
+                              padding: const EdgeInsets.symmetric(horizontal: 8),
                               backgroundColor: Colors.white
                           ),
                           onPressed: (){
@@ -569,7 +566,7 @@ class _EditShopInformationScreenState extends State<EditShopInformationScreen> {
                             );
                           },
                           child: Align(alignment: Alignment.centerLeft,
-                            child: Text(_businesshours.isEmpty ? 'Select' : _businesshours, style: TextStyle(fontSize: 16, color: Colors.black54),),)
+                            child: Text(_businesshours.isEmpty ? 'Select' : _businesshours, style: const TextStyle(fontSize: 16, color: Colors.black54),),)
                       ),
                     )
                   ],

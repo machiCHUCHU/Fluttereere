@@ -478,14 +478,6 @@ class ReviewData {
   final double rates;
 }
 
-class _DoughnutChart {
-  _DoughnutChart(this.x, this.y,this.color);
-
-  final String x;
-  final double y;
-  final Color color;
-}
-
 List<Color> donutColors = [
   Colors.green,
   Colors.lime,

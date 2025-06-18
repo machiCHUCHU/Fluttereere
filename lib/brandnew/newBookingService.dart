@@ -1,5 +1,4 @@
 
-import 'dart:ui';
 
 import 'package:calendar_date_picker2/calendar_date_picker2.dart';
 import 'package:capstone/api_response.dart';
@@ -10,7 +9,6 @@ import 'package:capstone/styles/loginStyle.dart';
 import 'package:capstone/styles/mainColorStyle.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_profile_picture/flutter_profile_picture.dart';
 import 'package:intl/intl.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
@@ -26,7 +24,6 @@ class ForRegisteredScreen extends StatefulWidget {
 }
 
 class _ForRegisteredScreenState extends State<ForRegisteredScreen> {
-  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final TextEditingController _load = TextEditingController();
   List<dynamic> customer = []; String? customerId; String? customerName; String customerImage ='';
   List<dynamic> service = []; String? serviceName;
@@ -59,7 +56,6 @@ class _ForRegisteredScreenState extends State<ForRegisteredScreen> {
           timeformatted = selectedTime.format(context);
         });
       } else {
-        print("No time selected");
       }
     });
   }
@@ -77,7 +73,6 @@ class _ForRegisteredScreenState extends State<ForRegisteredScreen> {
         isLoading = false;
       });
     }else{
-      print(response.error);
     }
   }
 
@@ -178,7 +173,6 @@ class _ForRegisteredScreenState extends State<ForRegisteredScreen> {
                                 customerName = '${reg['CustomerName']}';
                                 customerImage = '${reg['CustomerImage']}';
                               });
-                              print(customerImage);
                             },
                             child: Material(
                               color: customerId == '${reg['CustomerID']}' ? ColorStyle.tertiary : Colors.white,
@@ -229,7 +223,6 @@ class _ForRegisteredScreenState extends State<ForRegisteredScreen> {
   }
   @override
   Widget build(BuildContext context) {
-    print(customerImage == 'null');
     return Scaffold(
       appBar: AppBar(
         title: const Text('Set a Service'),
