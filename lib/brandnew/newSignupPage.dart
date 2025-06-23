@@ -427,23 +427,6 @@ class _NewSignupScreenState extends State<NewSignupScreen> {
                                     )
                                 ),
                               ),
-                              /*Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  const Text(
-                                      'Already have an account? '
-                                  ),
-                                  GestureDetector(
-                                      onTap: (){
-                                        Navigator.push(context, MaterialPageRoute(builder: (context) => const NewLoginScreen()));
-                                      },
-                                      child: const Text(
-                                        'Login',
-                                        style: RegistrationStyle.textButton,
-                                      )
-                                  ),
-                                ],
-                              ),*/
                             ],
                           ),
                         ),

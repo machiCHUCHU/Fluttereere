@@ -16,7 +16,6 @@ import 'package:capstone/styles/loginStyle.dart';
 import 'package:capstone/styles/mainColorStyle.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/painting.dart';
 import 'package:intl/intl.dart';
 import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -30,19 +29,9 @@ class NewHomeScreen extends StatefulWidget {
 
 class _NewHomeScreenState extends State<NewHomeScreen> {
 
-  String? token;
-  String? usertype;
-  String? access;
-  int? userid;
-  int? shopid;
-  String _selectedRange = 'Weekly';
-  Map home = {};
-  Map appbar = {};
-  bool hasData = false;
-  Timer? _timer;
-  List<dynamic> service = [];
-  Map serve = {};
-  Map chart = {};
+  String? token; String? usertype; String? access; int? userid;
+  int? shopid; Map home = {}; Map appbar = {}; bool hasData = false;
+  Timer? _timer; List<dynamic> service = []; Map serve = {}; Map chart = {}; bool isLoading = true;
 
   void getUser() async{
     final SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -54,8 +43,6 @@ class _NewHomeScreenState extends State<NewHomeScreen> {
     homeDisplay();
   }
 
-
-
   Future<void> homeDisplay() async{
     ApiResponse response = await getHome(token.toString());
 
@@ -65,6 +52,7 @@ class _NewHomeScreenState extends State<NewHomeScreen> {
         hasData = home.isNotEmpty;
       });
     }else{
+      await errorDialog(context, '${response.error}');
     }
   }
 
@@ -74,114 +62,10 @@ class _NewHomeScreenState extends State<NewHomeScreen> {
     });
   }
 
-  Map profile = {};
-  Future<void> appBarDisplay() async{
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    ApiResponse response = await getAppbar('${prefs.getString('token')}');
-
-    if(response.error == null){
-      setState(() {
-        profile = response.data as Map;
-      });
-    }else{
-
-    }
-  }
-
-  void _bottomModalCustomers(){
-    showMaterialModalBottomSheet(
-      context: context,
-      shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(
-              top: Radius.circular(25)
-          )
-      ),
-      builder: (context) => SizedBox(
-        height: 300,
-        child: Column(
-          children: [
-            const SizedBox(height: 20,),
-            const Text(
-              'Select Customer',
-              style: LoginStyle.modalTitle,
-            ),
-            const SizedBox(height: 20,),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                InkWell(
-                  onTap: (){
-                    Navigator.push(context, MaterialPageRoute(builder: (context) => const ForRegisteredScreen()));
-                  },
-                  child: Container(
-                    width: 125,
-                    height: 125,
-                    decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(5),
-                        border: Border.all(
-                            color: ColorStyle.tertiary,
-                            width: 2
-                        )
-                    ),
-                    child: const Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.person_pin_rounded,
-                          size: 80,
-                          color: ColorStyle.tertiary,
-                        ),
-                        Text(
-                          'Registered',
-                          style: LoginStyle.modalSubTitle,
-                        )
-                      ],
-                    ),
-                  ),
-                ),
-                InkWell(
-                  onTap: (){
-                    Navigator.push(context, MaterialPageRoute(builder: (context) => const ForWalkinScreen()));
-                  },
-                  child: Container(
-                    width: 125,
-                    height: 125,
-                    decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(5),
-                        border: Border.all(
-                            color: ColorStyle.tertiary,
-                            width: 2
-                        )
-                    ),
-                    child: const Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.directions_walk,
-                          size: 80,
-                          color: ColorStyle.tertiary,
-                        ),
-                        Text(
-                          'Walk-in',
-                          style: LoginStyle.modalSubTitle,
-                        )
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            )
-          ],
-        ),
-      ),
-    );
-  }
-
   @override
   void initState(){
     super.initState();
     getUser();
-    appBarDisplay();
     startTimer();
   }
 
@@ -205,12 +89,10 @@ class _NewHomeScreenState extends State<NewHomeScreen> {
         );
       }
     } else {
+      if(!mounted) return;
+      await errorDialog(context, '${response.error}');
     }
   }
-
-  bool showAvg = false;
-  bool isWeekly = true;
-  bool isLoading = true;
 
   String formatNumber(int number) {
     final formatter = NumberFormat('#,###');
@@ -459,7 +341,7 @@ class _NewHomeScreenState extends State<NewHomeScreen> {
                         final response = await Navigator.push(context, MaterialPageRoute(builder: (context) => const NewSettingsScreen()));
 
                         if(response == true){
-                          appBarDisplay();
+
                         }
                       },
                       child: const Column(
@@ -484,8 +366,8 @@ class _NewHomeScreenState extends State<NewHomeScreen> {
                         fixedSize: const Size(105, 105),
                       ),
                       onPressed: (){
-                        usertype == 'owner' ? _bottomModalCustomers()
-                            : access == 'full' ? _bottomModalCustomers()
+                        usertype == 'owner' ? _bottomModalCustomers(context)
+                            : access == 'full' ? _bottomModalCustomers(context)
                             : warningTextDialog(context, 'Access Denied', 'Sorry you don\'t have a permission to book services');
                       },
                       child: const Column(
@@ -612,3 +494,91 @@ class _NewHomeScreenState extends State<NewHomeScreen> {
   }
 }
 
+void _bottomModalCustomers(BuildContext context){
+  showMaterialModalBottomSheet(
+    context: context,
+    shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(
+            top: Radius.circular(25)
+        )
+    ),
+    builder: (context) => SizedBox(
+      height: 300,
+      child: Column(
+        children: [
+          const SizedBox(height: 20,),
+          const Text(
+            'Select Customer',
+            style: LoginStyle.modalTitle,
+          ),
+          const SizedBox(height: 20,),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              InkWell(
+                onTap: (){
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => const ForRegisteredScreen()));
+                },
+                child: Container(
+                  width: 125,
+                  height: 125,
+                  decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(5),
+                      border: Border.all(
+                          color: ColorStyle.tertiary,
+                          width: 2
+                      )
+                  ),
+                  child: const Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.person_pin_rounded,
+                        size: 80,
+                        color: ColorStyle.tertiary,
+                      ),
+                      Text(
+                        'Registered',
+                        style: LoginStyle.modalSubTitle,
+                      )
+                    ],
+                  ),
+                ),
+              ),
+              InkWell(
+                onTap: (){
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => const ForWalkinScreen()));
+                },
+                child: Container(
+                  width: 125,
+                  height: 125,
+                  decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(5),
+                      border: Border.all(
+                          color: ColorStyle.tertiary,
+                          width: 2
+                      )
+                  ),
+                  child: const Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.directions_walk,
+                        size: 80,
+                        color: ColorStyle.tertiary,
+                      ),
+                      Text(
+                        'Walk-in',
+                        style: LoginStyle.modalSubTitle,
+                      )
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          )
+        ],
+      ),
+    ),
+  );
+}

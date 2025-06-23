@@ -1,5 +1,6 @@
 import 'package:capstone/api_response.dart';
 import 'package:capstone/brandnew/dialogs.dart';
+import 'package:capstone/model/LaundryServiceInfo.dart';
 import 'package:capstone/services/servicesadd.dart';
 import 'package:capstone/styles/mainColorStyle.dart';
 import 'package:flutter/cupertino.dart';
@@ -16,8 +17,7 @@ class NewLaundryServiceScreen extends StatefulWidget {
 
 class _NewLaundryServiceScreenState extends State<NewLaundryServiceScreen> {
   List<dynamic> service = []; bool isLoading = true;
-  String? usertype;
-  String? access;
+  String? usertype; String? access;
 
   void getUser() async{
     final SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -37,6 +37,7 @@ class _NewLaundryServiceScreenState extends State<NewLaundryServiceScreen> {
         isLoading = false;
       });
     }else{
+      await errorDialog(context, '${response.error}');
     }
   }
 
@@ -69,11 +70,8 @@ class _NewLaundryServiceScreenState extends State<NewLaundryServiceScreen> {
           itemBuilder: (context, index){
             Map serve = service[index] as Map;
             String serviceType = ''; String serviceOffer = ''; String loadType = '';
-            if(serve['ServiceType'] == 'full'){
-              serviceType = 'Full Service';
-            }else{
-              serviceType = 'Self Service';
-            }
+
+            serve['ServiceType'] == 'full' ? serviceType = 'Full Service' : serviceType = 'Self Service';
 
             switch(serve['ServiceOffer']){
               case 'full':
@@ -129,11 +127,13 @@ class _NewLaundryServiceScreenState extends State<NewLaundryServiceScreen> {
                               tooltip: 'Edit Service',
                               onPressed: usertype == 'owner'
                                   ? ()async{
+
+                                LaundryServiceInfo service = LaundryServiceInfo(
+                                    name: '${serve['ServiceName']}', loadPrice: '${serve['LoadPrice']}', type: serviceType, offer: serviceOffer,
+                                    loadWeight: '${serve['LoadWeight']}', description: '${serve['Description']}', loadType: loadType, id: '${serve['ServiceID']}'
+                                );
                                 final response = await Navigator.push(context, MaterialPageRoute(builder: (context)
-                                =>EditServiceScreen(
-                                  servicename: '${serve['ServiceName']}', serviceType: serviceType,
-                                  serviceOffer: serviceOffer, weight: '${serve['LoadWeight']}', price: '${serve['LoadPrice']}',
-                                  loadType: loadType, desc: '${serve['Description']}', serviceid: '${serve['ServiceID']}',)));
+                                =>EditServiceScreen(service: service,)));
 
                                 if(response == true){
                                   serviceDisplay();
@@ -246,15 +246,17 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
 
   Future<void> addServices() async{
     final SharedPreferences prefs = await SharedPreferences.getInstance();
-    ApiResponse response = await addLaundryServices(
-        _servicename.text, _weight.text, _servicetype, _serviceoffer,
-        _price.text, _desc.text, _loadtype, '${prefs.getString('token')}');
+    LaundryServiceInfo service = LaundryServiceInfo(
+      name: _servicename.text, loadPrice: _price.text, type: _servicetype, offer: _serviceoffer,
+      loadWeight: _weight.text, description: _desc.text, loadType: _loadtype
+    );
+    ApiResponse response = await addLaundryServices(service, '${prefs.getString('token')}');
 
     if(response.error == null){
       await successDialog(context, '${response.data}');
       Navigator.pop(context,true);
     }else{
-      warningDialog(context, '${response.error}');
+      await warningDialog(context, '${response.error}');
     }
   }
 
@@ -577,10 +579,8 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
 }
 
 class EditServiceScreen extends StatefulWidget {
-  final String servicename; final String serviceType; final String serviceOffer;
-  final String weight; final String price; final String loadType; final String desc;
-  final String serviceid;
-  const EditServiceScreen({super.key, required this.servicename, required this.serviceType, required this.serviceOffer, required this.weight, required this.price, required this.loadType, required this.desc, required this.serviceid});
+  final LaundryServiceInfo service;
+  const EditServiceScreen({super.key, required this.service});
 
   @override
   State<EditServiceScreen> createState() => _EditServiceScreenState();
@@ -633,31 +633,30 @@ class _EditServiceScreenState extends State<EditServiceScreen> {
     }
 
     final SharedPreferences prefs = await SharedPreferences.getInstance();
-    ApiResponse response = await editLaundryServices(
-        _servicename.text, _weight.text,
-        _serveType.isEmpty ? _servicetype : _serveType,
-        _serveOffer.isEmpty ? _serviceoffer : _serveOffer,
-        _price.text, _desc.text,
-        _loadType.isEmpty ? _loadtype : _loadType,
-        '${prefs.getString('token')}',widget.serviceid);
+    LaundryServiceInfo service = LaundryServiceInfo(
+      name: _servicename.text, loadWeight: _weight.text, type: _serveType.isEmpty ? _servicetype : _serveType,
+      offer: _serveOffer.isEmpty ? _serviceoffer : _serveOffer, loadPrice: _price.text, description: _desc.text,
+      loadType: _loadType.isEmpty ? _loadtype : _loadType, id: widget.service.id
+    );
+    ApiResponse response = await editLaundryServices(service, '${prefs.getString('token')}');
 
     if(response.error == null){
       await successDialog(context, '${response.data}');
       Navigator.pop(context,true);
     }else{
-      warningDialog(context, '${response.error}');
+      await warningDialog(context, '${response.error}');
     }
   }
 
   @override
   void initState() {
-    _servicename.text = widget.servicename;
-    _weight.text = widget.weight;
-    _servicetype = widget.serviceType;
-    _serviceoffer = widget.serviceOffer;
-    _price.text = widget.price;
-    _desc.text = widget.desc;
-    _loadtype = widget.loadType;
+    _servicename.text = widget.service.name ?? '';
+    _weight.text = widget.service.loadWeight ?? '';
+    _servicetype = widget.service.type ?? '';
+    _serviceoffer = widget.service.offer ?? '';
+    _price.text = widget.service.loadPrice ?? '';
+    _desc.text = widget.service.description ?? '';
+    _loadtype = widget.service.loadType ?? '';
     super.initState();
   }
 

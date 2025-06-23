@@ -1,6 +1,7 @@
 
 import 'package:capstone/api_response.dart';
 import 'package:capstone/brandnew/dialogs.dart';
+import 'package:capstone/model/CoOwnerInfo.dart';
 import 'package:capstone/services/services.dart';
 import 'package:capstone/services/servicesadd.dart';
 import 'package:capstone/services/validation.dart';
@@ -35,7 +36,7 @@ class _NewCoOwnerScreenState extends State<NewCoOwnerScreen> {
         hasdata = coOwners.isNotEmpty;
       });
     }else{
-      warningDialog(context, '${response.error}');
+      await errorDialog(context, '${response.error}');
     }
   }
 
@@ -77,9 +78,10 @@ class _NewCoOwnerScreenState extends State<NewCoOwnerScreen> {
 
             return InkWell(
               onTap: ()async{
+                CoOwnerInfo info = CoOwnerInfo(name: '${co['CoOwnerName']}', address: '${co['CoOwnerAddress']}',
+                contact: '${co['CoOwnerContact']}', access: '${co['AccessType']}', id: '${co['CoOwnerID']}');
                 final response = await Navigator.push(context, MaterialPageRoute(builder: (context) =>
-                    EditCoOwnerScreen(coname: '${co['CoOwnerName']}', coaddress: '${co['CoOwnerAddress']}',
-                      cocontact: '${co['CoOwnerContact']}', access: '${co['AccessType']}', coid: '${co['CoOwnerID']}',)));
+                    EditCoOwnerScreen(info: info,)));
 
                 if(response == true){
                   coOwnerDisplay();
@@ -173,7 +175,7 @@ class _AddCoOwnerScreenState extends State<AddCoOwnerScreen> {
     }
   }
 
-  Future<void> otpDisplay() async{/*widget.contact*/
+  Future<void> otpDisplay() async{
     await otpVerification(_coContact.text);
   }
 
@@ -445,9 +447,11 @@ class _AddCoOwnerScreenState extends State<AddCoOwnerScreen> {
                       'one lowercase letter, one number, and one special character');
             }
             else{
+              CoOwnerInfo info = CoOwnerInfo(
+                  name: _coName.text, address: _coAddress.text, contact: _coContact.text,
+                  access: selectedAccess);
               Navigator.push(context, MaterialPageRoute(builder: (context) =>
-                  NewOTPScreen(coname: _coName.text, coaddress: _coAddress.text, cocontact: _coContact.text,
-                      access: selectedAccess, password: _coPassword.text)));
+                  NewOTPScreen(info: info, password: _coPassword.text)));
               otpDisplay();
             }
           },
@@ -459,9 +463,9 @@ class _AddCoOwnerScreenState extends State<AddCoOwnerScreen> {
 }
 
 class NewOTPScreen extends StatefulWidget {
-  final String coname; final String coaddress; final String cocontact;
-  final String access; final String password;
-  const NewOTPScreen({super.key, required this.coname, required this.coaddress, required this.cocontact, required this.access, required this.password});
+  final CoOwnerInfo info;
+  final String password;
+  const NewOTPScreen({super.key, required this.info, required this.password});
 
   @override
   State<NewOTPScreen> createState() => _NewOTPScreenState();
@@ -481,14 +485,17 @@ class _NewOTPScreenState extends State<NewOTPScreen> {
       },
     );
     String access = '';
-    if(widget.access == 'Full Access'){
+    if(widget.info.access == 'Full Access'){
       access = 'full';
     }else{
       access == 'limit';
     }
 
-    ApiResponse response = await addCoOwners(widget.coname, widget.coaddress, widget.cocontact,
-        widget.password, access, '${prefs.getString('token')}');
+    CoOwnerInfo info = CoOwnerInfo(
+        name: widget.info.name, address: widget.info.address, contact: widget.info.contact,
+        access: access);
+
+    ApiResponse response = await addCoOwners(info, widget.password, '${prefs.getString('token')}');
 
     if (response.error == null) {
       await successDialog(context, '${response.data}');
@@ -503,16 +510,17 @@ class _NewOTPScreenState extends State<NewOTPScreen> {
   }
 
   Future<void> otpDisplay() async{/*widget.contact*/
-    await otpVerification(widget.cocontact);
+    await otpVerification(widget.info.contact ?? '');
 
   }
 
   Future<void> addCoowner() async{
     final SharedPreferences prefs = await SharedPreferences.getInstance();
-    ApiResponse response = await addCoOwners(
-        widget.coname, widget.coaddress,
-        widget.cocontact, widget.password,
-        widget.access, '${prefs.getString('token')}');
+    CoOwnerInfo info = CoOwnerInfo(
+        name: widget.info.name, address: widget.info.address, contact: widget.info.contact,
+        access: widget.info.access);
+
+    ApiResponse response = await addCoOwners(info, widget.password, '${prefs.getString('token')}');
 
     if(response.error == null){
       await successDialog(context, '${response.data}');
@@ -583,7 +591,7 @@ class _NewOTPScreenState extends State<NewOTPScreen> {
                     Container(
                       margin: const EdgeInsets.only(bottom: 40),
                       child: Text(
-                        widget.cocontact,
+                        widget.info.contact ?? '',
                         style: const TextStyle(
                             color: Colors.black,
                             fontSize: 18
@@ -669,9 +677,8 @@ class _NewOTPScreenState extends State<NewOTPScreen> {
 }
 
 class EditCoOwnerScreen extends StatefulWidget {
-  final String coname; final String coaddress; final String cocontact;
-  final String access; final String coid;
-  const EditCoOwnerScreen({super.key, required this.coname, required this.coaddress, required this.cocontact, required this.access, required this.coid});
+  final CoOwnerInfo info;
+  const EditCoOwnerScreen({super.key, required this.info});
 
   @override
   State<EditCoOwnerScreen> createState() => _EditCoOwnerScreenState();
@@ -680,8 +687,6 @@ class EditCoOwnerScreen extends StatefulWidget {
 class _EditCoOwnerScreenState extends State<EditCoOwnerScreen> {
   final TextEditingController _coName = TextEditingController();
   final TextEditingController _coAddress = TextEditingController();
-  final TextEditingController _coContact = TextEditingController();
-  final TextEditingController _coPassword = TextEditingController();
   String selectedAccess = ''; bool exist = false; bool isHidden =true; String selectedAcc = ''; int selIndex = 0;
   String editContact = '';
 
@@ -704,9 +709,11 @@ class _EditCoOwnerScreenState extends State<EditCoOwnerScreen> {
         access = 'limit';
       });
     }
-    ApiResponse response = await editCoOwners(
-        _coName.text, _coAddress.text, editContact, widget.coid, widget.cocontact,
-        selectedAccess.isEmpty ? widget.access : access, '${prefs.getString('token')}');
+
+    CoOwnerInfo info = CoOwnerInfo(
+      id: widget.info.id, name: widget.info.name, address: widget.info.address,
+        access: selectedAccess.isEmpty ? widget.info.access : access, contact: editContact);
+    ApiResponse response = await editCoOwners(info, widget.info.contact ?? '','${prefs.getString('token')}');
 
     if(response.error == null){
       await successDialog(context, '${response.data}');
@@ -719,21 +726,21 @@ class _EditCoOwnerScreenState extends State<EditCoOwnerScreen> {
 
   @override
   void initState() {
-   _coName.text = widget.coname;
-   _coAddress.text = widget.coaddress;
-   editContact = widget.cocontact;
-   selectedAcc = widget.access;
+   _coName.text = widget.info.name ?? '';
+   _coAddress.text = widget.info.address ?? '';
+   editContact = widget.info.contact ?? '';
+   selectedAcc = widget.info.access ?? '';
     super.initState();
   }
   
   @override
   Widget build(BuildContext context) {
 
-    if(widget.access == 'full' || selectedAccess == 'Full Access'){
+    if(widget.info.access == 'full' || selectedAccess == 'Full Access'){
 
         selIndex = 0;
 
-    }else if(widget.access == 'limit' || selectedAccess == 'Limited Access'){
+    }else if(widget.info.access == 'limit' || selectedAccess == 'Limited Access'){
 
         selIndex = 1;
 
@@ -841,7 +848,7 @@ class _EditCoOwnerScreenState extends State<EditCoOwnerScreen> {
                 },
                 child: Align(
                   alignment: Alignment.centerLeft,
-                  child: Text(widget.cocontact,style: TextStyle(color: Colors.grey.shade700,fontSize: 16)),
+                  child: Text(widget.info.contact ?? '',style: TextStyle(color: Colors.grey.shade700,fontSize: 16)),
                 )
             ),
             const SizedBox(height: 10,),
@@ -1012,7 +1019,7 @@ class _NumberChangeScreenState extends State<NumberChangeScreen> {
     }
   }
 
-  Future<void> otpDisplay() async{/*widget.contact*/
+  Future<void> otpDisplay() async{
     await otpVerification(_newContact.text);
   }
   @override

@@ -52,7 +52,7 @@ class _NewLoginScreenState extends State<NewLoginScreen> {
         isloading = false;
       });
       Navigator.pop(context);
-      errorDialog(context, 'Invalid Credentials');
+      errorDialog(context, '${response.error}');
     }
   }
   Future<void> _saveAndRedirectToHome(User user) async {

@@ -1,3 +1,3 @@
-const ipaddress = 'https://production.matelaundry.com/api';
+const ipaddress = 'http://192.168.100.13:8000/api';
 
-const picaddress = 'https://production.matelaundry.com/images/';
+const picaddress = 'http://production.matelaundry.com/images/';

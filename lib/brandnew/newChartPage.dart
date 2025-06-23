@@ -1,5 +1,6 @@
 
 import 'package:capstone/api_response.dart';
+import 'package:capstone/brandnew/dialogs.dart';
 import 'package:capstone/services/services.dart';
 import 'package:capstone/styles/mainColorStyle.dart';
 import 'package:fl_chart/fl_chart.dart';
@@ -20,10 +21,7 @@ class _NewChartScreenState extends State<NewChartScreen> {
   bool isLoading = true; bool hasBar = false;
   Map bar = {}; Map monthlyBar = {};
   List<dynamic> doughnut = [];  List<_DoughnutChart> services = []; int serviceMade = 0;
-  List<dynamic> inventory = [];  int invCount = 0;
-  String? token;
-
-  var formatter = NumberFormat('#,##,###');
+  List<dynamic> inventory = [];  int invCount = 0; String? token; var formatter = NumberFormat('#,##,###');
 
   void getToken() async{
     final SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -48,6 +46,7 @@ class _NewChartScreenState extends State<NewChartScreen> {
 
       });
     }else{
+      await errorDialog(context, '${response.error}');
     }
   }
 
@@ -60,7 +59,7 @@ class _NewChartScreenState extends State<NewChartScreen> {
         monthlyBar = response.data as Map;
       });
     }else{
-
+      await errorDialog(context, '${response.error}');
     }
   }
 
@@ -77,7 +76,7 @@ class _NewChartScreenState extends State<NewChartScreen> {
         }).toList();
       });
     }else{
-
+      await errorDialog(context, '${response.error}');
     }
   }
 
@@ -91,7 +90,7 @@ class _NewChartScreenState extends State<NewChartScreen> {
         invCount = response.count ?? 0;
       });
     }else{
-
+      await errorDialog(context, '${response.error}');
     }
   }
 

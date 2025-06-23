@@ -23,13 +23,9 @@ class NewServiceBookingScreen extends StatefulWidget {
 
 class _NewServiceBookingScreenState extends State<NewServiceBookingScreen> {
   List<dynamic> services = []; int selectedIndex = 0; int totalPrice = 0;
-  int? serviceId;
-  String pickedDate = ''; String pickedDateDisp = ''; List<DateTime?> date = []; String chosenDate = '';
-  DateTime? dateSelected; String schedule = ''; String time = ''; String timeformatted = '';
-  bool isLoading = true;
-  int total = 0;
-  String load = '';
-  String shopid = ''; int? cusId;
+  int? serviceId; String pickedDate = ''; String pickedDateDisp = ''; List<DateTime?> date = []; String chosenDate = '';
+  DateTime? dateSelected; String schedule = ''; String time = ''; String timeformatted = ''; bool isLoading = true;
+  int total = 0; String load = ''; String shopid = ''; int? cusId;
 
 
 
@@ -80,7 +76,7 @@ class _NewServiceBookingScreenState extends State<NewServiceBookingScreen> {
         isLoading = false;
       });
     }else{
-
+      await errorDialog(context, '${response.error}');
     }
   }
 
@@ -106,8 +102,6 @@ class _NewServiceBookingScreenState extends State<NewServiceBookingScreen> {
       await warningTextDialog(context, 'Service Unavailable', '${response.error}');
     }
   }
-
-
 
   final controller = GroupButtonController();
 

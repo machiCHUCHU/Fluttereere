@@ -1,6 +1,6 @@
-
 import 'package:capstone/api_response.dart';
 import 'package:capstone/brandnew/dialogs.dart';
+import 'package:capstone/model/Inventory.dart';
 import 'package:capstone/services/services.dart';
 import 'package:capstone/styles/invStyle.dart';
 import 'package:capstone/styles/mainColorStyle.dart';
@@ -19,26 +19,10 @@ class NewInventoryScreen extends StatefulWidget {
 }
 
 class _NewInventoryScreenState extends State<NewInventoryScreen> {
-  List<dynamic> inventory = [];
-  String? id;
-  bool isLoading = true;
-  String? token;
-  int? userid;
-  int? shopid;
-  int? total;
-  int? out;
-  bool hasData = false;
-  String? categoryName;
-  bool isDefault = false;
-  String? usertype;
-  String? access;
-
-  List<String> category = [
-    'Detergent',
-    'Fabric Conditioner',
-    'Bleach',
-    'Fabric Freshener'
-  ];
+  List<dynamic> inventory = []; bool isLoading = true; String? token; int? total;
+  int? out; bool hasData = false; String? categoryName; bool isDefault = false;
+  String? usertype; String? access;
+  List<String> category = ['Detergent', 'Fabric Conditioner', 'Bleach', 'Fabric Freshener'];
 
   void getUser() async{
     final SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -47,13 +31,12 @@ class _NewInventoryScreenState extends State<NewInventoryScreen> {
       usertype = prefs.getString('usertype');
       access = prefs.getString('accesstype');
     });
-
     inventoryDisplay();
   }
 
   Future<void> inventoryDisplay() async{
-
     ApiResponse response = await getInventory(token.toString());
+    if(!mounted) return;
 
     if(response.error == null){
       setState(() {
@@ -67,7 +50,7 @@ class _NewInventoryScreenState extends State<NewInventoryScreen> {
       setState(() {
         isLoading = false;
       });
-      errorDialog(context, '${response.error}');
+      await errorDialog(context, '${response.error}');
     }
   }
 
@@ -79,11 +62,9 @@ class _NewInventoryScreenState extends State<NewInventoryScreen> {
           return loading();
         }
     );
+    ApiResponse apiResponse = await deleteInventory(itemId, token.toString());
 
-    ApiResponse apiResponse = await deleteInventory(
-        itemId,
-        token.toString()
-    );
+    if(!mounted) return;
 
     Navigator.pop(context);
 
@@ -91,14 +72,11 @@ class _NewInventoryScreenState extends State<NewInventoryScreen> {
       successDialog(context, 'Item has been deleted.');
       inventoryDisplay();
     }else{
-      errorDialog(context, '${apiResponse.error}');
+      await errorDialog(context, '${apiResponse.error}');
     }
-
   }
 
-  void _bottomModal(String itemName, String itemQty, String itemId,
-      String itemVol, String volUse, String remVol, String category, bool setuse){
-    print(category);
+  void _bottomModal(Inventory inv){
     showMaterialModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(
@@ -116,7 +94,7 @@ class _NewInventoryScreenState extends State<NewInventoryScreen> {
                 Padding(
                   padding: const EdgeInsets.only(top: 8),
                   child: Text(
-                    itemName,
+                    '${inv.itemName}',
                     style: InvStyle.modalTitle,
                   ),
                 ),
@@ -132,7 +110,7 @@ class _NewInventoryScreenState extends State<NewInventoryScreen> {
                                 Text('Category', style: InvStyle.modalSubTitle)
                               ],
                             ),
-                            description: Text(category,style: const TextStyle(fontWeight: FontWeight.bold)),
+                            description: Text('${inv.category}',style: const TextStyle(fontWeight: FontWeight.bold)),
                           ),
                           RowItem(
                             title: const Row(
@@ -141,7 +119,7 @@ class _NewInventoryScreenState extends State<NewInventoryScreen> {
                                 Text('Quantity', style: InvStyle.modalSubTitle)
                               ],
                             ),
-                            description: Text(itemQty,style: const TextStyle(fontWeight: FontWeight.bold)),
+                            description: Text('${inv.itemQty}',style: const TextStyle(fontWeight: FontWeight.bold)),
                           ),
                           RowItem(
                             title: const Row(
@@ -150,7 +128,7 @@ class _NewInventoryScreenState extends State<NewInventoryScreen> {
                                 Text('Volume', style: InvStyle.modalSubTitle)
                               ],
                             ),
-                            description: Text(itemVol,style: const TextStyle(fontWeight: FontWeight.bold)),
+                            description: Text('${inv.itemVolume}',style: const TextStyle(fontWeight: FontWeight.bold)),
                           ),
                           RowItem(
                             title: const Row(
@@ -159,7 +137,7 @@ class _NewInventoryScreenState extends State<NewInventoryScreen> {
                                 Text('Remaining Volume', style: InvStyle.modalSubTitle,)
                               ],
                             ),
-                            description: Text(remVol,style: const TextStyle(fontWeight: FontWeight.bold)),
+                            description: Text('${inv.remainingVolume}',style: const TextStyle(fontWeight: FontWeight.bold)),
                           ),
                           RowItem(
                             title: const Row(
@@ -168,7 +146,7 @@ class _NewInventoryScreenState extends State<NewInventoryScreen> {
                                 Text('Volume Usage', style: InvStyle.modalSubTitle)
                               ],
                             ),
-                            description: Text(volUse,style: const TextStyle(fontWeight: FontWeight.bold),),
+                            description: Text('${inv.volummeUse}',style: const TextStyle(fontWeight: FontWeight.bold),),
                           ),
                         ],
                       ),
@@ -187,11 +165,10 @@ class _NewInventoryScreenState extends State<NewInventoryScreen> {
                                   )
                               ),
                               onPressed: () async{
-                                final result = await Navigator.push(context, MaterialPageRoute(builder: (context) => InventoryEditScreen(
-                                    itemname: itemName, itemqty: itemQty, itemvolume: itemVol,
-                                    id: itemId, volumeuse: volUse, setuse: setuse, category: category, )));
+                                final result = await Navigator.push(context, MaterialPageRoute(builder: (context) => InventoryEditScreen(inv: inv,)));
 
                                 if(result == true){
+                                  if(!mounted) return;
                                   Navigator.pop(context);
                                   inventoryDisplay();
                                 }
@@ -212,7 +189,7 @@ class _NewInventoryScreenState extends State<NewInventoryScreen> {
                                   )
                               ),
                               onPressed: (){
-                                inventoryDelete(itemId);
+                                inventoryDelete('${inv.id}');
                                 Navigator.pop(context);
                                 inventoryDisplay();
                               },
@@ -233,9 +210,6 @@ class _NewInventoryScreenState extends State<NewInventoryScreen> {
     );
   }
 
-
-
-
   @override
   void initState(){
     super.initState();
@@ -244,7 +218,6 @@ class _NewInventoryScreenState extends State<NewInventoryScreen> {
 
   @override
   Widget build(BuildContext context) {
-    print(access);
     if(isLoading){
       return Scaffold(
           appBar: AppBar(
@@ -261,7 +234,7 @@ class _NewInventoryScreenState extends State<NewInventoryScreen> {
       );
     }
 
-    if(hasData == false){
+    if(!hasData){
       return Scaffold(
         appBar: AppBar(
           title: const Text('Inventory'),
@@ -324,7 +297,6 @@ class _NewInventoryScreenState extends State<NewInventoryScreen> {
             if (result == true) {
               await inventoryDisplay();
             }
-
           },
           child: const Icon(Icons.add, size: 50),
         ),
@@ -353,8 +325,8 @@ class _NewInventoryScreenState extends State<NewInventoryScreen> {
                     decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(5),
-                        boxShadow: [
-                          const BoxShadow(
+                        boxShadow: const [
+                          BoxShadow(
                             color: Colors.grey,
                             offset: Offset(0, 2),
                             blurRadius: 1
@@ -383,10 +355,7 @@ class _NewInventoryScreenState extends State<NewInventoryScreen> {
                     itemCount: inventory.length,
                     itemBuilder: (context, index){
                       Map inv = inventory[index] as Map;
-
                       bool setuse = inv['IsUse'] == '1';
-
-
 
                       return Padding(
                         padding: const EdgeInsets.symmetric(vertical: 4),
@@ -428,17 +397,14 @@ class _NewInventoryScreenState extends State<NewInventoryScreen> {
                                           ),
                                           description: IconButton(
                                             onPressed: (){
-                                              usertype == 'owner' ? _bottomModal(
-                                                  '${inv['ItemName']}', '${inv['ItemQty']}',
-                                                  '${inv['InventoryID']}', '${inv['ItemVolume']}',
-                                                  '${inv['VolumeUse']}', '${inv['RemainingVolume']}',
-                                                  '${inv['Category']}',setuse
-                                              ) : access == 'full' ? _bottomModal(
-                                                  '${inv['ItemName']}', '${inv['ItemQty']}',
-                                                  '${inv['InventoryID']}', '${inv['ItemVolume']}',
-                                                  '${inv['VolumeUse']}', '${inv['RemainingVolume']}',
-                                                  '${inv['Category']}',setuse
-                                              ) : warningTextDialog(context, 'Access Denied', 'Sorry you don\'t have permission to edit the inventory');
+                                              Inventory invent = Inventory(
+                                                  id: '${inv['InventoryID']}', itemName: '${inv['ItemName']}', category: '${inv['Category']}',
+                                                  itemQty: '${inv['ItemQty']}', itemVolume: '${inv['ItemVolume']}', volummeUse: '${inv['VolumeUse']}',
+                                                  remainingVolume: '${inv['RemainingVolume']}', isUse: setuse ? '1' : '0'
+                                              );
+                                              usertype == 'owner' ? _bottomModal(invent) : access == 'full'
+                                                  ? _bottomModal(invent)
+                                                  : warningTextDialog(context, 'Access Denied', 'Sorry you don\'t have permission to edit the inventory');
                                             },
                                             icon: const Icon(Icons.more_vert),
                                           )
@@ -473,7 +439,7 @@ class _NewInventoryScreenState extends State<NewInventoryScreen> {
         } : (){
           warningTextDialog(context, 'Access Denied', 'Sorry you don\'t have permission to add item to the inventory');
         },
-        child: const Icon(Icons.add, size: 50, color: Colors.white,), // Set icon size here
+        child: const Icon(Icons.add, size: 50, color: Colors.white,),
       ),
     );
   }
@@ -487,26 +453,13 @@ class InventoryAddScreen extends StatefulWidget {
 }
 
 class _InventoryAddScreenState extends State<InventoryAddScreen> {
-
-  String? token;
-  int? userid;
-  int? shopid;
-  String? categoryName;
-  bool setUse = false;
-  String isDefault = '';
-  List<String> category = [
-    'Detergent',
-    'Fabric Conditioner',
-    'Bleach',
-    'Fabric Freshener Spray'
-  ];
+  String? token; String? categoryName; bool setUse = false; String isDefault = '';
+  List<String> category = ['Detergent', 'Fabric Conditioner', 'Bleach', 'Fabric Freshener Spray'];
 
   void getUser() async{
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
       token = prefs.getString('token');
-      userid = prefs.getInt('userid');
-      shopid = prefs.getInt('shopid');
     });
   }
 
@@ -520,7 +473,6 @@ class _InventoryAddScreenState extends State<InventoryAddScreen> {
   final TextEditingController _itemqty = TextEditingController();
   final TextEditingController _itemvolume = TextEditingController();
   final TextEditingController _itemuse = TextEditingController();
-
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
   Future<void> inventoryAdd() async{
@@ -532,7 +484,7 @@ class _InventoryAddScreenState extends State<InventoryAddScreen> {
         }
     );
 
-    if(setUse == true){
+    if(setUse){
       setState(() {
         isDefault = '1';
       });
@@ -542,25 +494,23 @@ class _InventoryAddScreenState extends State<InventoryAddScreen> {
       });
     }
 
-    ApiResponse apiResponse = await addInventory(
-        _itemname.text, _itemqty.text,
-        _itemvolume.text, _itemuse.text,
-        categoryName!, isDefault,
-        token.toString()
-    );
+    Inventory inv = Inventory(
+        itemName: _itemname.text, category: categoryName!, isUse: isDefault,
+        itemQty: _itemqty.text, itemVolume: _itemvolume.text,
+        remainingVolume: _itemvolume.text, volummeUse: _itemuse.text);
+
+    ApiResponse apiResponse = await addInventory(inv, token.toString());
+    if(!mounted) return;
 
     Navigator.pop(context);
 
     if(apiResponse.error == null){
       await successDialog(context, 'Item has been added.');
-
         Navigator.pop(context,true);
     } else {
-      errorDialog(context, '${apiResponse.error}');
+      await errorDialog(context, '${apiResponse.error}');
     }
   }
-
-
 
   @override
   Widget build(BuildContext context) {
@@ -659,7 +609,6 @@ class _InventoryAddScreenState extends State<InventoryAddScreen> {
                     onChanged: (newValue) {
                       setState(() {
                         categoryName = newValue;
-
                       });
                     },
                     validator: (String? value) {
@@ -783,67 +732,29 @@ class _InventoryAddScreenState extends State<InventoryAddScreen> {
 }
 
 class InventoryEditScreen extends StatefulWidget {
-  final String itemname;
-  final String itemqty;
-  final String itemvolume;
-  final String volumeuse;
-  final String id;
-  final bool setuse;
-  final String category;
-  const InventoryEditScreen({super.key, required this.itemname, required this.itemqty, required this.itemvolume, required this.id, required this.volumeuse, required this.setuse, required this.category});
+  final Inventory inv;
+  const InventoryEditScreen({super.key, required this.inv});
 
   @override
   State<InventoryEditScreen> createState() => _InventoryEditScreenState();
 }
 
 class _InventoryEditScreenState extends State<InventoryEditScreen> {
-
-
-  String? id;
-  bool isLoading = true;
-  String? token;
-  int? userid;
-  int? shopid;
-  int? total;
-  int? out;
-  bool hasData = false;
+  bool isLoading = true; String? token; int? total; int? out; bool hasData = false;
 
   void getUser() async{
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
       token = prefs.getString('token');
-      userid = prefs.getInt('userid');
-      shopid = prefs.getInt('shopid');
-
     });
-  }
-
-  @override
-  void initState(){
-    _itemname.text = widget.itemname;
-    _itemqty.text = widget.itemqty;
-    _itemvolume.text = widget.itemvolume;
-    _itemuse.text = widget.volumeuse;
-    categoryName = widget.category;
-    setUse = widget.setuse;
-    widget.id;
-    super.initState();
   }
 
   final TextEditingController _itemname = TextEditingController();
   final TextEditingController _itemqty = TextEditingController();
   final TextEditingController _itemvolume = TextEditingController();
   final TextEditingController _itemuse = TextEditingController();
-  String? categoryName;
-  String isDefault = '';
-  bool setUse = false;
-
-  List<String> category = [
-    'Detergent',
-    'Fabric Conditioner',
-    'Bleach',
-    'Fabric Freshener Spray'
-  ];
+  String? categoryName; String isDefault = ''; bool setUse = false;
+  List<String> category = ['Detergent', 'Fabric Conditioner', 'Bleach', 'Fabric Freshener Spray'];
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
   Future<void> updateInv() async{
@@ -856,7 +767,7 @@ class _InventoryEditScreenState extends State<InventoryEditScreen> {
         }
     );
 
-    if(setUse == true){
+    if(setUse){
       setState(() {
         isDefault = '1';
       });
@@ -866,21 +777,31 @@ class _InventoryEditScreenState extends State<InventoryEditScreen> {
       });
     }
 
-    ApiResponse apiResponse = await updateInventory(
-        widget.id, _itemname.text,
-        _itemqty.text, _itemvolume.text,
-        _itemuse.text, '${prefs.getString('token')}', '$categoryName',isDefault
-    );
+    Inventory inv = Inventory(
+    id: widget.inv.id, itemName: _itemname.text, itemQty: _itemqty.text, itemVolume: _itemvolume.text,
+    volummeUse: _itemuse.text, category: categoryName, isUse: setUse ? '1' : '0');
 
+    ApiResponse apiResponse = await updateInventory(inv, '${prefs.getString('token')}');
     Navigator.pop(context);
-
 
     if(apiResponse.error == null){
       await successDialog(context, 'Item has been updated.');
       Navigator.pop(context,true);
     }else{
-      errorDialog(context, '${apiResponse.error}');
+      await errorDialog(context, '${apiResponse.error}');
     }
+  }
+
+  @override
+  void initState(){
+    _itemname.text = widget.inv.itemName ?? '';
+    _itemqty.text = widget.inv.itemQty ?? '';
+    _itemvolume.text = widget.inv.itemVolume ?? '';
+    _itemuse.text = widget.inv.volummeUse ?? '';
+    categoryName = widget.inv.category ?? '';
+    setUse = widget.inv.isUse == '1';
+    widget.inv.id;
+    super.initState();
   }
 
   @override
@@ -957,7 +878,6 @@ class _InventoryEditScreenState extends State<InventoryEditScreen> {
 
                     Container(
                       width: double.infinity,
-
                       padding: const EdgeInsets.all(4),
                       decoration: const BoxDecoration(
                           color: ColorStyle.tertiary,
@@ -1085,7 +1005,7 @@ class _InventoryEditScreenState extends State<InventoryEditScreen> {
                 ),
                 onPressed: (){
                   if(_formKey.currentState!.validate()){
-          setState(() {
+                    setState(() {
                       updateInv();
                     });
                   }

@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:capstone/api_response.dart';
 import 'package:capstone/brandnew/dialogs.dart';
 import 'package:capstone/connect/laravel.dart';
+import 'package:capstone/model/OwnerInfo.dart';
 import 'package:capstone/services/services.dart';
 import 'package:capstone/services/servicesadd.dart';
 import 'package:capstone/styles/mainColorStyle.dart';
@@ -39,6 +40,7 @@ class _NewProfileScreenState extends State<NewProfileScreen> {
         isLoading = false;
       });
     }else{
+      await errorDialog(context, '${response.error}');
     }
   }
 
@@ -233,6 +235,7 @@ class _NewProfileEditScreenState extends State<NewProfileEditScreen> {
 
     if(response.error == null){
     }else{
+      await errorDialog(context, '${response.error}');
     }
   }
 
@@ -260,8 +263,10 @@ class _NewProfileEditScreenState extends State<NewProfileEditScreen> {
       hasPickedImage = _image;
     }
 
-    ApiResponse response = await updateOwnerProfile(
-        widget.id, _name, _sex, _address, _contact, hasPickedImage, '${prefs.getString('token')}');
+    OwnerInfo info = OwnerInfo(
+        id: widget.id, name: _name, sex: _sex, address: _address,
+        contact: _contact, image: hasPickedImage);
+    ApiResponse response = await updateOwnerProfile(info, '${prefs.getString('token')}');
 
     if(!mounted) return;
     Navigator.pop(context);
@@ -856,9 +861,6 @@ class _InputNameScreenState extends State<InputNameScreen> {
     );
   }
 }
-
-
-
 
 class OTPScreen extends StatefulWidget {
   final String contact;

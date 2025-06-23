@@ -10,6 +10,7 @@ import 'package:capstone/brandnew/newProfilePage.dart';
 import 'package:capstone/brandnew/newServiceTime.dart';
 import 'package:capstone/brandnew/newShopInformationPage.dart';
 import 'package:capstone/connect/laravel.dart';
+import 'package:capstone/model/OwnerInfo.dart';
 import 'package:capstone/services/services.dart';
 import 'package:capstone/styles/mainColorStyle.dart';
 import 'package:capstone/styles/settingStyle.dart';
@@ -32,15 +33,8 @@ class NewSettingsScreen extends StatefulWidget {
 }
 
 class _NewSettingsScreenState extends State<NewSettingsScreen> {
-  List<dynamic> settings = [];
-  List<dynamic> service = [];
-  Map set = {};
-  bool hasData = false;
-  bool hasImage = false;
-  bool isLoading = true;
-  String? token;
-  String? usertype;
-  String? access;
+  List<dynamic> settings = []; List<dynamic> service = []; Map set = {}; bool hasData = false;
+  bool hasImage = false; bool isLoading = true; String? token; String? usertype; String? access;
 
   void getUser() async{
     final SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -65,6 +59,8 @@ class _NewSettingsScreenState extends State<NewSettingsScreen> {
         hasImage = set['OwnerImage'] != null;
         isLoading = false;
       });
+    }else{
+      await errorDialog(context, '${response.error}');
     }
   }
 
@@ -82,6 +78,7 @@ class _NewSettingsScreenState extends State<NewSettingsScreen> {
         );
       }
     } else {
+      await errorDialog(context, '${response.error}');
     }
   }
 
@@ -350,10 +347,11 @@ class _EditUserScreenState extends State<EditUserScreen> {
       hasPickedImage = image!;
     }
 
-    ApiResponse apiResponse = await updateOwnerProfile(
-        widget.id, _name.text, _selectedGender!,
-        _address.text, _contact.text, hasPickedImage,
-    '${prefs.getString('token')}');
+    OwnerInfo info = OwnerInfo(
+      id: widget.id, name: _name.text, sex: _selectedGender, address: _address.text,
+      contact: _contact.text, image: hasPickedImage);
+
+    ApiResponse apiResponse = await updateOwnerProfile(info, '${prefs.getString('token')}');
 
     Navigator.pop(context);
 
@@ -365,7 +363,7 @@ class _EditUserScreenState extends State<EditUserScreen> {
       }
       Navigator.pop(context, true);
     }else{
-      errorDialog(context, '${apiResponse.error}');
+      await errorDialog(context, '${apiResponse.error}');
     }
   }
 

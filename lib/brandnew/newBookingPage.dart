@@ -50,6 +50,7 @@ class _NewBookingScreenState extends State<NewBookingScreen> {
         });
     } else {
       isLoading = false;
+      await errorDialog(context, '${response.error}');
     }
   }
 
@@ -63,6 +64,7 @@ class _NewBookingScreenState extends State<NewBookingScreen> {
           hasWalkin = walkins.isNotEmpty;
         });
     } else {
+      await errorDialog(context, '${response.error}');
     }
   }
 
@@ -547,6 +549,7 @@ class _NewBookingScreenState extends State<NewBookingScreen> {
 
   @override
   Widget build(BuildContext context) {
+      print(bookings);
       return DefaultTabController(
           length: 2,
           child: Scaffold(

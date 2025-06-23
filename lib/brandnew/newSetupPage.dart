@@ -3,6 +3,9 @@ import 'dart:convert';
 import 'package:capstone/api_response.dart';
 import 'package:capstone/brandnew/dialogs.dart';
 import 'package:capstone/brandnew/newHomePage.dart';
+import 'package:capstone/model/LaundryServiceInfo.dart';
+import 'package:capstone/model/MachineInfo.dart';
+import 'package:capstone/model/ShopInfo.dart';
 import 'package:capstone/services/services.dart';
 import 'package:capstone/styles/mainColorStyle.dart';
 import 'package:capstone/styles/signupStyle.dart';
@@ -192,18 +195,27 @@ class _SetupInformationScreenState extends State<SetupInformationScreen> {
   }
   Future<void> addSetup() async{
     final SharedPreferences prefs = await SharedPreferences.getInstance();
+    ShopInfo shopInfo = ShopInfo(
+        name: _shopName.text, address: _shopAddress.text, maxLoad: _maxLoad.text,
+        image: base64Encode(_pickedImageBytes ?? Uint8List(0)), workHour: _shopTime,
+        workDay: _workDays ?? '');
 
-    ApiResponse response = await shopInfoRegister(_shopName.text, _shopAddress.text,
-        _maxLoad.text, _washerQty.text, _washerTime.text, _dryerQty.text, _dryerTime.text,
-        _servicename.text, _servicetype, _serviceoffer, _weight.text, _price.text, _loadtype, 
-        _desc.text, _shopTime, _workDays ?? '', _foldingTime.text, base64Encode(_pickedImageBytes ?? Uint8List(0)), 
-        '${prefs.getString('token')}');
+    MachineInfo machineInfo = MachineInfo(
+        washerQty: _washerQty.text, washerTime: _washerTime.text, dryerQty: _dryerQty.text,
+        dryerTime: _dryerTime.text, foldingTime: _foldingTime.text);
+
+    LaundryServiceInfo serviceInfo = LaundryServiceInfo(
+        name: _servicename.text, type: _servicetype, offer: _serviceoffer, loadWeight: _weight.text,
+        loadPrice: _price.text, loadType: _loadtype, description: _desc.text);
+
+    ApiResponse response = await shopInfoRegister(shopInfo, serviceInfo, machineInfo,'${prefs.getString('token')}');
 
     if(response.error == null){
       await successDialog(context, '${response.data}');
       Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => const NewHomeScreen()), (route) => false);
     }else{
-      errorDialog(context, '${response.error}');
+      await errorDialog(context, '${response.error}');
+
     }
   }
 

@@ -25,49 +25,48 @@ class _NewReportRatingScreenState extends State<NewReportRatingScreen> {
 
   Future<void> reviewsDisplay() async{
     final SharedPreferences prefs = await SharedPreferences.getInstance();
-    ApiResponse apiResponse = await getRating('','${prefs.getString('token')}');
+    ApiResponse response = await getRating('','${prefs.getString('token')}');
 
-    if(apiResponse.error == null){
+    if(response.error == null){
       setState(() {
-        ratings = apiResponse.totalstar as Map;
-
+        ratings = response.totalstar as Map;
       });
     } else {
       setState(() {
         isLoading = false;
       });
+      await errorDialog(context, '${response.error}');
     }
   }
 
   Future<void> performanceDisplay() async{
     final SharedPreferences prefs = await SharedPreferences.getInstance();
-    ApiResponse apiResponse = await shopPerformance('${prefs.getString('token')}');
+    ApiResponse response = await shopPerformance('${prefs.getString('token')}');
 
-    if(apiResponse.error == null){
+    if(response.error == null){
       setState(() {
-        perf = apiResponse.data as Map;
+        perf = response.data as Map;
         isLoading = false;
       });
     } else {
-      setState(() {
-
-      });
+      await errorDialog(context, '${response.error}');
     }
   }
 
   Future<void> newRatingsDisplay() async{
     final SharedPreferences prefs = await SharedPreferences.getInstance();
-    ApiResponse apiResponse = await getNewRatings('${prefs.getString('token')}');
+    ApiResponse response = await getNewRatings('${prefs.getString('token')}');
 
-    if(apiResponse.error == null){
+    if(response.error == null){
       setState(() {
-        newreviews = apiResponse.data as List<dynamic>;
+        newreviews = response.data as List<dynamic>;
         hasReviews = newreviews.isNotEmpty;
       });
     } else {
       setState(() {
         isLoading = false;
       });
+      await errorDialog(context, '${response.error}');
     }
   }
 

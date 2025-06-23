@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:capstone/api_response.dart';
 import 'package:capstone/brandnew/dialogs.dart';
 import 'package:capstone/connect/laravel.dart';
+import 'package:capstone/model/ShopInfo.dart';
 import 'package:capstone/services/servicesadd.dart';
 import 'package:capstone/styles/mainColorStyle.dart';
 import 'package:flutter/cupertino.dart';
@@ -24,9 +25,7 @@ class NewShopInformationScreen extends StatefulWidget {
 
 class _NewShopInformationScreenState extends State<NewShopInformationScreen> {
   List<dynamic> shopinfo = []; Map shop = {}; bool isLoading = true; late Color statColor;
-  String days = '';
-  String? usertype;
-  String? access;
+  String days = ''; String? usertype; String? access;
 
   void getUser() async{
     final SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -47,6 +46,7 @@ class _NewShopInformationScreenState extends State<NewShopInformationScreen> {
         isLoading = false;
       });
     }else{
+      await errorDialog(context, '${response.error}');
     }
   }
 
@@ -59,6 +59,7 @@ class _NewShopInformationScreenState extends State<NewShopInformationScreen> {
 
   @override
   Widget build(BuildContext context) {
+
     switch(shop['ShopStatus']){
       case 'open':
        statColor = Colors.green;
@@ -177,10 +178,13 @@ class _NewShopInformationScreenState extends State<NewShopInformationScreen> {
                   ),
                   onPressed: usertype == 'owner'
                       ?()async{
+                    ShopInfo info = ShopInfo(
+                        image: '${shop['ShopImage']}', name: '${shop['ShopName']}', status: '${shop['ShopStatus']}',
+                        address: '${shop['ShopAddress']}', workDay: '${shop['WorkDay']}',workHour: '${shop['WorkHour']}',
+                        maxLoad: '${shop['MaxLoad']}');
+
                     final response = await Navigator.push(context, MaterialPageRoute(builder: (context) =>
-                        EditShopInformationScreen(image: '${shop['ShopImage']}', shopName: '${shop['ShopName']}',
-                            shopStat: '${shop['ShopStatus']}', shopAddress: '${shop['ShopAddress']}',
-                            workDay: '${shop['WorkDay']}', workHour: '${shop['WorkHour']}', maxLoad: '${shop['MaxLoad']}' )));
+                        EditShopInformationScreen(info: info)));
 
                     if(response == true){
                       shopInfoDisplay();
@@ -200,10 +204,8 @@ class _NewShopInformationScreenState extends State<NewShopInformationScreen> {
 }
 
 class EditShopInformationScreen extends StatefulWidget {
-  final String image; final String shopName; final String shopStat;
-  final String shopAddress; final String workDay; final String workHour; final String maxLoad;
-  const EditShopInformationScreen({super.key, required this.image, required this.shopName, required this.shopStat,
-    required this.shopAddress, required this.workDay, required this.workHour, required this.maxLoad});
+  final ShopInfo info;
+  const EditShopInformationScreen({super.key, required this.info});
 
   @override
   State<EditShopInformationScreen> createState() => _EditShopInformationScreenState();
@@ -284,9 +286,11 @@ class _EditShopInformationScreenState extends State<EditShopInformationScreen> {
     }else{
       hasPickedImage = _image;
     }
-    ApiResponse response = await editShopInfo(
-        _shopname.text, _shopaddress.text, _businessdays, _businesshours,
-        _maxload.text, _shopstatus, hasPickedImage, '${prefs.getString('token')}');
+    ShopInfo info = ShopInfo(
+        name: _shopname.text, address: _shopaddress.text, workDay: _businessdays,
+        maxLoad: _maxload.text, status: _shopstatus, image: hasPickedImage);
+
+    ApiResponse response = await editShopInfo(info, '${prefs.getString('token')}');
 
     if(response.error == null){
       await successDialog(context, '${response.data}');
@@ -298,13 +302,13 @@ class _EditShopInformationScreenState extends State<EditShopInformationScreen> {
 
   @override
   void initState() {
-    _image = widget.image;
-    _businessdays = widget.workDay;
-    _businesshours = widget.workHour;
-    _shopstatus = widget.shopStat;
-    _shopname.text = widget.shopName;
-    _shopaddress.text = widget.shopAddress;
-    _maxload.text = widget.maxLoad;
+    _image = widget.info.image ?? '';
+    _businessdays = widget.info.workDay ?? '';
+    _businesshours = widget.info.workHour ?? '';
+    _shopstatus = widget.info.status ?? '';
+    _shopname.text = widget.info.name ?? '';
+    _shopaddress.text = widget.info.address ?? '';
+    _maxload.text = widget.info.maxLoad ?? '';
     super.initState();
   }
 
@@ -349,7 +353,7 @@ class _EditShopInformationScreenState extends State<EditShopInformationScreen> {
                                   backgroundColor: ColorStyle.tertiary,
                                   radius: 50,
                                   child: ProfilePicture(
-                                    name: widget.shopName,
+                                    name: widget.info.name ?? '',
                                     radius: 48,
                                     fontsize: 28,
                                     img: _image == '' ? null : '$picaddress/$_image',

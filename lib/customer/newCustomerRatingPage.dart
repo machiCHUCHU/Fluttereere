@@ -187,7 +187,7 @@ class _ViewRatingScreenState extends State<ViewRatingScreen> {
         isLoading = false;
       });
     }else{
-
+      await errorDialog(context, '${response.error}');
     }
   }
 

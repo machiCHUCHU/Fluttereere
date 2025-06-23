@@ -1,6 +1,7 @@
 
 import 'package:capstone/api_response.dart';
 import 'package:capstone/brandnew/dialogs.dart';
+import 'package:capstone/model/MachineInfo.dart';
 import 'package:capstone/services/servicesadd.dart';
 import 'package:capstone/styles/mainColorStyle.dart';
 import 'package:flutter/cupertino.dart';
@@ -17,8 +18,7 @@ class NewServiceTimeScreen extends StatefulWidget {
 
 class _NewServiceTimeScreenState extends State<NewServiceTimeScreen> {
   List<dynamic> operation = []; Map op = {}; bool isLoading = true;
-  String? usertype;
-  String? access;
+  String? usertype; String? access;
 
   void getUser() async{
     final SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -39,6 +39,7 @@ class _NewServiceTimeScreenState extends State<NewServiceTimeScreen> {
         isLoading = false;
       });
     }else{
+      await errorDialog(context, '${response.error}');
     }
   }
 
@@ -131,10 +132,13 @@ class _NewServiceTimeScreenState extends State<NewServiceTimeScreen> {
                           ),
                           onPressed: usertype == 'owner'
                               ? ()async{
+                            MachineInfo info = MachineInfo(
+                              washerQty: '${op['WasherQty']}', dryerQty: '${op['DryerQty']}', washerTime: '${op['WasherTime']}',
+                              dryerTime: '${op['DryerTime']}', foldingTime: '${op['FoldingTime']}', id: '${op['ShopMachineID']}'
+                            );
+                            
                             final response = await Navigator.push(context, MaterialPageRoute(builder: (context)
-                            => EditServiceTimeScreen(washerqty: '${op['WasherQty']}', dryerqty: '${op['DryerQty']}',
-                                washertime: '${op['WasherTime']}', dryertime: '${op['DryerTime']}',
-                                foldtime: '${op['FoldingTime']}', machineid: '${op['ShopMachineID']}',)));
+                            => EditServiceTimeScreen(info: info,)));
 
                             if(response == true){
                               operationDisplay();
@@ -157,9 +161,9 @@ class _NewServiceTimeScreenState extends State<NewServiceTimeScreen> {
 }
 
 class EditServiceTimeScreen extends StatefulWidget {
-  final String washerqty; final String dryerqty; final String washertime; final String dryertime;
-  final String foldtime; final String machineid;
-  const EditServiceTimeScreen({super.key, required this.washerqty, required this.dryerqty, required this.washertime, required this.dryertime, required this.foldtime, required this.machineid});
+  final MachineInfo info;
+  
+  const EditServiceTimeScreen({super.key, required this.info});
 
   @override
   State<EditServiceTimeScreen> createState() => _EditServiceTimeScreenState();
@@ -174,24 +178,26 @@ class _EditServiceTimeScreenState extends State<EditServiceTimeScreen> {
 
   Future<void> updateServiceTime()async{
     final SharedPreferences prefs = await SharedPreferences.getInstance();
-    ApiResponse response = await editServiceTime(_washerQty.text, _washerDuration.text, _dryerQty.text,
-        _dryerDuration.text, _foldDuration.text, widget.machineid,'${prefs.getString('token')}');
+    MachineInfo info = MachineInfo(
+        washerQty: _washerQty.text, washerTime: _washerDuration.text, dryerQty: _dryerQty.text,
+    dryerTime: _dryerDuration.text, foldingTime: _foldDuration.text, id: widget.info.id);
+    ApiResponse response = await editServiceTime(info,'${prefs.getString('token')}');
 
     if(response.error == null){
       await successDialog(context, '${response.data}');
       Navigator.pop(context,true);
     }else{
-
+      await errorDialog(context, '${response.error}');
     }
   }
 
   @override
   void initState() {
-    _washerQty.text = widget.washerqty;
-    _dryerQty.text = widget.dryerqty;
-    _dryerDuration.text = widget.dryertime;
-    _washerDuration.text = widget.washertime;
-    _foldDuration.text = widget.foldtime;
+    _washerQty.text = widget.info.washerQty ?? '';
+    _dryerQty.text = widget.info.dryerQty ?? '';
+    _dryerDuration.text = widget.info.dryerTime ?? '';
+    _washerDuration.text = widget.info.washerTime ?? '';
+    _foldDuration.text = widget.info.foldingTime ?? '';
     super.initState();
   }
   

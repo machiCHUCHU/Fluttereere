@@ -45,12 +45,12 @@ class _NewReviewPageState extends State<NewReviewPage> {
 
 
   Future<void> reviewsDisplay() async{
-    ApiResponse apiResponse = await getRating(selectedRate,token.toString());
+    ApiResponse response = await getRating(selectedRate,token.toString());
 
-    if(apiResponse.error == null){
+    if(response.error == null){
       setState(() {
-        review = apiResponse.data as List<dynamic>;
-        ratings = apiResponse.totalstar as Map;
+        review = response.data as List<dynamic>;
+        ratings = response.totalstar as Map;
         isLoading = false;
         hasData = review.isNotEmpty;
         totalReviews = review.length;
@@ -60,6 +60,7 @@ class _NewReviewPageState extends State<NewReviewPage> {
         isLoading = false;
         hasData = false;
       });
+      await errorDialog(context, '${response.error}');
     }
   }
 
@@ -76,6 +77,7 @@ class _NewReviewPageState extends State<NewReviewPage> {
         Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => const NewLoginScreen()), (route) => false);
       }
     }else{
+      await errorDialog(context, '${response.error}');
     }
   }
 

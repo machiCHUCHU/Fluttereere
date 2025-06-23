@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:capstone/api_response.dart';
 import 'package:capstone/brandnew/dialogs.dart';
 import 'package:capstone/connect/laravel.dart';
+import 'package:capstone/model/CustomerInfo.dart';
 import 'package:capstone/services/services.dart';
 import 'package:capstone/styles/mainColorStyle.dart';
 import 'package:capstone/styles/signupStyle.dart';
@@ -19,13 +20,8 @@ import 'dart:typed_data';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class NewProfileEditScreen extends StatefulWidget {
-  final String id;
-  final String image;
-  final String name;
-  final String sex;
-  final String address;
-  final String contact;
-  const NewProfileEditScreen({super.key, required this.image, required this.name, required this.sex, required this.address, required this.contact, required this.id});
+  final CustomerInfo info;
+  const NewProfileEditScreen({super.key, required this.info});
   
   @override
   State<NewProfileEditScreen> createState() => _NewProfileEditScreenState();
@@ -40,11 +36,11 @@ class _NewProfileEditScreenState extends State<NewProfileEditScreen> {
 
   @override
   void initState() {
-    _image = widget.image;
-    _name = widget.name;
-    _sex = widget.sex;
-    _address = widget.address;
-    _contact = widget.contact;
+    _image = widget.info.image ?? '';
+    _name = widget.info.name ?? '';
+    _sex = widget.info.sex ?? '';
+    _address = widget.info.address ?? '';
+    _contact = widget.info.contact ?? '';
     super.initState();
   }
 
@@ -139,15 +135,17 @@ class _NewProfileEditScreenState extends State<NewProfileEditScreen> {
       hasPickedImage = _image;
     }
 
-    ApiResponse response = await updateCustomerProfile(
-        widget.id, _name, _sex, _address, _contact, hasPickedImage, '${prefs.getString('token')}');
+    CustomerInfo info = CustomerInfo(id: widget.info.id, name: _name, sex: _sex,
+        address: _address, contact: _contact, image: hasPickedImage);
+
+    ApiResponse response = await updateCustomerProfile(info, '${prefs.getString('token')}');
 
     if(!mounted) return;
     Navigator.pop(context);
 
     if (response.error == null) {
       await successDialog(context, '${response.data}');
-      if(_contact != widget.contact){
+      if(_contact != widget.info.contact){
         await reloginDialog(context);
         prefs.clear();
       }else{
@@ -160,7 +158,7 @@ class _NewProfileEditScreenState extends State<NewProfileEditScreen> {
   }
 
   bool isEditable(){
-    if(widget.name != _name || widget.sex != _sex || widget.address != _address || widget.contact != _contact || widget.image != _image){
+    if(widget.info.name != _name || widget.info.sex != _sex || widget.info.address != _address || widget.info.contact != _contact || widget.info.image != _image){
       return true;
     }else{
       return false;

@@ -4,6 +4,8 @@ import 'package:calendar_date_picker2/calendar_date_picker2.dart';
 import 'package:capstone/api_response.dart';
 import 'package:capstone/brandnew/dialogs.dart';
 import 'package:capstone/connect/laravel.dart';
+import 'package:capstone/model/BookingInfo.dart';
+import 'package:capstone/model/WalkinInfo.dart';
 import 'package:capstone/services/services.dart';
 import 'package:capstone/styles/loginStyle.dart';
 import 'package:capstone/styles/mainColorStyle.dart';
@@ -56,6 +58,7 @@ class _ForRegisteredScreenState extends State<ForRegisteredScreen> {
           timeformatted = selectedTime.format(context);
         });
       } else {
+
       }
     });
   }
@@ -85,7 +88,7 @@ class _ForRegisteredScreenState extends State<ForRegisteredScreen> {
         customer = response.data as List<dynamic>;
       });
     }else{
-      errorDialog(context, '${response.error}');
+      await errorDialog(context, '${response.error}');
     }
   }
 
@@ -104,21 +107,18 @@ class _ForRegisteredScreenState extends State<ForRegisteredScreen> {
     });
   }
 
-  // TimeOfDay selectedTime = TimeOfDay.now();
-
   Future<void> registeredAdd() async{
     final SharedPreferences prefs = await SharedPreferences.getInstance();
-    ApiResponse response = await addBookings(
-        _load.text, '$chosenDate $time',
-        customerId.toString(), serviceName.toString(),
-        total.toString(),
-        '${prefs.getString('token')}');
+    BookingInfo info = BookingInfo(
+        customerLoad: _load.text, schedule: '$chosenDate $time', customerId: customerId.toString(),
+        serviceId: serviceName.toString(), loadCost: total.toString());
+    ApiResponse response = await addBookings(info, '${prefs.getString('token')}');
 
     if(response.error == null){
       await successDialog(context, '${response.data}');
       Navigator.popUntil(context, (route) => route.isFirst);
     }else{
-      errorDialog(context, '${response.error}');
+      await errorDialog(context, '${response.error}');
     }
   }
 
@@ -511,45 +511,22 @@ class ForWalkinScreen extends StatefulWidget {
 }
 
 class _ForWalkinScreenState extends State<ForWalkinScreen> {
-  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final TextEditingController _contact = TextEditingController();
   final TextEditingController _load = TextEditingController();
-  String serviceType = '';
-  String? serviceName;
-  String serviceCost = '';
-  String detergent = '';
-  bool hasData = false;
-  bool isLoading = true;
-  int multiplier = 0;
-  double weight = 0;
-  int shopweight = 0;
-  int shopprice = 0;
-  int total = 0;
-
-  List<dynamic> service = [];
-  List<dynamic> inventory = [];
+  String serviceType = ''; String? serviceName; String serviceCost = ''; String detergent = '';
+  bool hasData = false; bool isLoading = true; int multiplier = 0; double weight = 0;
+  int shopweight = 0; int shopprice = 0; int total = 0;
+  List<dynamic> service = []; List<dynamic> inventory = [];
 
   Future<void> walkinAdd() async{
 
-    /*showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (context){
-          return Center(
-            child: LoadingAnimationWidget.staggeredDotsWave(
-              color: Colors.black,
-              size: 50,
-            ),
-          );
-        }
-    );*/
     final SharedPreferences pref = await SharedPreferences.getInstance();
 
-    ApiResponse apiResponse = await addWalkin(
-        _contact.text, _load.text
-        ,
-        serviceName.toString(),total.toString(),'${pref.getString('token')}'
-    );
+    WalkinInfo info = WalkinInfo(
+        contact: _contact.text, walkinLoad: _load.text, serviceId: serviceName.toString(),
+        total: total.toString());
+
+    ApiResponse apiResponse = await addWalkin(info,'${pref.getString('token')}');
 
 
     if(apiResponse.error == null){
@@ -557,7 +534,7 @@ class _ForWalkinScreenState extends State<ForWalkinScreen> {
 
       Navigator.popUntil(context, (route) => route.isFirst);
     } else {
-      errorDialog(context, '${apiResponse.error}');
+      await errorDialog(context, '${apiResponse.error}');
     }
   }
 
@@ -573,7 +550,7 @@ class _ForWalkinScreenState extends State<ForWalkinScreen> {
         isLoading = false;
       });
     }else{
-
+      await errorDialog(context, '${response.error}');
     }
   }
 
@@ -602,85 +579,9 @@ class _ForWalkinScreenState extends State<ForWalkinScreen> {
     }
   }
 
-
-  /*void _bottomModalConfirmation(){
-    showMaterialModalBottomSheet(
-      context: context,
-      shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(
-              top: Radius.circular(25)
-          )
-      ),
-      builder: (context) => SizedBox(
-        height: 300,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8.0),
-          child: Column(
-            children: [
-              const SizedBox(height: 20,),
-              const Text(
-                'Review Information',
-                style: LoginStyle.modalTitle,
-              ),
-              const SizedBox(height: 20,),
-              Expanded(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      RowItem(title: Text('Contact Number', style: InvStyle.modalSubTitle,),
-                          description: Text(_contact.text,style: const TextStyle(fontWeight: FontWeight.bold))),
-                      RowItem(title: Text('Laundry Load', style: InvStyle.modalSubTitle),
-                          description: Text(_load.text, style: const TextStyle(fontWeight: FontWeight.bold))),
-                      RowItem(title: Text('Laundry Service', style: InvStyle.modalSubTitle),
-                          description: Text(serviceName!, style: const TextStyle(fontWeight: FontWeight.bold))),
-                      RowItem(title: Text('Total Cost', style: InvStyle.modalSubTitle),
-                          description: Text('₱$total.00', style: const TextStyle(fontWeight: FontWeight.bold))),
-                    ],
-                  )
-              ),
-              Expanded(child: Align(
-                alignment: Alignment.bottomCenter,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.red,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(5)
-                        ),
-                        fixedSize: Size(150, 20)
-                      ),
-                      onPressed: (){
-                        Navigator.pop(context);
-                      },
-                      child: const Text('Cancel', style: TextStyle(color: Colors.white),),
-                    ),
-                    ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.green,
-                          fixedSize: Size(150, 20),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(5)
-                          )
-                      ),
-                      onPressed: (){
-                        walkinAdd();
-                      },
-                      child: const Text('Proceed', style: TextStyle(color: Colors.white),),
-                    ),
-                  ],
-                ),
-              ))
-            ],
-          ),
-        ),
-      ),
-    );
-  }*/
-
   @override
   Widget build(BuildContext context) {
+
     if(isLoading){
       return Scaffold(
           appBar: AppBar(
@@ -917,11 +818,4 @@ class _ForWalkinScreenState extends State<ForWalkinScreen> {
       )
     );
   }
-}
-
-class Customer {
-  final String name;
-  final String address;
-
-  Customer({required this.name, required this.address});
 }

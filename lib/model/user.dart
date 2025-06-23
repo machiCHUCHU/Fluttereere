@@ -37,17 +37,3 @@ class User {
     );
   }
 }
-
-class Test{
-  int? testid;
-
-  Test({
-    this.testid
-});
-
-  factory Test.fromJson(Map<String, dynamic> json){
-    return Test(
-      testid: json['sfsdf']
-    );
-  }
-}

@@ -211,12 +211,8 @@ class ServiceListScreen extends StatefulWidget {
 }
 
 class _ServiceListScreenState extends State<ServiceListScreen> {
-  List<DateTime?> _pickDate1 = [];
-  List<DateTime?> _pickDate2 = [];
-  String dateRange1 = '';
-  String dateRange2 = '';
-  String page = '';
-  bool isBook = true; bool hasData = false; bool isloading = true;
+  List<DateTime?> _pickDate1 = []; List<DateTime?> _pickDate2 = []; String dateRange1 = ''; String dateRange2 = '';
+  String page = ''; bool isBook = true; bool hasData = false; bool isloading = true;
 
   @override
   void initState() {
@@ -320,7 +316,6 @@ class _ServiceListScreenState extends State<ServiceListScreen> {
                 onPressed: () async {
                   await datepick2();
                   setState(() {
-
                     dateRange2 = dateRange2;
                   });
                 },
@@ -415,9 +410,9 @@ class _ServiceListScreenState extends State<ServiceListScreen> {
         isloading = false;
       });
     }else{
+      await errorDialog(context, '${response.error}');
     }
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -435,15 +430,6 @@ class _ServiceListScreenState extends State<ServiceListScreen> {
           },
           icon: const Icon(CupertinoIcons.chevron_left,color: Colors.white,),
         ),
-        /*actions: [
-          IconButton(
-              onPressed: (){
-                filter();
-              },
-              icon: const Icon(Icons.filter_alt_sharp,color: Colors.white,),
-            tooltip: 'Filter',
-          )
-        ],*/
       ),
       body: isloading
           ? loading()

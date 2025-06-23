@@ -31,7 +31,7 @@ class _NewForgotPasswordScreenState extends State<NewForgotPasswordScreen> {
     }
   }
 
-  Future<void> otpDisplay() async{/*widget.contact*/
+  Future<void> otpDisplay() async{
     await otpVerification(_contact.text);
   }
 

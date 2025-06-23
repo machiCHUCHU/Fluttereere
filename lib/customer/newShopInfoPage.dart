@@ -3,7 +3,6 @@ import 'package:capstone/api_response.dart';
 import 'package:capstone/brandnew/dialogs.dart';
 import 'package:capstone/connect/laravel.dart';
 import 'package:capstone/customer/NewServiceBookingPage.dart';
-import 'package:capstone/services/services.dart';
 import 'package:capstone/styles/mainColorStyle.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -12,6 +11,7 @@ import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:persistent_bottom_nav_bar_v2/persistent_bottom_nav_bar_v2.dart';
 import 'package:row_item/row_item.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:capstone/services/services.dart';
 
 class NewShopInfoScreen extends StatefulWidget {
   final String shopId;
@@ -55,6 +55,7 @@ class _NewShopInfoScreenState extends State<NewShopInfoScreen> {
         hasRating = ratings.isNotEmpty;
       });
     }else{
+      await errorDialog(context, '${response.error}');
     }
   }
 

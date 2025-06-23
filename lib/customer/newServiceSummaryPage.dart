@@ -35,6 +35,7 @@ class _NewServiceSummaryScreenState extends State<NewServiceSummaryScreen> {
 
       });
     }else{
+      await errorDialog(context, '${response.error}');
     }
   }
 
@@ -48,7 +49,7 @@ class _NewServiceSummaryScreenState extends State<NewServiceSummaryScreen> {
         isLoading = false;
       });
     }else{
-
+      await errorDialog(context, '${response.error}');
     }
   }
 

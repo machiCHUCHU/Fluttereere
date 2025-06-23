@@ -31,7 +31,7 @@ class _UserLogScreenState extends State<UserLogScreen> {
         hasData = useraudit.isNotEmpty;
       });
     }else{
-
+      errorDialog(context, '${response.error}');
     }
   }
 

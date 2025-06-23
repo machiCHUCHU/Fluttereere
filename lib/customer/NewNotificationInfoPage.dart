@@ -34,6 +34,7 @@ class _NewNotificationInfoScreenState extends State<NewNotificationInfoScreen> {
         isLoading = false;
       });
     }else{
+      await errorDialog(context, '${response.error}');
     }
   }
 

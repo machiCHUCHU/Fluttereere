@@ -31,6 +31,7 @@ class _NewLaundryStatementScreenState extends State<NewLaundryStatementScreen> {
         isLoading = false;
       });
     }else{
+      await errorDialog(context, '${response.error}');
     }
   }
   @override

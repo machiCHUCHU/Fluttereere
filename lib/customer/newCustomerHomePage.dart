@@ -9,6 +9,7 @@ import 'package:capstone/customer/newCustomerRatingPage.dart';
 import 'package:capstone/customer/newProfileEditPage.dart';
 import 'package:capstone/customer/newServiceSummaryPage.dart';
 import 'package:capstone/customer/newShopInfoPage.dart';
+import 'package:capstone/model/CustomerInfo.dart';
 import 'package:capstone/services/services.dart';
 import 'package:capstone/services/timelineservices.dart';
 import 'package:capstone/styles/mainColorStyle.dart';
@@ -46,7 +47,7 @@ class _NewCustomerHomeScreenState extends State<NewCustomerHomeScreen> {
         shops = response.data as List<dynamic>;
       });
     }else{
-
+      await errorDialog(context, '${response.error}');
     }
   }
 
@@ -161,23 +162,6 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-
-  Future<void> requestShops() async{
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    ApiResponse response = await addRequestShops(_code.text, '${prefs.get('token')}');
-
-    if(response.error == null){
-      setState(() {
-        isloading = false;
-      });
-      await successDialog(context, '${response.data}');
-    }else{
-      setState(() {
-        isloading = false;
-      });
-      await warningDialog(context, '${response.error}');
-    }
-  }
 
 
   @override
@@ -306,7 +290,7 @@ class _TrackScreenState extends State<TrackScreen> {
         hasdata = laundry.isNotEmpty;
       });
     }else{
-
+      await errorDialog(context, '${response.error}');
     }
   }
 
@@ -971,7 +955,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
         hasData1 = notification.isNotEmpty;
       });
     }else{
-
+      await errorDialog(context, '${response.error}');
     }
   }
 
@@ -1151,7 +1135,7 @@ class _AccountScreenState extends State<AccountScreen> {
         isloading = false;
       });
     }else{
-
+      await errorDialog(context, '${response.error}');
     }
   }
 
@@ -1165,7 +1149,7 @@ class _AccountScreenState extends State<AccountScreen> {
         pushReplacementWithoutNavBar(context, MaterialPageRoute(builder: (context) => const NewLoginScreen()));
       }
     } else {
-
+      await errorDialog(context, '${response.error}');
     }
   }
 
@@ -1265,11 +1249,11 @@ class _AccountScreenState extends State<AccountScreen> {
                     fixedSize: Size(MediaQuery.of(context).size.width * .8, 20),
                   ),
                   onPressed: ()async{
+                    CustomerInfo info = CustomerInfo(
+                        image: '${prof['CustomerImage']}', name: '${prof['CustomerName']}', sex: '${prof['CustomerSex']}',
+                                contact: '${prof['CustomerContactNumber']}', id: '${prof['CustomerID']}');
                     final result = await pushWithoutNavBar(context, MaterialPageRoute(builder: (context) =>
-                        NewProfileEditScreen(
-                            image: '${prof['CustomerImage']}', name: '${prof['CustomerName']}',
-                            sex: '${prof['CustomerSex']}', address: '${prof['CustomerAddress']}',
-                            contact: '${prof['CustomerContactNumber']}', id: '${prof['CustomerID']}',)));
+                        NewProfileEditScreen(info: info)));
 
                     if(result == true){
                       myProfile();

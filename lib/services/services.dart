@@ -1,5 +1,13 @@
 import 'dart:convert';
 import 'package:capstone/api_response.dart';
+import 'package:capstone/model/BookingInfo.dart';
+import 'package:capstone/model/CustomerInfo.dart';
+import 'package:capstone/model/Inventory.dart';
+import 'package:capstone/model/LaundryServiceInfo.dart';
+import 'package:capstone/model/MachineInfo.dart';
+import 'package:capstone/model/OwnerInfo.dart';
+import 'package:capstone/model/ShopInfo.dart';
+import 'package:capstone/model/WalkinInfo.dart';
 import 'package:http/http.dart' as http;
 import 'package:capstone/connect/laravel.dart';
 import 'package:capstone/model/user.dart';
@@ -27,24 +35,14 @@ Future<ApiResponse> register(String name, String sex, String address,
         }
     );
 
-    switch(response.statusCode){
-      case 200:
-        apiResponse.data = jsonDecode(response.body)['response'];
-        break;
-      case 422:
-        final errors = jsonDecode(response.body)['message'];
-        apiResponse.error = errors;
-        break;
-      case 403:
-        apiResponse.error = jsonDecode(response.body)['message'];
-        break;
-      default:
-        apiResponse.error = jsonDecode(response.body)['message'];
-        break;
+    if(response.statusCode == 200){
+      apiResponse.data = jsonDecode(response.body)['response'];
+    }else{
+      apiResponse.error = jsonDecode(response.body)['message'];
     }
 
   } catch(e){
-    apiResponse.error = "$e";
+    apiResponse.error = "Something went wrong";
   }
 
   return apiResponse;
@@ -65,25 +63,14 @@ Future<ApiResponse> login(String contact, String password) async {
         }
     );
 
-    switch(response.statusCode){
-      case 200:
-        apiResponse.data = User.fromJson(jsonDecode(response.body));
-        break;
-      case 422:
-        final errors = jsonDecode(response.body)['message'];
-        apiResponse.error = errors;
-        break;
-      case 403:
-        final errors = jsonDecode(response.body)['message'];
-        apiResponse.error = errors;
-        break;
-      default:
-        apiResponse.error = jsonDecode(response.body)['message'];
-        break;
+    if(response.statusCode == 200){
+      apiResponse.data = User.fromJson(jsonDecode(response.body));
+    }else{
+      apiResponse.error = jsonDecode(response.body)['message'];
     }
 
   } catch(e){
-    apiResponse.error = '$e';
+    apiResponse.error = 'Something went wrong';
   }
 
   return apiResponse;
@@ -100,25 +87,14 @@ Future<ApiResponse> logout(String token) async{
       }
     );
 
-    switch(response.statusCode){
-      case 200:
-        apiResponse.data = jsonDecode(response.body)['message'];
-        break;
-      case 422:
-        final errors = jsonDecode(response.body)['message'];
-        apiResponse.error = errors;
-        break;
-      case 403:
-        final errors = jsonDecode(response.body)['message'];
-        apiResponse.error = errors;
-        break;
-      default:
-        apiResponse.error = jsonDecode(response.body)['message'];
-        break;
+    if(response.statusCode == 200){
+      apiResponse.data = jsonDecode(response.body)['response'];
+    }else{
+      apiResponse.error = jsonDecode(response.body)['message'];
     }
 
   } catch(e){
-    apiResponse.error = '$e';
+    apiResponse.error = 'Something went wrong';
   }
 
   return apiResponse;
@@ -140,36 +116,21 @@ Future<ApiResponse> changePassword(String contact, String password) async{
       }
     );
 
-    switch(response.statusCode){
-      case 200:
-        apiResponse.data = jsonDecode(response.body)['message'];
-        break;
-      case 422:
-        final errors = jsonDecode(response.body)['message'];
-        apiResponse.error = errors;
-        break;
-      case 403:
-        final errors = jsonDecode(response.body)['message'];
-        apiResponse.error = errors;
-        break;
-      default:
-        apiResponse.error = jsonDecode(response.body)['message'];
-        break;
+    if(response.statusCode == 200){
+      apiResponse.data = jsonDecode(response.body)['response'];
+    }else{
+      apiResponse.error = jsonDecode(response.body)['message'];
     }
 
   } catch(e){
-    apiResponse.error = '$e';
+    apiResponse.error = 'Something went wrong';
   }
 
   return apiResponse;
 
 }
 
-Future<ApiResponse> shopInfoRegister(
-    String shopName, String shopAdd, String maxLoad, String washerQty, String washerTime,String dryerQty,
-    String dryerTime, String servicename, String servicetype,String serviceoffer, String loadweight, String loadprice,
-    String loadtype, String description,String workHour, String workDay, String foldTime, String shopimage, String token
-    ) async {
+Future<ApiResponse> shopInfoRegister(ShopInfo shopInfo, LaundryServiceInfo service, MachineInfo machine, String token) async {
 
   ApiResponse apiResponse = ApiResponse();
 
@@ -182,59 +143,46 @@ Future<ApiResponse> shopInfoRegister(
           'Authorization': 'Bearer $token'
         },
         body: {
-          'ShopName':shopName,
-          'ShopImage': shopimage,
-          'ShopAddress':shopAdd,
-          'MaxLoad':maxLoad,
-          'WasherQty':washerQty,
-          'WasherTime':washerTime,
-          'DryerQty':dryerQty,
-          'DryerTime':dryerTime,
-          'WorkHour':workHour,
-          'WorkDay':workDay,
-          'FoldingTime':foldTime,
-          'servicename':servicename,
-          'servicetype':servicetype,
-          'serviceoffer':serviceoffer,
-          'loadweight':loadweight,
-          'loadprice':loadprice,
-          'loadtype':loadtype,
-          'description':description
+          'ShopName':shopInfo.name,
+          'ShopImage': shopInfo.image,
+          'ShopAddress':shopInfo.address,
+          'MaxLoad':shopInfo.maxLoad,
+          'WasherQty':machine.washerQty,
+          'WasherTime':machine.washerTime,
+          'DryerQty':machine.dryerQty,
+          'DryerTime':machine.dryerTime,
+          'WorkHour':shopInfo.workHour,
+          'WorkDay':shopInfo.workDay,
+          'FoldingTime':machine.foldingTime,
+          'servicename':service.name,
+          'servicetype':service.type,
+          'serviceoffer':service.offer,
+          'loadweight':service.loadWeight,
+          'loadprice':service.loadPrice,
+          'loadtype':service.loadType,
+          'description':service.description
         }
     );
 
-    switch(response.statusCode){
-      case 200:
-        apiResponse.data = jsonDecode(response.body)['response'];
-        break;
-      case 422:
-        final errors = jsonDecode(response.body)['message'];
-        apiResponse.error = errors;
-        break;
-      case 403:
-        apiResponse.error = jsonDecode(response.body)['message'];
-        break;
-      default:
-        apiResponse.error = jsonDecode(response.body)['message'];
-        break;
+    if(response.statusCode == 200){
+      apiResponse.data = jsonDecode(response.body)['response'];
+    }else{
+      apiResponse.error = jsonDecode(response.body)['message'];
     }
 
   } catch(e){
-    apiResponse.error = "$e";
+    apiResponse.error = "Something went wrong";
   }
 
   return apiResponse;
 
 }
 
-
-Future<ApiResponse> addInventory(String itemname, String itemqty, String itemvol, String voluse,
-    String category, String isuse, String token) async {
+Future<ApiResponse> addInventory(Inventory inventory, String token) async {
 
   ApiResponse apiResponse = ApiResponse();
 
   try{
-
     final response = await http.post(
         Uri.parse('$ipaddress/shop-inventory/add'),
         headers: {
@@ -242,118 +190,35 @@ Future<ApiResponse> addInventory(String itemname, String itemqty, String itemvol
           'Authorization': 'Bearer $token'
         },
         body: {
-          'ItemName':itemname,
-          'ItemQty':itemqty,
-          'itemVolume':itemvol,
-          'volumeuse':voluse,
-          'category': category,
-          'isuse': isuse
+          'ItemName':inventory.itemName,
+          'ItemQty':inventory.itemQty,
+          'itemVolume':inventory.itemVolume,
+          'volumeuse':inventory.volummeUse,
+          'category': inventory.category,
+          'isuse': inventory.isUse
         }
     );
 
-    switch(response.statusCode){
-      case 200:
-        apiResponse.data = jsonDecode(response.body)['response'];
-        break;
-      case 422:
-        final errors = jsonDecode(response.body)['message'];
-        apiResponse.error = errors;
-        break;
-      case 403:
-        apiResponse.error = jsonDecode(response.body)['message'];
-        break;
-      default:
-        apiResponse.error = jsonDecode(response.body)['message'];
-        break;
+
+
+    if(response.statusCode == 200){
+      apiResponse.data = jsonDecode(response.body)['response'];
+    }else{
+      apiResponse.error = jsonDecode(response.body)['message'];
     }
 
   } catch(e){
-    apiResponse.error = "$e";
+    apiResponse.error = "Something went wrong";
   }
 
   return apiResponse;
 
-}
-
-//checking
-Future<ApiResponse> getAddedShop(String token) async{
-  ApiResponse apiResponse = ApiResponse();
-
-  try {
-
-    final response = await http.get(
-        Uri.parse('$ipaddress/shop-added-customer'),
-        headers: {
-          'Accept': 'application/json',
-          'Authorization': 'Bearer $token'
-        }
-    );
-
-    switch(response.statusCode){
-      case 200:
-        apiResponse.data = jsonDecode(response.body)['addedshop'];
-        break;
-      case 422:
-        final errors = jsonDecode(response.body)['message'];
-        apiResponse.error = errors;
-        break;
-      case 403:
-        apiResponse.error = jsonDecode(response.body)['message'];
-        break;
-      default:
-        apiResponse.error = jsonDecode(response.body)['message'];
-        break;
-
-    }
-
-  } catch(e){
-    apiResponse.error = '$e';
-  }
-
-  return apiResponse;
-}
-
-Future<ApiResponse> updateAddedShop(String token,String id, String status) async{
-  ApiResponse apiResponse = ApiResponse();
-
-  try{
-    final response = await http.put(Uri.parse('$ipaddress/shop-added-customer/update/$id'),
-      headers: {
-      'Accept': 'application/json',
-      'Authorization': 'Bearer $token'
-      },
-      body: {
-      'stat':status
-      }
-    );
-
-    switch(response.statusCode){
-      case 200:
-        apiResponse.data = jsonDecode(response.body)['message'];
-
-        break;
-      case 422:
-        final errors = jsonDecode(response.body)['message'];
-        apiResponse.error = errors;
-        break;
-      case 403:
-        apiResponse.error = jsonDecode(response.body)['message'];
-        break;
-      default:
-        break;
-    }
-  }catch(e){
-    apiResponse.error = '$e';
-  }
-
-  return apiResponse;
 }
 
 Future<ApiResponse> getInventory(String token) async {
   ApiResponse apiResponse = ApiResponse();
 
   try {
-
     final response = await http.get(
         Uri.parse('$ipaddress/shop-inventory'),
         headers: {
@@ -362,27 +227,16 @@ Future<ApiResponse> getInventory(String token) async {
         }
     );
 
-    switch(response.statusCode){
-      case 200:
-        apiResponse.data = jsonDecode(response.body)['inventory'];
-        apiResponse.total = jsonDecode(response.body)['total'];
-        apiResponse.out = jsonDecode(response.body)['out'];
-        break;
-      case 422:
-        final errors = jsonDecode(response.body)['message'];
-        apiResponse.error = errors;
-        break;
-      case 403:
-        apiResponse.error = jsonDecode(response.body)['message'];
-        break;
-      default:
-        apiResponse.error = jsonDecode(response.body)['message'];
-        break;
-
+    if(response.statusCode == 200){
+      apiResponse.data = jsonDecode(response.body)['inventory'];
+      apiResponse.total = jsonDecode(response.body)['total'];
+      apiResponse.out = jsonDecode(response.body)['out'];
+    }else{
+      apiResponse.error = jsonDecode(response.body)['message'];
     }
 
   } catch(e){
-    apiResponse.error = '$e';
+    apiResponse.error = 'Something went wrong';
   }
 
   return apiResponse;
@@ -399,35 +253,25 @@ Future<ApiResponse> deleteInventory(String id, String token) async{
       },
     );
 
-    switch(response.statusCode){
-      case 200:
-        apiResponse.data = jsonDecode(response.body)['response'];
-        break;
-      case 422:
-        final errors = jsonDecode(response.body)['message'];
-        apiResponse.error = errors;
-        break;
-      case 403:
-        apiResponse.error = jsonDecode(response.body)['message'];
-        break;
-      default:
-        apiResponse.error = jsonDecode(response.body);
-        break;
+    if(response.statusCode == 200){
+      apiResponse.data = jsonDecode(response.body)['response'];
+    }else{
+      apiResponse.error = jsonDecode(response.body)['message'];
     }
+
   }catch(e){
-    apiResponse.error = '$e';
+    apiResponse.error = 'Something went wrong';
   }
 
   return apiResponse;
 }
 
-                            /*String number v*/
 Future<ApiResponse> otpVerification(String contact) async{
   ApiResponse apiResponse = ApiResponse();
 
   try {
 
-    final response = await http.post( /* $number*/
+    final response = await http.post(
         Uri.parse('$ipaddress/verification'),
         headers: {
           'Accept': 'application/json',
@@ -442,25 +286,14 @@ Future<ApiResponse> otpVerification(String contact) async{
       session = rawCookie.split(';')[0];
     }
 
-    switch(response.statusCode){
-      case 200:
-        apiResponse.data = jsonDecode(response.body)['message'];
-        break;
-      case 422:
-        final errors = jsonDecode(response.body)['message'];
-        apiResponse.error = errors;
-        break;
-      case 403:
-        apiResponse.error = jsonDecode(response.body)['message'];
-        break;
-      default:
-        apiResponse.error = jsonDecode(response.body)['message'];
-        break;
-
+    if(response.statusCode == 200){
+      apiResponse.data = jsonDecode(response.body)['response'];
+    }else{
+      apiResponse.error = jsonDecode(response.body)['message'];
     }
 
   } catch(e){
-    apiResponse.error = '$e';
+    apiResponse.error = 'Something went wrong';
   }
 
   return apiResponse;
@@ -471,7 +304,7 @@ Future<ApiResponse> otpCheck(String otpinput) async{
 
   try {
 
-    final response = await http.post( /* $number*/
+    final response = await http.post(
         Uri.parse('$ipaddress/verification/otp'),
         headers: {
           'Accept': 'application/json',
@@ -482,68 +315,46 @@ Future<ApiResponse> otpCheck(String otpinput) async{
         }
     );
 
-    switch(response.statusCode){
-      case 200:
-        apiResponse.data = jsonDecode(response.body)['message'];
-        break;
-      case 422:
-        final errors = jsonDecode(response.body)['message'];
-        apiResponse.error = errors;
-        break;
-      case 403:
-        apiResponse.error = jsonDecode(response.body)['message'];
-        break;
-      default:
-        apiResponse.error = jsonDecode(response.body)['message'];
-        break;
-
+    if(response.statusCode == 200){
+      apiResponse.data = jsonDecode(response.body)['response'];
+    }else{
+      apiResponse.error = jsonDecode(response.body)['message'];
     }
 
   } catch(e){
-    apiResponse.error = '$e';
+    apiResponse.error = 'Something went wrong';
   }
 
   return apiResponse;
 }
 
-Future<ApiResponse> updateInventory(String id, String itemname, String itemqty,
-    String itemvol, String voluse, String token, String category, String isuse) async{
+Future<ApiResponse> updateInventory(Inventory inv, String token) async{
   ApiResponse apiResponse = ApiResponse();
 
   try{
-    final response = await http.put(Uri.parse('$ipaddress/shop-inventory/update/$id'),
+    final response = await http.put(Uri.parse('$ipaddress/shop-inventory/update/${inv.id}'),
       headers: {
         'Accept': 'application/json',
         'Authorization': 'Bearer $token'
       },
       body: {
-        'ItemName':itemname,
-        'ItemQty':itemqty,
-        'itemVolume':itemvol,
-        'volumeuse': voluse,
-        'category': category,
-        'isuse': isuse
+        'ItemName':inv.itemName,
+        'ItemQty':inv.itemQty,
+        'itemVolume':inv.itemVolume,
+        'volumeuse': inv.volummeUse,
+        'category': inv.category,
+        'isuse': inv.isUse
       }
     );
 
-    switch(response.statusCode){
-      case 200:
-        apiResponse.data = jsonDecode(response.body)['response'];
-        break;
-      case 422:
-        final errors = jsonDecode(response.body)['message'];
-        apiResponse.error = errors;
-        break;
-      case 403:
-        apiResponse.error = jsonDecode(response.body)['message'];
-        break;
-      default:
-        final errors = jsonDecode(response.body)['message'];
-        apiResponse.error = errors;
-        break;
+    if(response.statusCode == 200){
+      apiResponse.data = jsonDecode(response.body)['response'];
+    }else{
+      apiResponse.error = jsonDecode(response.body)['message'];
     }
+
   }catch(e){
-    apiResponse.error = '$e';
+    apiResponse.error = 'Something went wrong';
   }
 
   return apiResponse;
@@ -560,135 +371,14 @@ Future<ApiResponse> matchShop(String token) async{
         },
     );
 
-    switch(response.statusCode){
-      case 200:
-        apiResponse.data = jsonDecode(response.body)['response'];
-        break;
-      case 422:
-        final errors = jsonDecode(response.body)['message'];
-        apiResponse.error = errors;
-        break;
-      case 403:
-        apiResponse.error = jsonDecode(response.body)['message'];
-        break;
-      default:
-        final errors = jsonDecode(response.body)['message'];
-        apiResponse.error = errors;
-        break;
+    if(response.statusCode == 200){
+      apiResponse.data = jsonDecode(response.body)['response'];
+    }else{
+      apiResponse.error = jsonDecode(response.body)['message'];
     }
+
   }catch(e){
-    apiResponse.error = '$e';
-  }
-
-  return apiResponse;
-}
-
-Future<ApiResponse> getShopProfile(String id) async{
-  ApiResponse apiResponse = ApiResponse();
-
-  try {
-
-    final response = await http.get(
-        Uri.parse('$ipaddress/profile/$id'),
-        headers: {
-          'Accept': 'application/json',
-        }
-    );
-
-    switch(response.statusCode){
-      case 200:
-        apiResponse.data = jsonDecode(response.body)['shop'];
-        break;
-      case 422:
-        final errors = jsonDecode(response.body)['message'];
-        apiResponse.error = errors;
-        break;
-      case 403:
-        apiResponse.error = jsonDecode(response.body)['message'];
-        break;
-      default:
-        apiResponse.error = jsonDecode(response.body)['message'];
-        break;
-
-    }
-
-  } catch(e){
-    apiResponse.error = '$e';
-  }
-
-  return apiResponse;
-}
-
-Future<ApiResponse> getUserProfile(String id) async{
-  ApiResponse apiResponse = ApiResponse();
-
-  try {
-
-    final response = await http.get(
-        Uri.parse('$ipaddress/profile/$id'),
-        headers: {
-          'Accept': 'application/json',
-        }
-    );
-
-    switch(response.statusCode){
-      case 200:
-        apiResponse.data = jsonDecode(response.body)['user'];
-        break;
-      case 422:
-        final errors = jsonDecode(response.body)['message'];
-        apiResponse.error = errors;
-        break;
-      case 403:
-        apiResponse.error = jsonDecode(response.body)['message'];
-        break;
-      default:
-        apiResponse.error = jsonDecode(response.body)['message'];
-        break;
-
-    }
-
-  } catch(e){
-    apiResponse.error = '$e';
-  }
-
-  return apiResponse;
-}
-
-Future<ApiResponse> updateUserProfile(String id, String name, String add, String contact, String base64image) async{
-  ApiResponse apiResponse = ApiResponse();
-
-  try{
-    final response = await http.put(Uri.parse('$ipaddress/profile/$id/update'),
-        headers: {
-          'Accept': 'application/json'
-        },
-        body: {
-          'name':name,
-          'address':add,
-          'contact':contact,
-          'image': base64image
-        }
-    );
-
-    switch(response.statusCode){
-      case 200:
-        apiResponse.data = jsonDecode(response.body)['response'];
-        break;
-      case 422:
-        final errors = jsonDecode(response.body)['message'];
-        apiResponse.error = errors;
-        break;
-      case 403:
-        apiResponse.error = jsonDecode(response.body)['message'];
-        break;
-      default:
-        final errors = jsonDecode(response.body)['message'];
-        apiResponse.error = errors;
-        break;
-    }
-  }catch(e){
-    apiResponse.error = '$e';
+    apiResponse.error = 'Something went wrong';
   }
 
   return apiResponse;
@@ -710,26 +400,15 @@ Future<ApiResponse> getRating(String index,String token) async{
       }
     );
 
-    switch(response.statusCode){
-      case 200:
-        apiResponse.data = jsonDecode(response.body)['ratings'];
-        apiResponse.totalstar = jsonDecode(response.body)['star_counts'];
-        break;
-      case 422:
-        final errors = jsonDecode(response.body)['message'];
-        apiResponse.error = errors;
-        break;
-      case 403:
-        apiResponse.error = jsonDecode(response.body)['message'];
-        break;
-      default:
-        apiResponse.error = jsonDecode(response.body)['message'];
-        break;
-
+    if(response.statusCode == 200){
+      apiResponse.data = jsonDecode(response.body)['ratings'];
+      apiResponse.totalstar = jsonDecode(response.body)['star_counts'];
+    }else{
+      apiResponse.error = jsonDecode(response.body)['message'];
     }
 
   } catch(e){
-    apiResponse.error = '$e';
+    apiResponse.error = 'Something went wrong';
   }
 
   return apiResponse;
@@ -748,123 +427,14 @@ Future<ApiResponse> getRatingCount(String token) async{
         }
     );
 
-    switch(response.statusCode){
-      case 200:
-        break;
-      case 422:
-        final errors = jsonDecode(response.body)['message'];
-        apiResponse.error = errors;
-        break;
-      case 403:
-        apiResponse.error = jsonDecode(response.body)['message'];
-        break;
-      default:
-        apiResponse.error = jsonDecode(response.body)['message'];
-        break;
-
+    if(response.statusCode == 200){
+      apiResponse.data = jsonDecode(response.body);
+    }else{
+      apiResponse.error = jsonDecode(response.body)['message'];
     }
 
   } catch(e){
-    apiResponse.error = '$e';
-  }
-
-  return apiResponse;
-}
-
-Future<ApiResponse> getWeeklyBookingChart(String token) async{
-  ApiResponse apiResponse = ApiResponse();
-
-  try {
-
-    final response = await http.get(
-        Uri.parse('$ipaddress/booking/weekly'),
-        headers: {
-          'Accept': 'application/json',
-          'Authorization': 'Bearer $token'
-        }
-    );
-
-    switch(response.statusCode){
-      case 200:
-        apiResponse.mon = jsonDecode(response.body)['monday'];
-        apiResponse.tue = jsonDecode(response.body)['tuesday'];
-        apiResponse.wed = jsonDecode(response.body)['wednesday'];
-        apiResponse.thu = jsonDecode(response.body)['thursday'];
-        apiResponse.fri = jsonDecode(response.body)['friday'];
-        apiResponse.sat = jsonDecode(response.body)['saturday'];
-        apiResponse.sun = jsonDecode(response.body)['sunday'];
-        apiResponse.mostday = jsonDecode(response.body)['mostday']['daycount'] ?? 0;
-        apiResponse.status = jsonDecode(response.body)['mostday']['dayname'];
-        apiResponse.totalbooks = jsonDecode(response.body)['total'][0]['totalbooks'];
-        apiResponse.weeklyload = jsonDecode(response.body)['total'][0]['customerload'];
-        break;
-      case 422:
-        final errors = jsonDecode(response.body)['message'];
-        apiResponse.error = errors;
-        break;
-      case 403:
-        apiResponse.error = jsonDecode(response.body)['message'];
-        break;
-      default:
-        apiResponse.error = jsonDecode(response.body)['message'];
-        break;
-
-    }
-
-  } catch(e){
-    apiResponse.error = '$e';
-  }
-
-  return apiResponse;
-}
-
-Future<ApiResponse> getMonthBookingChart(String token) async{
-  ApiResponse apiResponse = ApiResponse();
-
-  try {
-
-    final response = await http.get(
-        Uri.parse('$ipaddress/booking/monthly'),
-        headers: {
-          'Accept': 'application/json',
-          'Authorization': 'Bearer $token'
-        }
-    );
-
-    switch(response.statusCode){
-      case 200:
-        apiResponse.jan = jsonDecode(response.body)['jan'];
-        apiResponse.feb = jsonDecode(response.body)['feb'];
-        apiResponse.mar = jsonDecode(response.body)['mar'];
-        apiResponse.apr = jsonDecode(response.body)['apr'];
-        apiResponse.may = jsonDecode(response.body)['may'];
-        apiResponse.jun = jsonDecode(response.body)['jun'];
-        apiResponse.jul = jsonDecode(response.body)['jul'];
-        apiResponse.aug = jsonDecode(response.body)['aug'];
-        apiResponse.sep = jsonDecode(response.body)['sep'];
-        apiResponse.oct = jsonDecode(response.body)['oct'];
-        apiResponse.nov = jsonDecode(response.body)['nov'];
-        apiResponse.dec = jsonDecode(response.body)['dec'];
-        apiResponse.mostmonth = jsonDecode(response.body)['monthly']['monthcount'];
-        apiResponse.status = jsonDecode(response.body)['monthly']['monthname'];
-        apiResponse.totalbooks = jsonDecode(response.body)['total'][0]['totalbooks'];
-        apiResponse.monthlyload = jsonDecode(response.body)['total'][0]['customerload'];
-        break;
-      case 422:
-        final errors = jsonDecode(response.body)['message'];
-        apiResponse.error = errors;
-        break;
-      case 403:
-        apiResponse.error = jsonDecode(response.body)['message'];
-        break;
-      default:
-        apiResponse.error = jsonDecode(response.body)['message'];
-        break;
-
-    }
-
-  } catch(e){
-    apiResponse.error = '$e';
+    apiResponse.error = 'Something went wrong';
   }
 
   return apiResponse;
@@ -874,7 +444,6 @@ Future<ApiResponse> getWeeklySalesChart(String token) async{
   ApiResponse apiResponse = ApiResponse();
 
   try {
-
     final response = await http.get(
         Uri.parse('$ipaddress/sales/weekly'),
         headers: {
@@ -883,25 +452,14 @@ Future<ApiResponse> getWeeklySalesChart(String token) async{
         }
     );
 
-    switch(response.statusCode){
-      case 200:
-        apiResponse.data = jsonDecode(response.body);
-        break;
-      case 422:
-        final errors = jsonDecode(response.body)['message'];
-        apiResponse.error = errors;
-        break;
-      case 403:
-        apiResponse.error = jsonDecode(response.body)['message'];
-        break;
-      default:
-        apiResponse.error = jsonDecode(response.body)['message'];
-        break;
-
+    if(response.statusCode == 200){
+      apiResponse.data = jsonDecode(response.body);
+    }else{
+      apiResponse.error = jsonDecode(response.body)['message'];
     }
 
   } catch(e){
-    apiResponse.error = '$e';
+    apiResponse.error = 'Something went wrong';
   }
 
   return apiResponse;
@@ -920,39 +478,28 @@ Future<ApiResponse> getMonthlySalesChart(String token) async{
         }
     );
 
-    switch(response.statusCode){
-      case 200:
-        apiResponse.jan = jsonDecode(response.body)['jan'];
-        apiResponse.feb = jsonDecode(response.body)['feb'];
-        apiResponse.mar = jsonDecode(response.body)['mar'];
-        apiResponse.apr = jsonDecode(response.body)['apr'];
-        apiResponse.may = jsonDecode(response.body)['may'];
-        apiResponse.jun = jsonDecode(response.body)['jun'];
-        apiResponse.jul = jsonDecode(response.body)['jul'];
-        apiResponse.aug = jsonDecode(response.body)['aug'];
-        apiResponse.sep = jsonDecode(response.body)['sep'];
-        apiResponse.oct = jsonDecode(response.body)['oct'];
-        apiResponse.nov = jsonDecode(response.body)['nov'];
-        apiResponse.dec = jsonDecode(response.body)['dec'];
-        apiResponse.low = jsonDecode(response.body)['min'];
-        apiResponse.high = jsonDecode(response.body)['high'];
-        apiResponse.total = jsonDecode(response.body)['total'];
-        break;
-      case 422:
-        final errors = jsonDecode(response.body)['message'];
-        apiResponse.error = errors;
-        break;
-      case 403:
-        apiResponse.error = jsonDecode(response.body)['message'];
-        break;
-      default:
-        apiResponse.error = jsonDecode(response.body)['message'];
-        break;
-
+    if(response.statusCode == 200){
+      apiResponse.jan = jsonDecode(response.body)['jan'];
+      apiResponse.feb = jsonDecode(response.body)['feb'];
+      apiResponse.mar = jsonDecode(response.body)['mar'];
+      apiResponse.apr = jsonDecode(response.body)['apr'];
+      apiResponse.may = jsonDecode(response.body)['may'];
+      apiResponse.jun = jsonDecode(response.body)['jun'];
+      apiResponse.jul = jsonDecode(response.body)['jul'];
+      apiResponse.aug = jsonDecode(response.body)['aug'];
+      apiResponse.sep = jsonDecode(response.body)['sep'];
+      apiResponse.oct = jsonDecode(response.body)['oct'];
+      apiResponse.nov = jsonDecode(response.body)['nov'];
+      apiResponse.dec = jsonDecode(response.body)['dec'];
+      apiResponse.low = jsonDecode(response.body)['min'];
+      apiResponse.high = jsonDecode(response.body)['high'];
+      apiResponse.total = jsonDecode(response.body)['total'];
+    }else{
+      apiResponse.error = jsonDecode(response.body)['message'];
     }
 
   } catch(e){
-    apiResponse.error = '$e';
+    apiResponse.error = 'Something went wrong';
   }
 
   return apiResponse;
@@ -971,62 +518,14 @@ Future<ApiResponse> getHome(String token) async{
         }
     );
 
-    switch(response.statusCode){
-      case 200:
-        apiResponse.data = jsonDecode(response.body);
-        break;
-      case 422:
-        final errors = jsonDecode(response.body)['message'];
-        apiResponse.error = errors;
-        break;
-      case 403:
-        apiResponse.error = jsonDecode(response.body)['message'];
-        break;
-      default:
-        apiResponse.error = jsonDecode(response.body)['message'];
-        break;
-
+    if(response.statusCode == 200){
+      apiResponse.data = jsonDecode(response.body);
+    }else{
+      apiResponse.error = jsonDecode(response.body)['message'];
     }
 
   } catch(e){
-    apiResponse.error = '$e';
-  }
-
-  return apiResponse;
-}
-
-Future<ApiResponse> getAppbar(String token) async{
-  ApiResponse apiResponse = ApiResponse();
-
-  try {
-
-    final response = await http.get(
-        Uri.parse('$ipaddress/appbar'),
-        headers: {
-          'Accept': 'application/json',
-          'Authorization': 'Bearer $token'
-        }
-    );
-
-    switch(response.statusCode){
-      case 200:
-        apiResponse.data = jsonDecode(response.body);
-        break;
-      case 422:
-        final errors = jsonDecode(response.body)['message'];
-        apiResponse.error = errors;
-        break;
-      case 403:
-        apiResponse.error = jsonDecode(response.body)['message'];
-        break;
-      default:
-        apiResponse.error = jsonDecode(response.body)['message'];
-        break;
-
-    }
-
-  } catch(e){
-    apiResponse.error = '$e';
+    apiResponse.error = 'Something went wrong';
   }
 
   return apiResponse;
@@ -1036,7 +535,6 @@ Future<ApiResponse> getBookings(String token) async{
   ApiResponse apiResponse = ApiResponse();
 
   try {
-
     final response = await http.get(
         Uri.parse('$ipaddress/bookings'),
         headers: {
@@ -1045,25 +543,14 @@ Future<ApiResponse> getBookings(String token) async{
         }
     );
 
-    switch(response.statusCode){
-      case 200:
-        apiResponse.data = jsonDecode(response.body)['bookings'];
-        break;
-      case 422:
-        final errors = jsonDecode(response.body)['message'];
-        apiResponse.error = errors;
-        break;
-      case 403:
-        apiResponse.error = jsonDecode(response.body)['message'];
-        break;
-      default:
-        apiResponse.error = jsonDecode(response.body)['message'];
-        break;
-
+    if(response.statusCode == 200){
+      apiResponse.data = jsonDecode(response.body)['response'];
+    }else{
+      apiResponse.error = jsonDecode(response.body)['message'];
     }
 
   } catch(e){
-    apiResponse.error = '$e';
+    apiResponse.error = 'Something went wrong';
   }
 
   return apiResponse;
@@ -1080,72 +567,52 @@ Future<ApiResponse> getInfos(String token) async {
           'Authorization': 'Bearer $token'
         }
     );
-    switch (response.statusCode) {
-      case 200:
-        apiResponse.data = jsonDecode(response.body)['info'];
-        apiResponse.data1 = jsonDecode(response.body)['service'];
-        break;
-      case 422:
-        final errors = jsonDecode(response.body)['message'];
-        apiResponse.error = errors;
-        break;
-      case 403:
-        apiResponse.error = jsonDecode(response.body)['message'];
-        break;
-      default:
-        apiResponse.error = jsonDecode(response.body)['message'];
-        break;
+
+    if(response.statusCode == 200){
+      apiResponse.data = jsonDecode(response.body)['info'];
+      apiResponse.data1 = jsonDecode(response.body)['service'];
+    }else{
+      apiResponse.error = jsonDecode(response.body)['message'];
     }
+
   } catch (e) {
-    apiResponse.error = '$e';
+    apiResponse.error = 'Something went wrong';
   }
 
   return apiResponse;
 }
 
-Future<ApiResponse> updateOwnerProfile(String id, String name, String sex, String address,
-    String contact, String image, String token) async{
+Future<ApiResponse> updateOwnerProfile(OwnerInfo info, String token) async{
   ApiResponse apiResponse = ApiResponse();
 
   try{
-    final response = await http.put(Uri.parse('$ipaddress/settings/profile/update/$id'),
+    final response = await http.put(Uri.parse('$ipaddress/settings/profile/update/${info.id}'),
         headers: {
           'Accept': 'application/json',
           'Authorization': 'Bearer $token'
         },
         body: {
-          'name':name,
-          'sex':sex,
-          'address':address,
-          'contact': contact,
-          'image': image
+          'name':info.name,
+          'sex':info.sex,
+          'address':info.address,
+          'contact': info.contact,
+          'image': info.image
         }
     );
 
-    switch(response.statusCode){
-      case 200:
-        apiResponse.data = jsonDecode(response.body)['response'];
-        break;
-      case 422:
-        final errors = jsonDecode(response.body)['message'];
-        apiResponse.error = errors;
-        break;
-      case 403:
-        apiResponse.error = jsonDecode(response.body)['message'];
-        break;
-      default:
-        final errors = jsonDecode(response.body)['message'];
-        apiResponse.error = errors;
-        break;
+    if(response.statusCode == 200){
+      apiResponse.data = jsonDecode(response.body)['response'];
+    }else{
+      apiResponse.error = jsonDecode(response.body)['message'];
     }
   }catch(e){
-    apiResponse.error = '$e';
+    apiResponse.error = 'Something went wrong';
   }
 
   return apiResponse;
 }
 
-Future<ApiResponse> addWalkin(String contact, String load, String service, String total, String token) async{
+Future<ApiResponse> addWalkin(WalkinInfo info, String token) async{
   ApiResponse apiResponse = ApiResponse();
 
   try{
@@ -1157,31 +624,21 @@ Future<ApiResponse> addWalkin(String contact, String load, String service, Strin
           'Authorization': 'Bearer $token'
         },
         body: {
-          'contact': contact,
-          'load':load,
-          'total':total,
-          'service': service,
+          'contact': info.contact,
+          'load':info.walkinLoad,
+          'total':info.total,
+          'service': info.serviceId,
         }
     );
 
-    switch(response.statusCode){
-      case 201:
-        apiResponse.data = jsonDecode(response.body)['message'];
-        break;
-      case 422:
-        final errors = jsonDecode(response.body)['message'];
-        apiResponse.error = errors;
-        break;
-      case 403:
-        apiResponse.error = jsonDecode(response.body)['message'];
-        break;
-      default:
-        apiResponse.error = jsonDecode(response.body)['message'];
-        break;
+    if(response.statusCode == 200){
+      apiResponse.data = jsonDecode(response.body)['response'];
+    }else{
+      apiResponse.error = jsonDecode(response.body)['message'];
     }
 
   } catch(e){
-    apiResponse.error = "$e";
+    apiResponse.error = "Something went wrong";
   }
 
   return apiResponse;
@@ -1200,25 +657,14 @@ Future<ApiResponse> getWalkin(String token) async{
         }
     );
 
-    switch(response.statusCode){
-      case 200:
-        apiResponse.data = jsonDecode(response.body)['walkin'];
-        break;
-      case 422:
-        final errors = jsonDecode(response.body)['message'];
-        apiResponse.error = errors;
-        break;
-      case 403:
-        apiResponse.error = jsonDecode(response.body)['message'];
-        break;
-      default:
-        apiResponse.error = jsonDecode(response.body)['message'];
-        break;
-
+    if(response.statusCode == 200){
+      apiResponse.data = jsonDecode(response.body)['response'];
+    }else{
+      apiResponse.error = jsonDecode(response.body)['message'];
     }
 
   } catch(e){
-    apiResponse.error = '$e';
+    apiResponse.error = 'Something went wrong';
   }
 
   return apiResponse;
@@ -1240,27 +686,14 @@ Future<ApiResponse> getReport(String page, String token) async{
         }
     );
 
-    switch(response.statusCode){
-      case 200:
-        apiResponse.data = jsonDecode(response.body)['data'];
-        // apiResponse.count = jsonDecode(response.body)['servicecount'];
-        // apiResponse.tot = jsonDecode(response.body)['loadcount'];
-        break;
-      case 422:
-        final errors = jsonDecode(response.body)['message'];
-        apiResponse.error = errors;
-        break;
-      case 403:
-        apiResponse.error = jsonDecode(response.body)['message'];
-        break;
-      default:
-        apiResponse.error = jsonDecode(response.body)['message'];
-        break;
-
+    if(response.statusCode == 200){
+      apiResponse.data = jsonDecode(response.body)['response'];
+    }else{
+      apiResponse.error = jsonDecode(response.body)['message'];
     }
 
   } catch(e){
-    apiResponse.error = '$e';
+    apiResponse.error = 'Something went wrong';
   }
 
   return apiResponse;
@@ -1277,30 +710,21 @@ Future<ApiResponse> getCustomers(String token) async{
         'Authorization': 'Bearer $token'
       }
     );
-    switch(response.statusCode){
-      case 200:
-        apiResponse.data = jsonDecode(response.body)['message'];
-        break;
-      case 422:
-        final errors = jsonDecode(response.body)['message'];
-        apiResponse.error = errors;
-        break;
-      case 403:
-        apiResponse.error = jsonDecode(response.body)['message'];
-        break;
-      default:
-        apiResponse.error = jsonDecode(response.body)['message'];
-        break;
 
+    if(response.statusCode == 200){
+      apiResponse.data = jsonDecode(response.body)['response'];
+    }else{
+      apiResponse.error = jsonDecode(response.body)['message'];
     }
+
   }catch(e){
-    apiResponse.error = '$e';
+    apiResponse.error = 'Something went wrong';
   }
 
   return apiResponse;
 }
 
-Future<ApiResponse> addBookings(String load, String sched, String customerId, String serviceId, String loadcost,String token) async{
+Future<ApiResponse> addBookings(BookingInfo info, String token) async{
   ApiResponse apiResponse = ApiResponse();
 
   try{
@@ -1312,32 +736,22 @@ Future<ApiResponse> addBookings(String load, String sched, String customerId, St
           'Authorization': 'Bearer $token'
         },
         body: {
-          'load': load,
-          'sched': sched,
-          'customerId': customerId,
-          'serviceId': serviceId,
-          'loadcost': loadcost
+          'load': info.customerLoad,
+          'sched': info.schedule,
+          'customerId': info.customerId,
+          'serviceId': info.serviceId,
+          'loadcost': info.loadCost
         }
     );
 
-    switch(response.statusCode){
-      case 201:
-        apiResponse.data = jsonDecode(response.body)['message'];
-        break;
-      case 422:
-        final errors = jsonDecode(response.body)['message'];
-        apiResponse.error = errors;
-        break;
-      case 403:
-        apiResponse.error = jsonDecode(response.body)['message'];
-        break;
-      default:
-        apiResponse.error = jsonDecode(response.body)['message'];
-        break;
+    if(response.statusCode == 200){
+      apiResponse.data = jsonDecode(response.body)['response'];
+    }else{
+      apiResponse.error = jsonDecode(response.body)['message'];
     }
 
   } catch(e){
-    apiResponse.error = "$e";
+    apiResponse.error = "Something went wrong";
   }
 
   return apiResponse;
@@ -1358,23 +772,14 @@ Future<ApiResponse> updateWalkin(String stat, String token, String id) async{
       }
     );
 
-    switch(response.statusCode){
-      case 200:
-        apiResponse.data = jsonDecode(response.body)['message'];
-        break;
-      case 422:
-        final errors = jsonDecode(response.body)['message'];
-        apiResponse.error = errors;
-        break;
-      case 403:
-        apiResponse.error = jsonDecode(response.body)['message'];
-        break;
-      default:
-        apiResponse.error = jsonDecode(response.body)['message'];
-        break;
+    if(response.statusCode == 200){
+      apiResponse.data = jsonDecode(response.body)['response'];
+    }else{
+      apiResponse.error = jsonDecode(response.body)['message'];
     }
+
   }catch(e){
-    apiResponse.error = '$e';
+    apiResponse.error = 'Something went wrong';
   }
 
   return apiResponse;
@@ -1397,23 +802,14 @@ Future<ApiResponse> updateBooking(String stat, String token, String id, String f
         }
     );
 
-    switch(response.statusCode){
-      case 200:
-        apiResponse.data = jsonDecode(response.body)['message'];
-        break;
-      case 422:
-        final errors = jsonDecode(response.body)['message'];
-        apiResponse.error = errors;
-        break;
-      case 403:
-        apiResponse.error = jsonDecode(response.body)['message'];
-        break;
-      default:
-        apiResponse.error = jsonDecode(response.body)['message'];
-        break;
+    if(response.statusCode == 200){
+      apiResponse.data = jsonDecode(response.body)['response'];
+    }else{
+      apiResponse.error = jsonDecode(response.body)['message'];
     }
+
   }catch(e){
-    apiResponse.error = '$e';
+    apiResponse.error = 'Something went wrong';
   }
 
   return apiResponse;
@@ -1430,25 +826,16 @@ Future<ApiResponse> getWashing(String token) async{
           'Authorization': 'Bearer $token'
         }
     );
-    switch(response.statusCode){
-      case 200:
-        apiResponse.data = jsonDecode(response.body)['bookings'];
-        apiResponse.data1 = jsonDecode(response.body)['walkin'];
-        break;
-      case 422:
-        final errors = jsonDecode(response.body)['message'];
-        apiResponse.error = errors;
-        break;
-      case 403:
-        apiResponse.error = jsonDecode(response.body)['message'];
-        break;
-      default:
-        apiResponse.error = jsonDecode(response.body)['message'];
-        break;
 
+    if(response.statusCode == 200){
+      apiResponse.data = jsonDecode(response.body)['bookings'];
+      apiResponse.data1 = jsonDecode(response.body)['walkin'];
+    }else{
+      apiResponse.error = jsonDecode(response.body)['message'];
     }
+
   }catch(e){
-    apiResponse.error = '$e';
+    apiResponse.error = 'Something went wrong';
   }
 
   return apiResponse;
@@ -1465,25 +852,15 @@ Future<ApiResponse> getDrying(String token) async{
           'Authorization': 'Bearer $token'
         }
     );
-    switch(response.statusCode){
-      case 200:
-        apiResponse.data = jsonDecode(response.body)['bookings'];
-        apiResponse.data1 = jsonDecode(response.body)['walkin'];
-        break;
-      case 422:
-        final errors = jsonDecode(response.body)['message'];
-        apiResponse.error = errors;
-        break;
-      case 403:
-        apiResponse.error = jsonDecode(response.body)['message'];
-        break;
-      default:
-        apiResponse.error = jsonDecode(response.body)['message'];
-        break;
 
+    if(response.statusCode == 200){
+      apiResponse.data = jsonDecode(response.body)['bookings'];
+      apiResponse.data1 = jsonDecode(response.body)['walkin'];
+    }else{
+      apiResponse.error = jsonDecode(response.body)['message'];
     }
   }catch(e){
-    apiResponse.error = '$e';
+    apiResponse.error = 'Something went wrong';
   }
 
   return apiResponse;
@@ -1500,25 +877,16 @@ Future<ApiResponse> getFolding(String token) async{
           'Authorization': 'Bearer $token'
         }
     );
-    switch(response.statusCode){
-      case 200:
-        apiResponse.data = jsonDecode(response.body)['bookings'];
-        apiResponse.data1 = jsonDecode(response.body)['walkin'];
-        break;
-      case 422:
-        final errors = jsonDecode(response.body)['message'];
-        apiResponse.error = errors;
-        break;
-      case 403:
-        apiResponse.error = jsonDecode(response.body)['message'];
-        break;
-      default:
-        apiResponse.error = jsonDecode(response.body)['message'];
-        break;
 
+    if(response.statusCode == 200){
+      apiResponse.data = jsonDecode(response.body)['bookings'];
+      apiResponse.data1 = jsonDecode(response.body)['walkin'];
+    }else{
+      apiResponse.error = jsonDecode(response.body)['message'];
     }
+
   }catch(e){
-    apiResponse.error = '$e';
+    apiResponse.error = 'Something went wrong';
   }
 
   return apiResponse;
@@ -1535,25 +903,16 @@ Future<ApiResponse> getPickup(String token) async{
           'Authorization': 'Bearer $token'
         }
     );
-    switch(response.statusCode){
-      case 200:
-        apiResponse.data = jsonDecode(response.body)['bookings'];
-        apiResponse.data1 = jsonDecode(response.body)['walkin'];
-        break;
-      case 422:
-        final errors = jsonDecode(response.body)['message'];
-        apiResponse.error = errors;
-        break;
-      case 403:
-        apiResponse.error = jsonDecode(response.body)['message'];
-        break;
-      default:
-        apiResponse.error = jsonDecode(response.body)['message'];
-        break;
 
+    if(response.statusCode == 200){
+      apiResponse.data = jsonDecode(response.body)['bookings'];
+      apiResponse.data1 = jsonDecode(response.body)['walkin'];
+    }else{
+      apiResponse.error = jsonDecode(response.body)['message'];
     }
+
   }catch(e){
-    apiResponse.error = '$e';
+    apiResponse.error = 'Something went wrong';
   }
 
   return apiResponse;
@@ -1570,25 +929,16 @@ Future<ApiResponse> getComplete(String token) async{
           'Authorization': 'Bearer $token'
         }
     );
-    switch(response.statusCode){
-      case 200:
-        apiResponse.data = jsonDecode(response.body)['bookings'];
-        apiResponse.data1 = jsonDecode(response.body)['walkin'];
-        break;
-      case 422:
-        final errors = jsonDecode(response.body)['message'];
-        apiResponse.error = errors;
-        break;
-      case 403:
-        apiResponse.error = jsonDecode(response.body)['message'];
-        break;
-      default:
-        apiResponse.error = jsonDecode(response.body)['message'];
-        break;
 
+    if(response.statusCode == 200){
+      apiResponse.data = jsonDecode(response.body)['bookings'];
+      apiResponse.data1 = jsonDecode(response.body)['walkin'];
+    }else{
+      apiResponse.error = jsonDecode(response.body)['message'];
     }
+
   }catch(e){
-    apiResponse.error = '$e';
+    apiResponse.error = 'Something went wrong';
   }
 
   return apiResponse;
@@ -1609,23 +959,14 @@ Future<ApiResponse> updatePayment(String type, String id, String token) async{
       }
     );
 
-    switch(response.statusCode){
-      case 201:
-        apiResponse.data = jsonDecode(response.body)['message'];
-        break;
-      case 422:
-        final errors = jsonDecode(response.body)['message'];
-        apiResponse.error = errors;
-        break;
-      case 403:
-        apiResponse.error = jsonDecode(response.body)['message'];
-        break;
-      default:
-        apiResponse.error = jsonDecode(response.body)['message'];
-        break;
+    if(response.statusCode == 200){
+      apiResponse.data = jsonDecode(response.body)['response'];
+    }else{
+      apiResponse.error = jsonDecode(response.body)['message'];
     }
+
   }catch(e){
-    apiResponse.error = '$e';
+    apiResponse.error = 'Something went wrong';
   }
 
   return apiResponse;
@@ -1647,30 +988,19 @@ Future<ApiResponse> updateComplete(String type, String id, String paid, String t
         }
     );
 
-    switch(response.statusCode){
-      case 201:
-        apiResponse.data = jsonDecode(response.body)['message'];
-        break;
-      case 422:
-        final errors = jsonDecode(response.body)['message'];
-        apiResponse.error = errors;
-        break;
-      case 403:
-        apiResponse.error = jsonDecode(response.body)['message'];
-        break;
-      default:
-        apiResponse.error = jsonDecode(response.body)['message'];
-        break;
+    if(response.statusCode == 200){
+      apiResponse.data = jsonDecode(response.body)['response'];
+    }else{
+      apiResponse.error = jsonDecode(response.body)['message'];
     }
+
   }catch(e){
-    apiResponse.error = '$e';
+    apiResponse.error = 'Something went wrong';
   }
 
   return apiResponse;
 }
 
-
-/*------------------------------------------------------------------------------------------*/
 Future<ApiResponse> getRequestShops(String token) async{
   ApiResponse apiResponse = ApiResponse();
   
@@ -1683,106 +1013,13 @@ Future<ApiResponse> getRequestShops(String token) async{
       }
     );
 
-    switch(response.statusCode){
-      case 200:
-        apiResponse.data = jsonDecode(response.body)['shop_request'];
-        break;
-      case 422:
-        final errors = jsonDecode(response.body)['message'];
-        apiResponse.error = errors;
-        break;
-      case 403:
-        apiResponse.error = jsonDecode(response.body)['message'];
-        break;
-      default:
-        apiResponse.error = jsonDecode(response.body)['message'];
-        break;
+    if(response.statusCode == 200){
+      apiResponse.data = jsonDecode(response.body)['response'];
+    }else{
+      apiResponse.error = 'Something went wrong';
     }
   }catch(e){
-    apiResponse.error = '$e';
-  }
-
-  return apiResponse;
-}
-
-Future<ApiResponse> addRequestShops(String code, String token) async {
-
-  ApiResponse apiResponse = ApiResponse();
-
-  try{
-
-    final response = await http.post(
-        Uri.parse('$ipaddress/shop-request'),
-        headers: {
-          'Accept': 'application/json',
-          'Authorization': 'Bearer $token'
-        },
-        body: {
-          'code': code
-        }
-    );
-
-    switch(response.statusCode){
-      case 200:
-        apiResponse.data = jsonDecode(response.body)['message'];
-        break;
-      case 422:
-        final errors = jsonDecode(response.body)['message'];
-        apiResponse.error = errors;
-        break;
-      case 403:
-        apiResponse.error = jsonDecode(response.body)['message'];
-        break;
-      default:
-        apiResponse.error = jsonDecode(response.body)['message'];
-        break;
-    }
-
-  } catch(e){
-    apiResponse.error = "$e";
-  }
-
-  return apiResponse;
-
-}
-
-Future<ApiResponse> getRequestShopInfo(String shopId, String token) async{
-  ApiResponse apiResponse = ApiResponse();
-
-  try{
-    final response = await http.post(
-        Uri.parse('$ipaddress/shop/display'),
-        headers: {
-          'Accept': 'application/json',
-          'Authorization': 'Bearer $token'
-        },
-      body: {
-          'shopid': shopId
-      }
-    );
-
-    switch(response.statusCode){
-      case 200:
-        apiResponse.data = jsonDecode(response.body)['shop'];
-        apiResponse.data1 = jsonDecode(response.body)['service'];
-        apiResponse.data2 = jsonDecode(response.body)['ratings'];
-        apiResponse.total = jsonDecode(response.body)['rateSum'];
-        apiResponse.count = jsonDecode(response.body)['rateCount'];
-        apiResponse.message = jsonDecode(response.body)['message'];
-        break;
-      case 422:
-        final errors = jsonDecode(response.body)['message'];
-        apiResponse.error = errors;
-        break;
-      case 403:
-        apiResponse.error = jsonDecode(response.body)['message'];
-        break;
-      default:
-        apiResponse.error = jsonDecode(response.body)['message'];
-        break;
-    }
-  }catch(e){
-    apiResponse.error = '$e';
+    apiResponse.error = 'Something went wrong';
   }
 
   return apiResponse;
@@ -1802,23 +1039,13 @@ Future<ApiResponse> getLaundry(String nav,String token) async{
         }
     );
 
-    switch(response.statusCode){
-      case 200:
-        apiResponse.data = jsonDecode(response.body)['bookings'];
-        break;
-      case 422:
-        final errors = jsonDecode(response.body)['message'];
-        apiResponse.error = errors;
-        break;
-      case 403:
-        apiResponse.error = jsonDecode(response.body)['message'];
-        break;
-      default:
-        apiResponse.error = jsonDecode(response.body)['message'];
-        break;
+    if(response.statusCode == 200){
+      apiResponse.data = jsonDecode(response.body)['response'];
+    }else{
+      apiResponse.error = 'Something went wrong';
     }
   }catch(e){
-    apiResponse.error = '$e';
+    apiResponse.error = 'Something went wrong';
   }
 
   return apiResponse;
@@ -1836,23 +1063,13 @@ Future<ApiResponse> getSummary(String bookId, String token) async{
         },
     );
 
-    switch(response.statusCode){
-      case 200:
-        apiResponse.data = jsonDecode(response.body)['summary'];
-        break;
-      case 422:
-        final errors = jsonDecode(response.body)['message'];
-        apiResponse.error = errors;
-        break;
-      case 403:
-        apiResponse.error = jsonDecode(response.body)['message'];
-        break;
-      default:
-        apiResponse.error = jsonDecode(response.body)['message'];
-        break;
+    if(response.statusCode == 200){
+        apiResponse.data = jsonDecode(response.body)['response'];
+    }else{
+      apiResponse.error = 'Something went wrong';
     }
   }catch(e){
-    apiResponse.error = '$e';
+    apiResponse.error = 'Something went wrong';
   }
 
   return apiResponse;
@@ -1870,23 +1087,14 @@ Future<ApiResponse> cancelService(String bookId,String token) async{
       },
     );
 
-    switch(response.statusCode){
-      case 200:
-        apiResponse.data = jsonDecode(response.body)['message'];
-        break;
-      case 422:
-        final errors = jsonDecode(response.body)['message'];
-        apiResponse.error = errors;
-        break;
-      case 403:
-        apiResponse.error = jsonDecode(response.body)['message'];
-        break;
-      default:
-        apiResponse.error = jsonDecode(response.body)['message'];
-        break;
+    if(response.statusCode == 200){
+      apiResponse.data = jsonDecode(response.body)['response'];
+    }else{
+      apiResponse.error = 'Something went wrong';
     }
+
   }catch(e){
-    apiResponse.error = '$e';
+    apiResponse.error = 'Something went wrong';
   }
 
   return apiResponse;
@@ -1904,23 +1112,13 @@ Future<ApiResponse> completeService(String bookId,String token) async{
       },
     );
 
-    switch(response.statusCode){
-      case 200:
-        apiResponse.data = jsonDecode(response.body)['message'];
-        break;
-      case 422:
-        final errors = jsonDecode(response.body)['message'];
-        apiResponse.error = errors;
-        break;
-      case 403:
-        apiResponse.error = jsonDecode(response.body)['message'];
-        break;
-      default:
-        apiResponse.error = jsonDecode(response.body)['message'];
-        break;
+    if(response.statusCode == 200){
+      apiResponse.data = jsonDecode(response.body)['response'];
+    }else{
+      apiResponse.error = 'Something went wrong';
     }
   }catch(e){
-    apiResponse.error = '$e';
+    apiResponse.error = 'Something went wrong';
   }
 
   return apiResponse;
@@ -1944,23 +1142,13 @@ Future<ApiResponse> submitReview(String rate,String comment, String bookid, Stri
       }
     );
 
-    switch(response.statusCode){
-      case 200:
-        apiResponse.data = jsonDecode(response.body)['message'];
-        break;
-      case 422:
-        final errors = jsonDecode(response.body)['message'];
-        apiResponse.error = errors;
-        break;
-      case 403:
-        apiResponse.error = jsonDecode(response.body)['message'];
-        break;
-      default:
-        apiResponse.error = jsonDecode(response.body)['message'];
-        break;
+    if(response.statusCode == 200){
+      apiResponse.data = jsonDecode(response.body)['response'];
+    }else{
+      apiResponse.error = jsonDecode(response.body)['message'];
     }
   }catch(e){
-    apiResponse.error = '$e';
+    apiResponse.error = 'Something went wrong';
   }
 
   return apiResponse;
@@ -1981,23 +1169,13 @@ Future<ApiResponse> viewReview(String bookid, String token) async{
         }
     );
 
-    switch(response.statusCode){
-      case 200:
-        apiResponse.data = jsonDecode(response.body)['review'];
-        break;
-      case 422:
-        final errors = jsonDecode(response.body)['message'];
-        apiResponse.error = errors;
-        break;
-      case 403:
-        apiResponse.error = jsonDecode(response.body)['message'];
-        break;
-      default:
-        apiResponse.error = jsonDecode(response.body)['message'];
-        break;
+    if(response.statusCode == 200){
+      apiResponse.data = jsonDecode(response.body)['response'];
+    }else{
+      apiResponse.error = 'Something went wrong';
     }
   }catch(e){
-    apiResponse.error = '$e';
+    apiResponse.error = 'Something went wrong';
   }
 
   return apiResponse;
@@ -2016,23 +1194,13 @@ Future<ApiResponse> selectService(String shopId, String token) async{
 
     );
 
-    switch(response.statusCode){
-      case 200:
-        apiResponse.data = jsonDecode(response.body)['service'];
-        break;
-      case 422:
-        final errors = jsonDecode(response.body)['message'];
-        apiResponse.error = errors;
-        break;
-      case 403:
-        apiResponse.error = jsonDecode(response.body)['message'];
-        break;
-      default:
-        apiResponse.error = jsonDecode(response.body)['message'];
-        break;
+    if(response.statusCode == 200){
+      apiResponse.data = jsonDecode(response.body)['service'];
+    }else{
+      apiResponse.data = 'Something went wrong';
     }
   }catch(e){
-    apiResponse.error = '$e';
+    apiResponse.error = 'Something went wrong';
   }
 
   return apiResponse;
@@ -2054,23 +1222,13 @@ Future<ApiResponse> availService(List<Map<String,dynamic>> records,String token)
       })
     );
 
-    switch(response.statusCode){
-      case 200:
-        apiResponse.data = jsonDecode(response.body)['message'];
-        break;
-      case 422:
-        final errors = jsonDecode(response.body)['message'];
-        apiResponse.error = errors;
-        break;
-      case 403:
-        apiResponse.error = jsonDecode(response.body)['message'];
-        break;
-      default:
-        apiResponse.error = jsonDecode(response.body)['message'];
-        break;
+    if(response.statusCode == 200){
+      apiResponse.data = jsonDecode(response.body)['response'];
+    }else{
+      apiResponse.error = jsonDecode(response.body)['message'];
     }
   }catch(e){
-    apiResponse.error = '$e';
+    apiResponse.error = 'Something went wrong';
   }
 
   return apiResponse;
@@ -2088,23 +1246,13 @@ Future<ApiResponse> customerNotif(String token) async{
         },
     );
 
-    switch(response.statusCode){
-      case 200:
-        apiResponse.data = jsonDecode(response.body)['notif'];
-        break;
-      case 422:
-        final errors = jsonDecode(response.body)['message'];
-        apiResponse.error = errors;
-        break;
-      case 403:
-        apiResponse.error = jsonDecode(response.body)['message'];
-        break;
-      default:
-        apiResponse.error = jsonDecode(response.body)['message'];
-        break;
+    if(response.statusCode == 200){
+      apiResponse.data = jsonDecode(response.body)['response'];
+    }else{
+      apiResponse.error = 'Something went wrong';
     }
   }catch(e){
-    apiResponse.error = '$e';
+    apiResponse.error = 'Something went wrong';
   }
 
   return apiResponse;
@@ -2122,23 +1270,13 @@ Future<ApiResponse> customerNotifRead(String notifid,String token) async{
       },
     );
 
-    switch(response.statusCode){
-      case 200:
-        apiResponse.data = jsonDecode(response.body)['message'];
-        break;
-      case 422:
-        final errors = jsonDecode(response.body)['message'];
-        apiResponse.error = errors;
-        break;
-      case 403:
-        apiResponse.error = jsonDecode(response.body)['message'];
-        break;
-      default:
-        apiResponse.error = jsonDecode(response.body)['message'];
-        break;
+    if(response.statusCode == 200){
+      apiResponse.data = jsonDecode(response.body)['response'];
+    }else{
+      apiResponse.error = jsonDecode(response.body)['message'];
     }
   }catch(e){
-    apiResponse.error = '$e';
+    apiResponse.error = 'Something went wrong';
   }
 
   return apiResponse;
@@ -2156,23 +1294,13 @@ Future<ApiResponse> customerProfile(String token) async{
       },
     );
 
-    switch(response.statusCode){
-      case 200:
-        apiResponse.data = jsonDecode(response.body)['customer'];
-        break;
-      case 422:
-        final errors = jsonDecode(response.body)['message'];
-        apiResponse.error = errors;
-        break;
-      case 403:
-        apiResponse.error = jsonDecode(response.body)['message'];
-        break;
-      default:
-        apiResponse.error = jsonDecode(response.body)['message'];
-        break;
+    if(response.statusCode == 200){
+      apiResponse.data = jsonDecode(response.body)['customer'];
+    }else{
+      apiResponse.error = 'Something went wrong';
     }
   }catch(e){
-    apiResponse.error = '$e';
+    apiResponse.error = 'Something went wrong';
   }
 
   return apiResponse;
@@ -2189,23 +1317,13 @@ Future<ApiResponse> rememberToken(String token) async{
       },
     );
 
-    switch(response.statusCode){
-      case 200:
-        apiResponse.data = jsonDecode(response.body)['message'];
-        break;
-      case 422:
-        final errors = jsonDecode(response.body)['message'];
-        apiResponse.error = errors;
-        break;
-      case 403:
-        apiResponse.error = jsonDecode(response.body)['message'];
-        break;
-      default:
-        apiResponse.error = jsonDecode(response.body)['message'];
-        break;
+    if(response.statusCode == 200){
+      apiResponse.data = jsonDecode(response.body)['message'];
+    }else{
+      apiResponse.error = 'Something went wrong';
     }
   }catch(e){
-    apiResponse.error = '$e';
+    apiResponse.error = 'Something went wrong';
   }
 
   return apiResponse;
@@ -2257,83 +1375,37 @@ Future<ApiResponse> updateShop(
         break;
     }
   }catch(e){
-    apiResponse.error = '$e';
+    apiResponse.error = 'Something went wrong';
   }
 
   return apiResponse;
 }
 
-Future<ApiResponse> unfollowShop(String addshopid,String token) async{
+Future<ApiResponse> updateCustomerProfile(CustomerInfo info, String token) async{
   ApiResponse apiResponse = ApiResponse();
 
   try{
-    final response = await http.put(
-      Uri.parse('$ipaddress/shop-request/update/$addshopid'),
-      headers: {
-        'Authorization': 'Bearer $token'
-      },
-    );
-
-    switch(response.statusCode){
-      case 200:
-        apiResponse.data = jsonDecode(response.body)['message'];
-        break;
-      case 422:
-        final errors = jsonDecode(response.body)['message'];
-        apiResponse.error = errors;
-        break;
-      case 403:
-        apiResponse.error = jsonDecode(response.body)['message'];
-        break;
-      default:
-        apiResponse.error = jsonDecode(response.body)['message'];
-        break;
-    }
-  }catch(e){
-    apiResponse.error = '$e';
-  }
-
-  return apiResponse;
-}
-
-Future<ApiResponse> updateCustomerProfile(
-    String id, String name, String sex, String address,
-    String contact, String image, String token) async{
-  ApiResponse apiResponse = ApiResponse();
-
-  try{
-    final response = await http.put(Uri.parse('$ipaddress/customer/profile/update/$id'),
+    final response = await http.put(Uri.parse('$ipaddress/customer/profile/update/${info.id}'),
         headers: {
           'Accept': 'application/json',
           'Authorization': 'Bearer $token'
         },
         body: {
-          'name':name,
-          'sex':sex,
-          'address':address,
-          'contact': contact,
-          'image': image
+          'name':info.name,
+          'sex':info.sex,
+          'address':info.address,
+          'contact': info.contact,
+          'image': info.image
         }
     );
 
-    switch(response.statusCode){
-      case 200:
-        apiResponse.data = jsonDecode(response.body)['message'];
-        break;
-      case 422:
-        final errors = jsonDecode(response.body)['message'];
-        apiResponse.error = errors;
-        break;
-      case 403:
-        apiResponse.error = jsonDecode(response.body)['message'];
-        break;
-      default:
-        final errors = jsonDecode(response.body)['message'];
-        apiResponse.error = errors;
-        break;
+    if(response.statusCode == 200){
+      apiResponse.data = jsonDecode(response.body)['response'];
+    }else{
+      apiResponse.error = jsonDecode(response.body)['message'];
     }
   }catch(e){
-    apiResponse.error = '$e';
+    apiResponse.error = 'Something went wrong';
   }
 
   return apiResponse;
@@ -2351,23 +1423,45 @@ Future<ApiResponse> accessType(String token) async{
       },
     );
 
-    switch(response.statusCode){
-      case 200:
-        apiResponse.data = jsonDecode(response.body)['message'];
-        break;
-      case 422:
-        final errors = jsonDecode(response.body)['message'];
-        apiResponse.error = errors;
-        break;
-      case 403:
-        apiResponse.error = jsonDecode(response.body)['message'];
-        break;
-      default:
-        apiResponse.error = jsonDecode(response.body)['message'];
-        break;
+    if(response.statusCode == 200){
+      apiResponse.data = jsonDecode(response.body)['response'];
+    }else{
+      apiResponse.error = 'Something went wrong';
     }
   }catch(e){
-    apiResponse.error = '$e';
+    apiResponse.error = 'Something went wrong';
+  }
+
+  return apiResponse;
+}
+
+Future<ApiResponse> getRequestShopInfo(String shopId, String token) async{
+  ApiResponse apiResponse = ApiResponse();
+
+  try{
+    final response = await http.post(
+        Uri.parse('$ipaddress/shop/display'),
+        headers: {
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $token'
+        },
+        body: {
+          'shopid': shopId
+        }
+    );
+
+    if(response.statusCode == 200){
+      apiResponse.data = jsonDecode(response.body)['shop'];
+      apiResponse.data1 = jsonDecode(response.body)['service'];
+      apiResponse.data2 = jsonDecode(response.body)['ratings'];
+      apiResponse.total = jsonDecode(response.body)['rateSum'];
+      apiResponse.count = jsonDecode(response.body)['rateCount'];
+      apiResponse.message = jsonDecode(response.body)['message'];
+    }else{
+      apiResponse.error = 'Something went wrong';
+    }
+  }catch(e){
+    apiResponse.error = 'Something went wrong';
   }
 
   return apiResponse;

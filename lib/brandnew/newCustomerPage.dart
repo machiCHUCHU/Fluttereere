@@ -20,8 +20,6 @@ class _NewCustomerScreenState extends State<NewCustomerScreen> {
   String? token;
   bool isLoading = true; String page = '';
 
-
-
   List<dynamic> topCustomers = []; List<dynamic> restCustomers = [];
   List<Color> topColor = [
     const Color(0xFFFFD700), const Color(0xFFC0C0C0),const Color(0xFFCD7F32),
@@ -40,6 +38,7 @@ class _NewCustomerScreenState extends State<NewCustomerScreen> {
         hasData = true;
       });
     }else{
+      await errorDialog(context, '${response.error}');
     }
   }
 
