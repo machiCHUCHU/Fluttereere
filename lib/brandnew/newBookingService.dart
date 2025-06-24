@@ -13,7 +13,6 @@ import 'package:capstone/styles/mainColorStyle.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_profile_picture/flutter_profile_picture.dart';
 import 'package:intl/intl.dart';
-import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 import 'package:row_item/row_item.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -568,12 +567,7 @@ class _ForWalkinScreenState extends State<ForWalkinScreen> {
             preferredSize: const Size.fromHeight(kToolbarHeight),
             child: backAppBar(context, 'Book Service'),
           ),
-          body: Center(
-            child: LoadingAnimationWidget.staggeredDotsWave(
-              color: Colors.black,
-              size: 50,
-            ),
-          )
+          body: loading()
       );
     }
     return Scaffold(

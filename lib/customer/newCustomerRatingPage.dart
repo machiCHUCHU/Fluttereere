@@ -5,7 +5,6 @@ import 'package:capstone/services/services.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
-import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class NewCustomerRatingScreen extends StatefulWidget {
@@ -166,14 +165,6 @@ class _ViewRatingScreenState extends State<ViewRatingScreen> {
   bool hasImage = false;
   bool isLoading = true;
 
-  Center loading(){
-    return Center(
-      child: LoadingAnimationWidget.staggeredDotsWave(
-        color: Colors.black,
-        size: 50,
-      ),
-    );
-  }
 
   Future<void> reviewDisplay() async{
     final SharedPreferences prefs = await SharedPreferences.getInstance();

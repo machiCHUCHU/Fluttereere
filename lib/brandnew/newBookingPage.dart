@@ -8,7 +8,6 @@ import 'package:capstone/styles/mainColorStyle.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_profile_picture/flutter_profile_picture.dart';
-import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 import 'package:row_item/row_item.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -877,12 +876,7 @@ class _NewWashScreenState extends State<NewWashScreen> {
         context: context,
         barrierDismissible: false,
         builder: (context) {
-          return Center(
-            child: LoadingAnimationWidget.staggeredDotsWave(
-              color: Colors.black,
-              size: 50,
-            ),
-          );
+          return loading();
         });
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     ApiResponse response =
@@ -1303,12 +1297,7 @@ class _NewWashScreenState extends State<NewWashScreen> {
                     ),
                   )
               ),
-              body: Center(
-                child: LoadingAnimationWidget.staggeredDotsWave(
-                  color: Colors.black,
-                  size: 50,
-                ),
-              )));
+              body: loading()));
     }
     return DefaultTabController(
       length: 2, // Number of tabs
@@ -1653,12 +1642,7 @@ class _NewDryScreenState extends State<NewDryScreen> {
         context: context,
         barrierDismissible: false,
         builder: (context) {
-          return Center(
-            child: LoadingAnimationWidget.staggeredDotsWave(
-              color: Colors.black,
-              size: 50,
-            ),
-          );
+          return loading();
         });
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     ApiResponse response =
@@ -2073,12 +2057,7 @@ class _NewDryScreenState extends State<NewDryScreen> {
                   ),
                 )
               ),
-              body: Center(
-                child: LoadingAnimationWidget.staggeredDotsWave(
-                  color: Colors.black,
-                  size: 50,
-                ),
-              )));
+              body: loading()));
     }
     return DefaultTabController(
       length: 2, // Number of tabs
@@ -2432,12 +2411,7 @@ class _NewFoldScreenState extends State<NewFoldScreen> {
         context: context,
         barrierDismissible: false,
         builder: (context) {
-          return Center(
-            child: LoadingAnimationWidget.staggeredDotsWave(
-              color: Colors.black,
-              size: 50,
-            ),
-          );
+          return loading();
         });
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     ApiResponse response =
@@ -2812,12 +2786,7 @@ class _NewFoldScreenState extends State<NewFoldScreen> {
                   ),
                 )
               ),
-              body: Center(
-                child: LoadingAnimationWidget.staggeredDotsWave(
-                  color: Colors.black,
-                  size: 50,
-                ),
-              )));
+              body: loading()));
     }
     return DefaultTabController(
       length: 2, // Number of tabs
@@ -3173,12 +3142,7 @@ class _NewPickupScreenState extends State<NewPickupScreen> {
         context: context,
         barrierDismissible: false,
         builder: (context) {
-          return Center(
-            child: LoadingAnimationWidget.staggeredDotsWave(
-              color: Colors.black,
-              size: 50,
-            ),
-          );
+          return loading();
         });
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     ApiResponse response =
@@ -3202,12 +3166,7 @@ class _NewPickupScreenState extends State<NewPickupScreen> {
         context: context,
         barrierDismissible: false,
         builder: (context) {
-          return Center(
-            child: LoadingAnimationWidget.staggeredDotsWave(
-              color: Colors.black,
-              size: 50,
-            ),
-          );
+          return loading();
         });
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     ApiResponse response =
@@ -3721,12 +3680,7 @@ class _NewPickupScreenState extends State<NewPickupScreen> {
                   ),
                 )
               ),
-              body: Center(
-                child: LoadingAnimationWidget.staggeredDotsWave(
-                  color: Colors.black,
-                  size: 50,
-                ),
-              )));
+              body: loading()));
     }
     return DefaultTabController(
       length: 2, // Number of tabs
@@ -4079,12 +4033,7 @@ class _NewCompleteScreenState extends State<NewCompleteScreen> {
         context: context,
         barrierDismissible: false,
         builder: (context) {
-          return Center(
-            child: LoadingAnimationWidget.staggeredDotsWave(
-              color: Colors.black,
-              size: 50,
-            ),
-          );
+          return loading();
         });
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     ApiResponse response =
@@ -4462,12 +4411,7 @@ class _NewCompleteScreenState extends State<NewCompleteScreen> {
                   ),
                 )
               ),
-              body: Center(
-                child: LoadingAnimationWidget.staggeredDotsWave(
-                  color: Colors.black,
-                  size: 50,
-                ),
-              )));
+              body: loading()));
     }
     return DefaultTabController(
       length: 2, // Number of tabs

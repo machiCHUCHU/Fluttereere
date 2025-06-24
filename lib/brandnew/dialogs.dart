@@ -3,7 +3,6 @@ import 'package:capstone/brandnew/newCoOwnerPage.dart';
 import 'package:capstone/brandnew/newLoginPage.dart';
 import 'package:capstone/services/services.dart';
 import 'package:flutter/material.dart';
-import 'package:loading_animation_widget/loading_animation_widget.dart';
 
 Future<void> successDialog(BuildContext context, String title) async {
   await AwesomeDialog(
@@ -198,10 +197,9 @@ Future<void> resendOTPDialog(String contact,BuildContext context) async {
 
 
 Center loading(){
-  return Center(
-    child: LoadingAnimationWidget.staggeredDotsWave(
+  return const Center(
+    child: CircularProgressIndicator(
       color: Colors.black,
-      size: 32,
     ),
   );
 }

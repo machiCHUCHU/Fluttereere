@@ -10,7 +10,6 @@ import 'package:capstone/customer/newCustomerHomePage.dart';
 import 'package:capstone/services/services.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
-import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'styles/mainColorStyle.dart';
 
@@ -125,10 +124,7 @@ class _RedirectScreenState extends State<RedirectScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Image.asset('assets/LMateLogo.png'),
-            LoadingAnimationWidget.staggeredDotsWave(
-              color: Colors.black,
-              size: 20,
-            ),
+            const CircularProgressIndicator(color: Colors.black,),
           ],
         ),
       ) : Container(),
