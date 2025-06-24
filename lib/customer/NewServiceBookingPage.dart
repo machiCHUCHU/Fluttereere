@@ -4,7 +4,6 @@ import 'package:capstone/api_response.dart';
 import 'package:capstone/brandnew/dialogs.dart';
 import 'package:capstone/services/services.dart';
 import 'package:capstone/styles/mainColorStyle.dart';
-import 'package:date_picker_plus/date_picker_plus.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:group_button/group_button.dart';
@@ -27,24 +26,6 @@ class _NewServiceBookingScreenState extends State<NewServiceBookingScreen> {
   DateTime? dateSelected; String schedule = ''; String time = ''; String timeformatted = ''; bool isLoading = true;
   int total = 0; String load = ''; String shopid = ''; int? cusId;
 
-
-
-  Future<void> datePicker() async{
-    final date = await showDatePickerDialog(
-      context: context,
-      minDate: DateTime(2024),
-      maxDate: DateTime(2100),
-      initialDate: pickedDate == '' ? DateTime.now() : dateSelected,
-      currentDate: pickedDate == '' ? DateTime.now() : dateSelected,
-      slidersColor: ColorStyle.tertiary,
-      highlightColor: ColorStyle.tertiary,
-    );
-    setState(() {
-      pickedDate = DateFormat('yyyy-dd-MM').format(date!);
-      dateSelected = DateTime.parse(pickedDate);
-      pickedDateDisp = DateFormat('MM-dd-yyyy').format(date);
-    });
-  }
 
   Future<void> datepick1() async {
     var pickedDates = await showCalendarDatePicker2Dialog(

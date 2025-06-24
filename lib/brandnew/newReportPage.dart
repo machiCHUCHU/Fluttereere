@@ -10,7 +10,7 @@ import 'package:capstone/brandnew/newChartPage.dart';
 import 'package:capstone/brandnew/newReportRatingPage.dart';
 import 'package:capstone/services/services.dart';
 import 'package:capstone/styles/mainColorStyle.dart';
-import 'package:dropdown_button2/dropdown_button2.dart';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -266,129 +266,6 @@ class _ServiceListScreenState extends State<ServiceListScreen> {
       _pickDate2 = pickedDates!;
       dateRange2 = DateFormat('yyyy-MM-dd').format(_pickDate2[0]!);
     });
-  }
-
-  void filter(){
-    AwesomeDialog(
-      context: context,
-      animType: AnimType.topSlide,
-      dialogType: DialogType.noHeader,
-      title: 'Filter',
-      body: StatefulBuilder(
-        builder: (BuildContext context, StateSetter setState) {
-          return Column(
-            children: [
-              OutlinedButton(
-                style: OutlinedButton.styleFrom(
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(5)
-                  ),
-                  side: const BorderSide(color: ColorStyle.tertiary),
-                  fixedSize: Size(MediaQuery.of(context).size.width, 20),
-                ),
-                onPressed: () async {
-                  await datepick1();
-                  setState(() {
-                    dateRange1 = dateRange1;
-                  });
-                },
-                child: Text(
-                  dateRange1 == '' ? 'Start Date (From)' : dateRange1,
-                  style: const TextStyle(color: ColorStyle.tertiary),
-                ),
-              ),
-              OutlinedButton(
-                style: OutlinedButton.styleFrom(
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(5)
-                  ),
-                  side: const BorderSide(color: ColorStyle.tertiary),
-                  fixedSize: Size(MediaQuery.of(context).size.width, 20),
-                ),
-                onPressed: () async {
-                  await datepick2();
-                  setState(() {
-                    dateRange2 = dateRange2;
-                  });
-                },
-                child: Text(
-                  dateRange2 == '' ? 'End Date (To)' : dateRange2,
-                  style: const TextStyle(color: ColorStyle.tertiary),
-                ),
-              ),
-              DropdownButton2(
-                  items: service.map((String serve) => DropdownMenuItem<String>(
-                      value: serve,
-                      child: Center(
-                        child: Text(
-                          serve,
-                          style: const TextStyle(
-                            color: ColorStyle.tertiary,
-                            fontSize: 14
-                          ),
-                        ),
-                      )
-                  )).toList(),
-                value: selectedService,
-                hint: const Text('Select Service',style: TextStyle(color: ColorStyle.tertiary,fontSize: 14),),
-                onChanged: (String? value){
-                    setState((){
-                      selectedService = value;
-                    });
-                },
-                underline: const SizedBox(),
-                buttonStyleData: ButtonStyleData(
-                  width: MediaQuery.of(context).size.width,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(5),
-                    border: Border.all(color: ColorStyle.tertiary),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 5,),
-              DropdownButton2(
-                items: types.map((String type) => DropdownMenuItem<String>(
-                    value: type,
-                    child: Center(
-                      child: Text(
-                        type,
-                        style: const TextStyle(
-                            color: ColorStyle.tertiary,
-                            fontSize: 14
-                        ),
-                      ),
-                    )
-                )).toList(),
-                value: selectedType,
-                hint: const Text('Select Service Type',style: TextStyle(color: ColorStyle.tertiary,fontSize: 14),),
-                onChanged: (String? value){
-                  setState((){
-                    selectedType = value;
-                  });
-                },
-                underline: const SizedBox(),
-                buttonStyleData: ButtonStyleData(
-                  width: MediaQuery.of(context).size.width,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(5),
-                    border: Border.all(color: ColorStyle.tertiary),
-                  ),
-                ),
-              )
-            ],
-          );
-        },
-      ),
-      btnOkOnPress: ()async{
-        await reportDisplay();
-      },
-      btnCancelOnPress: (){
-
-      }
-    ).show();
-
   }
 
   Future<void> reportDisplay() async{

@@ -53,10 +53,10 @@ packages:
     dependency: "direct main"
     description:
       name: calendar_date_picker2
-      sha256: "986955aea43081c8cf70fe01735ccdfe9a7041218b2be53ed92d5d4e639e8a1a"
+      sha256: "7b5f20f2a02768df70b3d1fb181c217ab9f8992f39fd6c3fc2ff95b0885820a2"
       url: "https://pub.dev"
     source: hosted
-    version: "1.1.7"
+    version: "1.1.9"
   change_app_package_name:
     dependency: "direct main"
     description:
@@ -137,14 +137,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.0.8"
-  date_picker_plus:
-    dependency: "direct main"
-    description:
-      name: date_picker_plus
-      sha256: "9b22c94f86c76b20ebe46fa3e54544266400556a8ec9ad5508868ef3180ee513"
-      url: "https://pub.dev"
-    source: hosted
-    version: "4.1.0"
   date_picker_timeline:
     dependency: "direct main"
     description:
@@ -153,14 +145,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.2.6"
-  dropdown_button2:
-    dependency: "direct main"
-    description:
-      name: dropdown_button2
-      sha256: b0fe8d49a030315e9eef6c7ac84ca964250155a6224d491c1365061bc974a9e1
-      url: "https://pub.dev"
-    source: hosted
-    version: "2.3.9"
   easy_stepper:
     dependency: "direct main"
     description:
