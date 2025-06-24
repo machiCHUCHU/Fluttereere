@@ -2,6 +2,7 @@
 import 'package:capstone/api_response.dart';
 import 'package:capstone/brandnew/ConstWidgets.dart';
 import 'package:capstone/brandnew/dialogs.dart';
+import 'package:capstone/model/CalendarInfo.dart';
 import 'package:capstone/services/services.dart';
 import 'package:capstone/styles/mainColorStyle.dart';
 import 'package:fl_chart/fl_chart.dart';
@@ -96,14 +97,13 @@ class _NewChartScreenState extends State<NewChartScreen> {
     }
   }
 
-  List<BarChartGroupData> getWeeklyChart(String monRevenue, String tueRevenue, String wedRevenue,
-      String thuRevenue, String friRevenue, String satRevenue, String sunRevenue) {
+  List<BarChartGroupData> getWeeklyChart(CalendarWeek week) {
     return [
       BarChartGroupData(
           x: 0,
         barRods: [
           BarChartRodData(
-              toY: double.tryParse(monRevenue) ?? 0,
+              toY: double.tryParse('${week.monday}') ?? 0,
               color: Colors.red,
               width: 15
           )
@@ -113,7 +113,7 @@ class _NewChartScreenState extends State<NewChartScreen> {
           x: 1,
           barRods: [
             BarChartRodData(
-                toY: double.tryParse(tueRevenue) ?? 0,
+                toY: double.tryParse('${week.tuesday}') ?? 0,
                 color: Colors.red,
                 width: 15
             )
@@ -123,7 +123,7 @@ class _NewChartScreenState extends State<NewChartScreen> {
           x: 2,
           barRods: [
             BarChartRodData(
-                toY: double.tryParse(wedRevenue) ?? 0,
+                toY: double.tryParse('${week.wednesday}') ?? 0,
                 color: Colors.red,
                 width: 15
             )
@@ -133,7 +133,7 @@ class _NewChartScreenState extends State<NewChartScreen> {
           x: 3,
           barRods: [
             BarChartRodData(
-                toY: double.tryParse(thuRevenue) ?? 0,
+                toY: double.tryParse('${week.thursday}') ?? 0,
                 color: Colors.red,
                 width: 15
             )
@@ -143,7 +143,7 @@ class _NewChartScreenState extends State<NewChartScreen> {
           x: 4,
           barRods: [
             BarChartRodData(
-                toY: double.tryParse(friRevenue) ?? 0,
+                toY: double.tryParse('${week.friday}') ?? 0,
                 color: Colors.red,
                 width: 15
             )
@@ -153,7 +153,7 @@ class _NewChartScreenState extends State<NewChartScreen> {
           x: 5,
           barRods: [
             BarChartRodData(
-                toY: double.tryParse(satRevenue) ?? 0,
+                toY: double.tryParse('${week.saturday}') ?? 0,
                 color: Colors.red,
                 width: 15
             )
@@ -163,7 +163,7 @@ class _NewChartScreenState extends State<NewChartScreen> {
           x: 6,
           barRods: [
             BarChartRodData(
-                toY: double.tryParse(sunRevenue) ?? 0,
+                toY: double.tryParse('${week.sunday}') ?? 0,
                 color: Colors.red,
                 width: 15
             )
@@ -172,15 +172,13 @@ class _NewChartScreenState extends State<NewChartScreen> {
     ];
   }
 
-  List<BarChartGroupData> getMonthlyChart(String janRevenue, String febRevenue, String marRevenue,
-      String aprRevenue, String mayRevenue, String junRevenue, String julRevenue, String augRevenue, String sepRevenue,
-      String octRevenue, String novRevenue, String decRevenue) {
+  List<BarChartGroupData> getMonthlyChart(CalendarMonth month) {
     return [
       BarChartGroupData(
           x: 0,
           barRods: [
             BarChartRodData(
-                toY: double.tryParse(janRevenue) ?? 0,
+                toY: double.tryParse('${month.jan}') ?? 0,
                 color: Colors.red,
                 width: 15
             )
@@ -190,7 +188,7 @@ class _NewChartScreenState extends State<NewChartScreen> {
           x: 1,
           barRods: [
             BarChartRodData(
-                toY: double.tryParse(febRevenue) ?? 0,
+                toY: double.tryParse('${month.feb}') ?? 0,
                 color: Colors.red,
                 width: 15
             )
@@ -200,7 +198,7 @@ class _NewChartScreenState extends State<NewChartScreen> {
           x: 2,
           barRods: [
             BarChartRodData(
-                toY: double.tryParse(marRevenue) ?? 0,
+                toY: double.tryParse('${month.mar}') ?? 0,
                 color: Colors.red,
                 width: 15
             )
@@ -210,7 +208,7 @@ class _NewChartScreenState extends State<NewChartScreen> {
           x: 3,
           barRods: [
             BarChartRodData(
-                toY: double.tryParse(aprRevenue) ?? 0,
+                toY: double.tryParse('${month.apr}') ?? 0,
                 color: Colors.red,
                 width: 15
             )
@@ -220,7 +218,7 @@ class _NewChartScreenState extends State<NewChartScreen> {
           x: 4,
           barRods: [
             BarChartRodData(
-                toY: double.tryParse(mayRevenue) ?? 0,
+                toY: double.tryParse('${month.may}') ?? 0,
                 color: Colors.red,
                 width: 15
             )
@@ -230,7 +228,7 @@ class _NewChartScreenState extends State<NewChartScreen> {
           x: 5,
           barRods: [
             BarChartRodData(
-                toY: double.tryParse(junRevenue) ?? 0,
+                toY: double.tryParse('${month.jun}') ?? 0,
                 color: Colors.red,
                 width: 15
             )
@@ -240,7 +238,7 @@ class _NewChartScreenState extends State<NewChartScreen> {
           x: 6,
           barRods: [
             BarChartRodData(
-                toY: double.tryParse(julRevenue) ?? 0,
+                toY: double.tryParse('${month.jul}') ?? 0,
                 color: Colors.red,
                 width: 15
             )
@@ -250,7 +248,7 @@ class _NewChartScreenState extends State<NewChartScreen> {
           x: 7,
           barRods: [
             BarChartRodData(
-                toY: double.tryParse(augRevenue) ?? 0,
+                toY: double.tryParse('${month.aug}') ?? 0,
                 color: Colors.red,
                 width: 15
             )
@@ -260,7 +258,7 @@ class _NewChartScreenState extends State<NewChartScreen> {
           x: 8,
           barRods: [
             BarChartRodData(
-                toY: double.tryParse(sepRevenue) ?? 0,
+                toY: double.tryParse('${month.sep}') ?? 0,
                 color: Colors.red,
                 width: 15
             )
@@ -270,7 +268,7 @@ class _NewChartScreenState extends State<NewChartScreen> {
           x: 9,
           barRods: [
             BarChartRodData(
-                toY: double.tryParse(octRevenue) ?? 0,
+                toY: double.tryParse('${month.oct}') ?? 0,
                 color: Colors.red,
                 width: 15
             )
@@ -280,7 +278,7 @@ class _NewChartScreenState extends State<NewChartScreen> {
           x: 10,
           barRods: [
             BarChartRodData(
-                toY: double.tryParse(novRevenue) ?? 0,
+                toY: double.tryParse('${month.nov}') ?? 0,
                 color: Colors.red,
                 width: 15
             )
@@ -290,7 +288,7 @@ class _NewChartScreenState extends State<NewChartScreen> {
           x: 11,
           barRods: [
             BarChartRodData(
-                toY: double.tryParse(decRevenue) ?? 0,
+                toY: double.tryParse('${month.dec}') ?? 0,
                 color: Colors.red,
                 width: 15
             )
@@ -326,6 +324,15 @@ class _NewChartScreenState extends State<NewChartScreen> {
 
   @override
   Widget build(BuildContext context) {
+    CalendarWeek week = CalendarWeek(
+        monday: '${bar['monday']}', tuesday: '${bar['tuesday']}', wednesday: '${bar['wednesday']}', thursday: '${bar['thursday']}',
+        friday: '${bar['friday']}', saturday: '${bar['saturday']}', sunday: '${bar['sunday']}');
+
+    CalendarMonth month = CalendarMonth(
+      jan: '${monthlyBar['jan']}', feb: '${monthlyBar['feb']}', mar: '${monthlyBar['mar']}', apr: '${monthlyBar['apr']}',
+      may: '${monthlyBar['may']}', jun: '${monthlyBar['jun']}', jul: '${monthlyBar['jul']}', aug: '${monthlyBar['aug']}',
+      sep: '${monthlyBar['sep']}', oct: '${monthlyBar['oct']}', nov: '${monthlyBar['nov']}', dec: '${monthlyBar['dec']}') ;
+
     return Scaffold(
       appBar: PreferredSize(
         preferredSize: const Size.fromHeight(kToolbarHeight),
@@ -364,9 +371,7 @@ class _NewChartScreenState extends State<NewChartScreen> {
                     child: BarChart(
                       BarChartData(
                         barGroups: getWeeklyChart
-                          ('${bar['monday']}', '${bar['tuesday']}',
-                          '${bar['wednesday']}', '${bar['thursday']}',
-                          '${bar['friday']}', '${bar['saturday']}', '${bar['sunday']}'),
+                          (week),
                         borderData: FlBorderData(show: false),
                         gridData: const FlGridData(show: false),
                         titlesData: FlTitlesData(
@@ -426,11 +431,7 @@ class _NewChartScreenState extends State<NewChartScreen> {
                     height: 200,
                     child: BarChart(
                         BarChartData(
-                            barGroups: getMonthlyChart(
-                                '${monthlyBar['jan']}', '${monthlyBar['feb']}', '${monthlyBar['mar']}',
-                                '${monthlyBar['apr']}', '${monthlyBar['may']}', '${monthlyBar['jun']}',
-                                '${monthlyBar['jul']}', '${monthlyBar['aug']}', '${monthlyBar['sep']}',
-                                '${monthlyBar['oct']}', '${monthlyBar['nov']}', '${monthlyBar['dec']}'),
+                            barGroups: getMonthlyChart(month),
                             borderData: FlBorderData(show: false),
                             gridData: const FlGridData(show: false),
                             titlesData: FlTitlesData(
@@ -505,8 +506,8 @@ class _NewChartScreenState extends State<NewChartScreen> {
                       ),
                       const SizedBox(width: 20),
 
-
-                      Expanded(child: Column(
+                      Expanded(
+                        child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: List.generate(doughnut.length, (index) {
@@ -529,8 +530,6 @@ class _NewChartScreenState extends State<NewChartScreen> {
                   ),
             ),
             const SizedBox(height: 10,),
-
-
           ],
         ),
       ),
@@ -540,10 +539,10 @@ class _NewChartScreenState extends State<NewChartScreen> {
 
 
 class _DoughnutChart {
-  _DoughnutChart(this.x, this.y);
-
   final String x;
   final double y;
+
+  _DoughnutChart(this.x, this.y);
 }
 
 List<Color> donutColors = [

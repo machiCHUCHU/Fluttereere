@@ -17,10 +17,10 @@ class NewCustomerScreen extends StatefulWidget {
 }
 
 class _NewCustomerScreenState extends State<NewCustomerScreen> {
-  String? token;
-  bool isLoading = true; String page = '';
-
+  String? token; bool isLoading = true; String page = '';
+  String? id; String? status; bool isValued = false; bool hasData = false;
   List<dynamic> topCustomers = []; List<dynamic> restCustomers = [];
+
   List<Color> topColor = [
     const Color(0xFFFFD700), const Color(0xFFC0C0C0),const Color(0xFFCD7F32),
     const Color(0xFF4169E1), const Color(0xFF50C878)
@@ -42,14 +42,6 @@ class _NewCustomerScreenState extends State<NewCustomerScreen> {
       await errorDialog(context, '${response.error}');
     }
   }
-
-  String? id;
-  String? status;
-  bool isValued = false;
-  bool hasData = false;
-
-
-
 
   @override
   void initState() {
@@ -168,10 +160,8 @@ class _NewCustomerScreenState extends State<NewCustomerScreen> {
                           }
                       ),
                     ),
-                    const SizedBox(height: 10,),
+                    const SizedBox(height: 25,),
 
-
-                    const SizedBox(height: 15,),
                     ConstrainedBox(
                       constraints: BoxConstraints(
                           maxHeight: MediaQuery.of(context).size.height * .4
