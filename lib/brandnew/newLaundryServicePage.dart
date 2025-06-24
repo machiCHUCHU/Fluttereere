@@ -1,9 +1,9 @@
 import 'package:capstone/api_response.dart';
+import 'package:capstone/brandnew/ConstWidgets.dart';
 import 'package:capstone/brandnew/dialogs.dart';
 import 'package:capstone/model/LaundryServiceInfo.dart';
-import 'package:capstone/services/servicesadd.dart';
+import 'package:capstone/services/services.dart';
 import 'package:capstone/styles/mainColorStyle.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:row_item/row_item.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -37,6 +37,7 @@ class _NewLaundryServiceScreenState extends State<NewLaundryServiceScreen> {
         isLoading = false;
       });
     }else{
+      if(!mounted) return;
       await errorDialog(context, '${response.error}');
     }
   }
@@ -53,15 +54,9 @@ class _NewLaundryServiceScreenState extends State<NewLaundryServiceScreen> {
   Widget build(BuildContext context) {
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Laundry Services'),
-        titleTextStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-        leading: IconButton(
-          onPressed: (){
-            Navigator.pop(context,true);
-          },
-          icon: const Icon(CupertinoIcons.chevron_left,color: Colors.white,),
-        ),
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(kToolbarHeight),
+        child: backAppBar(context, 'Laundry Services'),
       ),
       body: isLoading
           ? loading()
@@ -252,8 +247,11 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
     );
     ApiResponse response = await addLaundryServices(service, '${prefs.getString('token')}');
 
+    if(!mounted) return;
+
     if(response.error == null){
       await successDialog(context, '${response.data}');
+      if(!mounted) return;
       Navigator.pop(context,true);
     }else{
       await warningDialog(context, '${response.error}');
@@ -263,15 +261,9 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Laundry Services'),
-        titleTextStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-        leading: IconButton(
-          onPressed: (){
-            Navigator.pop(context,true);
-          },
-          icon: const Icon(CupertinoIcons.chevron_left,color: Colors.white,),
-        ),
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(kToolbarHeight),
+        child: backAppBar(context, 'Laundry Services'),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(8),
@@ -588,7 +580,7 @@ class EditServiceScreen extends StatefulWidget {
 
 class _EditServiceScreenState extends State<EditServiceScreen> {
   final TextEditingController _servicename = TextEditingController();
-  String _servicetype = ''; String _serviceoffer = ''; String _loadtype = '';
+  String serviceType = ''; String serviceOffer = ''; String loadType = '';
   final TextEditingController _weight = TextEditingController();
   final TextEditingController _price = TextEditingController();
   final TextEditingController _desc = TextEditingController();
@@ -600,48 +592,50 @@ class _EditServiceScreenState extends State<EditServiceScreen> {
   List<String> loadtype = ['Light Load','Heavy Load','Comforter'];
 
   Future<void> editService() async{
-    if(_servicetype == 'Self Service'){
-      _servicetype = 'self';
-    }else if(_servicetype == 'full'){
-      _servicetype = 'full';
+    if(serviceType == 'Self Service'){
+      serviceType = 'self';
+    }else if(serviceType == 'full'){
+      serviceType = 'full';
     }
 
-    switch(_loadtype){
+    switch(loadType){
       case 'Light Load':
-        _loadtype = 'light';
+        loadType = 'light';
         break;
       case 'Heavy Load':
-        _loadtype = 'heavy';
+        loadType = 'heavy';
         break;
       case 'Comforter':
-        _loadtype = 'comforter';
+        loadType = 'comforter';
         break;
     }
-    switch(_serviceoffer){
+    switch(serviceOffer){
       case 'Full Service':
-        _serviceoffer = 'full';
+        serviceOffer = 'full';
         break;
       case 'Wash Only':
-        _serviceoffer = 'wash';
+        serviceOffer = 'wash';
         break;
       case 'Dry Only':
-        _serviceoffer = 'dry';
+        serviceOffer = 'dry';
         break;
       case 'Wash-Dry':
-        _serviceoffer = 'wash-dry';
+        serviceOffer = 'wash-dry';
         break;
     }
 
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     LaundryServiceInfo service = LaundryServiceInfo(
-      name: _servicename.text, loadWeight: _weight.text, type: _serveType.isEmpty ? _servicetype : _serveType,
-      offer: _serveOffer.isEmpty ? _serviceoffer : _serveOffer, loadPrice: _price.text, description: _desc.text,
-      loadType: _loadType.isEmpty ? _loadtype : _loadType, id: widget.service.id
+      name: _servicename.text, loadWeight: _weight.text, type: _serveType.isEmpty ? serviceType : _serveType,
+      offer: _serveOffer.isEmpty ? serviceOffer : _serveOffer, loadPrice: _price.text, description: _desc.text,
+      loadType: _loadType.isEmpty ? loadType : _loadType, id: widget.service.id
     );
     ApiResponse response = await editLaundryServices(service, '${prefs.getString('token')}');
+    if(!mounted) return;
 
     if(response.error == null){
       await successDialog(context, '${response.data}');
+      if(!mounted) return;
       Navigator.pop(context,true);
     }else{
       await warningDialog(context, '${response.error}');
@@ -652,26 +646,20 @@ class _EditServiceScreenState extends State<EditServiceScreen> {
   void initState() {
     _servicename.text = widget.service.name ?? '';
     _weight.text = widget.service.loadWeight ?? '';
-    _servicetype = widget.service.type ?? '';
-    _serviceoffer = widget.service.offer ?? '';
+    serviceType = widget.service.type ?? '';
+    serviceOffer = widget.service.offer ?? '';
     _price.text = widget.service.loadPrice ?? '';
     _desc.text = widget.service.description ?? '';
-    _loadtype = widget.service.loadType ?? '';
+    loadType = widget.service.loadType ?? '';
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Laundry Services'),
-        titleTextStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-        leading: IconButton(
-          onPressed: (){
-            Navigator.pop(context,true);
-          },
-          icon: const Icon(CupertinoIcons.chevron_left,color: Colors.white,),
-        ),
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(kToolbarHeight),
+        child: backAppBar(context, 'Laundry Services'),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(8),
@@ -734,7 +722,7 @@ class _EditServiceScreenState extends State<EditServiceScreen> {
                                     borderRadius: BorderRadius.vertical(bottom: Radius.circular(5))
                                 )
                             ),
-                            value: _serviceoffer,
+                            value: serviceOffer,
                             items: serviceoffer.map((value){
                               return DropdownMenuItem(
                                   value: value,
@@ -788,7 +776,7 @@ class _EditServiceScreenState extends State<EditServiceScreen> {
                                   borderRadius: BorderRadius.vertical(bottom: Radius.circular(5))
                               )
                           ),
-                          value: _servicetype,
+                          value: serviceType,
                           items: servicetype.map((value){
                             return DropdownMenuItem(
                                 value: value,
@@ -908,7 +896,7 @@ class _EditServiceScreenState extends State<EditServiceScreen> {
                         borderRadius: BorderRadius.vertical(bottom: Radius.circular(5))
                     )
                 ),
-                value: _loadtype,
+                value: loadType,
                 items: loadtype.map((value){
                   return DropdownMenuItem(
                       value: value,
@@ -924,7 +912,7 @@ class _EditServiceScreenState extends State<EditServiceScreen> {
                       _loadType = 'heavy';
                       break;
                     default:
-                      _loadtype = 'comforter';
+                      loadType = 'comforter';
                       break;
                   }
                 }

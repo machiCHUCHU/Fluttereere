@@ -22,21 +22,9 @@ class NewShopInfoScreen extends StatefulWidget {
 }
 
 class _NewShopInfoScreenState extends State<NewShopInfoScreen> {
-  List<dynamic> shopInfo = [];
-  List<dynamic> services = [];
-  List<dynamic> ratings = [];
-  int overallRate = 0;
-  int count = 0;
-  Map info = {};
-  bool isLoading = true;
-  bool hasRating = false;
-  Color? status;
-  Color? btnColor;
-  String message = '';
-  String isValued = '';
-  String shopStat = '';
-  String warningDesc = '';
-  String opening = '';
+  List<dynamic> shopInfo = []; List<dynamic> services = []; List<dynamic> ratings = [];int overallRate = 0;
+  int count = 0; Map info = {}; bool isLoading = true; bool hasRating = false; Color? status; Color? btnColor;
+  String message = ''; String isValued = ''; String shopStat = ''; String warningDesc = ''; String opening = '';
 
   Future<void> displayShopInfo() async{
     final SharedPreferences prefs = await SharedPreferences.getInstance();

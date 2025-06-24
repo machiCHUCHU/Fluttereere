@@ -1,11 +1,11 @@
 import 'package:capstone/api_response.dart';
+import 'package:capstone/brandnew/ConstWidgets.dart';
 import 'package:capstone/brandnew/dialogs.dart';
 import 'package:capstone/model/Inventory.dart';
 import 'package:capstone/services/services.dart';
 import 'package:capstone/styles/invStyle.dart';
 import 'package:capstone/styles/mainColorStyle.dart';
 import 'package:capstone/styles/signupStyle.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 import 'package:row_item/row_item.dart';
@@ -20,9 +20,7 @@ class NewInventoryScreen extends StatefulWidget {
 
 class _NewInventoryScreenState extends State<NewInventoryScreen> {
   List<dynamic> inventory = []; bool isLoading = true; String? token; int? total;
-  int? out; bool hasData = false; String? categoryName; bool isDefault = false;
-  String? usertype; String? access;
-  List<String> category = ['Detergent', 'Fabric Conditioner', 'Bleach', 'Fabric Freshener'];
+  int? out; bool hasData = false; String? categoryName; String? usertype; String? access;
 
   void getUser() async{
     final SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -62,17 +60,17 @@ class _NewInventoryScreenState extends State<NewInventoryScreen> {
           return loading();
         }
     );
-    ApiResponse apiResponse = await deleteInventory(itemId, token.toString());
+    ApiResponse response = await deleteInventory(itemId, token.toString());
 
     if(!mounted) return;
 
     Navigator.pop(context);
 
-    if(apiResponse.error == null){
-      successDialog(context, 'Item has been deleted.');
+    if(response.error == null){
+      successDialog(context, '${response.data}');
       inventoryDisplay();
     }else{
-      await errorDialog(context, '${apiResponse.error}');
+      await errorDialog(context, '${response.error}');
     }
   }
 
@@ -168,7 +166,7 @@ class _NewInventoryScreenState extends State<NewInventoryScreen> {
                                 final result = await Navigator.push(context, MaterialPageRoute(builder: (context) => InventoryEditScreen(inv: inv,)));
 
                                 if(result == true){
-                                  if(!mounted) return;
+                                  if(!context.mounted) return;
                                   Navigator.pop(context);
                                   inventoryDisplay();
                                 }
@@ -220,15 +218,9 @@ class _NewInventoryScreenState extends State<NewInventoryScreen> {
   Widget build(BuildContext context) {
     if(isLoading){
       return Scaffold(
-          appBar: AppBar(
-            title: const Text('Inventory'),
-            titleTextStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            leading: IconButton(
-              onPressed: (){
-                Navigator.pop(context);
-              },
-              icon: const Icon(CupertinoIcons.chevron_left,color: Colors.white,),
-            ),
+          appBar: PreferredSize(
+            preferredSize: const Size.fromHeight(kToolbarHeight),
+            child: backAppBar(context, 'Inventory'),
           ),
           body: loading()
       );
@@ -236,15 +228,9 @@ class _NewInventoryScreenState extends State<NewInventoryScreen> {
 
     if(!hasData){
       return Scaffold(
-        appBar: AppBar(
-          title: const Text('Inventory'),
-          titleTextStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-          leading: IconButton(
-            onPressed: (){
-              Navigator.pop(context);
-            },
-            icon: const Icon(CupertinoIcons.chevron_left,color: Colors.white,),
-          ),
+        appBar: PreferredSize(
+          preferredSize: const Size.fromHeight(kToolbarHeight),
+          child: backAppBar(context, 'Inventory'),
         ),
         body: Padding(
           padding: const EdgeInsets.all(8),
@@ -304,15 +290,9 @@ class _NewInventoryScreenState extends State<NewInventoryScreen> {
     }
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Inventory'),
-        titleTextStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-        leading: IconButton(
-          onPressed: (){
-            Navigator.pop(context);
-          },
-          icon: const Icon(CupertinoIcons.chevron_left,color: Colors.white,),
-        ),
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(kToolbarHeight),
+        child: backAppBar(context, 'Inventory'),
       ),
       body: SingleChildScrollView(
           child: Padding(
@@ -355,7 +335,7 @@ class _NewInventoryScreenState extends State<NewInventoryScreen> {
                     itemCount: inventory.length,
                     itemBuilder: (context, index){
                       Map inv = inventory[index] as Map;
-                      bool setuse = inv['IsUse'] == '1';
+                      bool setUse = inv['IsUse'] == '1';
 
                       return Padding(
                         padding: const EdgeInsets.symmetric(vertical: 4),
@@ -400,7 +380,7 @@ class _NewInventoryScreenState extends State<NewInventoryScreen> {
                                               Inventory invent = Inventory(
                                                   id: '${inv['InventoryID']}', itemName: '${inv['ItemName']}', category: '${inv['Category']}',
                                                   itemQty: '${inv['ItemQty']}', itemVolume: '${inv['ItemVolume']}', volummeUse: '${inv['VolumeUse']}',
-                                                  remainingVolume: '${inv['RemainingVolume']}', isUse: setuse ? '1' : '0'
+                                                  remainingVolume: '${inv['RemainingVolume']}', isUse: setUse ? '1' : '0'
                                               );
                                               usertype == 'owner' ? _bottomModal(invent) : access == 'full'
                                                   ? _bottomModal(invent)
@@ -469,10 +449,10 @@ class _InventoryAddScreenState extends State<InventoryAddScreen> {
     super.initState();
   }
 
-  final TextEditingController _itemname = TextEditingController();
-  final TextEditingController _itemqty = TextEditingController();
-  final TextEditingController _itemvolume = TextEditingController();
-  final TextEditingController _itemuse = TextEditingController();
+  final TextEditingController _itemName = TextEditingController();
+  final TextEditingController _itemQty = TextEditingController();
+  final TextEditingController _itemVolume = TextEditingController();
+  final TextEditingController _itemUse = TextEditingController();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
   Future<void> inventoryAdd() async{
@@ -495,9 +475,9 @@ class _InventoryAddScreenState extends State<InventoryAddScreen> {
     }
 
     Inventory inv = Inventory(
-        itemName: _itemname.text, category: categoryName!, isUse: isDefault,
-        itemQty: _itemqty.text, itemVolume: _itemvolume.text,
-        remainingVolume: _itemvolume.text, volummeUse: _itemuse.text);
+        itemName: _itemName.text, category: categoryName!, isUse: isDefault,
+        itemQty: _itemQty.text, itemVolume: _itemVolume.text,
+        remainingVolume: _itemVolume.text, volummeUse: _itemUse.text);
 
     ApiResponse apiResponse = await addInventory(inv, token.toString());
     if(!mounted) return;
@@ -506,6 +486,7 @@ class _InventoryAddScreenState extends State<InventoryAddScreen> {
 
     if(apiResponse.error == null){
       await successDialog(context, 'Item has been added.');
+      if(!mounted) return;
         Navigator.pop(context,true);
     } else {
       await errorDialog(context, '${apiResponse.error}');
@@ -516,15 +497,9 @@ class _InventoryAddScreenState extends State<InventoryAddScreen> {
   Widget build(BuildContext context) {
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Add Item'),
-        titleTextStyle: const TextStyle(fontSize: 18,fontWeight: FontWeight.bold),
-        leading: IconButton(
-          onPressed: (){
-            Navigator.pop(context);
-          },
-          icon: const Icon(CupertinoIcons.chevron_left,color: Colors.white,),
-        ),
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(kToolbarHeight),
+        child: backAppBar(context, 'Add Item'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(8),
@@ -547,7 +522,7 @@ class _InventoryAddScreenState extends State<InventoryAddScreen> {
                     ),
                   ),
                   TextFormField(
-                    controller: _itemname,
+                    controller: _itemName,
                     decoration: InvStyle.emailForm,
                     autovalidateMode: AutovalidateMode.onUserInteraction,
                     validator: (value) {
@@ -572,7 +547,7 @@ class _InventoryAddScreenState extends State<InventoryAddScreen> {
                     ),
                   ),
                   TextFormField(
-                    controller: _itemqty,
+                    controller: _itemQty,
                     keyboardType: TextInputType.number,
                     decoration: InvStyle.emailForm,
                     autovalidateMode: AutovalidateMode.onUserInteraction,
@@ -633,7 +608,7 @@ class _InventoryAddScreenState extends State<InventoryAddScreen> {
                     ),
                   ),
                   TextFormField(
-                    controller: _itemvolume,
+                    controller: _itemVolume,
                     keyboardType: TextInputType.number,
                     decoration: InvStyle.emailForm,
                     autovalidateMode: AutovalidateMode.onUserInteraction,
@@ -659,7 +634,7 @@ class _InventoryAddScreenState extends State<InventoryAddScreen> {
                     ),
                   ),
                   TextFormField(
-                    controller: _itemuse,
+                    controller: _itemUse,
                     keyboardType: TextInputType.number,
                     decoration: InvStyle.emailForm,
                     autovalidateMode: AutovalidateMode.onUserInteraction,
@@ -749,16 +724,17 @@ class _InventoryEditScreenState extends State<InventoryEditScreen> {
     });
   }
 
-  final TextEditingController _itemname = TextEditingController();
-  final TextEditingController _itemqty = TextEditingController();
-  final TextEditingController _itemvolume = TextEditingController();
-  final TextEditingController _itemuse = TextEditingController();
+  final TextEditingController itemName = TextEditingController();
+  final TextEditingController itemQty = TextEditingController();
+  final TextEditingController itemVolume = TextEditingController();
+  final TextEditingController itemUse = TextEditingController();
   String? categoryName; String isDefault = ''; bool setUse = false;
   List<String> category = ['Detergent', 'Fabric Conditioner', 'Bleach', 'Fabric Freshener Spray'];
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
   Future<void> updateInv() async{
     final SharedPreferences prefs = await SharedPreferences.getInstance();
+    if(!mounted) return;
     showDialog(
         context: context,
         barrierDismissible: false,
@@ -778,26 +754,29 @@ class _InventoryEditScreenState extends State<InventoryEditScreen> {
     }
 
     Inventory inv = Inventory(
-    id: widget.inv.id, itemName: _itemname.text, itemQty: _itemqty.text, itemVolume: _itemvolume.text,
-    volummeUse: _itemuse.text, category: categoryName, isUse: setUse ? '1' : '0');
+    id: widget.inv.id, itemName: itemName.text, itemQty: itemQty.text, itemVolume: itemVolume.text,
+    volummeUse: itemUse.text, category: categoryName, isUse: setUse ? '1' : '0');
 
-    ApiResponse apiResponse = await updateInventory(inv, '${prefs.getString('token')}');
+    ApiResponse response = await updateInventory(inv, '${prefs.getString('token')}');
+
+    if(!mounted) return;
     Navigator.pop(context);
 
-    if(apiResponse.error == null){
-      await successDialog(context, 'Item has been updated.');
+    if(response.error == null){
+      await successDialog(context, '${response.data}');
+      if(!mounted) return;
       Navigator.pop(context,true);
     }else{
-      await errorDialog(context, '${apiResponse.error}');
+      await errorDialog(context, '${response.error}');
     }
   }
 
   @override
   void initState(){
-    _itemname.text = widget.inv.itemName ?? '';
-    _itemqty.text = widget.inv.itemQty ?? '';
-    _itemvolume.text = widget.inv.itemVolume ?? '';
-    _itemuse.text = widget.inv.volummeUse ?? '';
+    itemName.text = widget.inv.itemName ?? '';
+    itemQty.text = widget.inv.itemQty ?? '';
+    itemVolume.text = widget.inv.itemVolume ?? '';
+    itemUse.text = widget.inv.volummeUse ?? '';
     categoryName = widget.inv.category ?? '';
     setUse = widget.inv.isUse == '1';
     widget.inv.id;
@@ -807,15 +786,9 @@ class _InventoryEditScreenState extends State<InventoryEditScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Edit Item'),
-        titleTextStyle: const TextStyle(fontWeight: FontWeight.bold,fontSize: 18),
-        leading: IconButton(
-          onPressed: (){
-            Navigator.pop(context);
-          },
-          icon: const Icon(CupertinoIcons.chevron_left,color: Colors.white,),
-        ),
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(kToolbarHeight),
+        child: backAppBar(context, 'Edit Item'),
       ),
         body: Padding(
           padding: const EdgeInsets.all(8),
@@ -838,7 +811,7 @@ class _InventoryEditScreenState extends State<InventoryEditScreen> {
                       ),
                     ),
                     TextFormField(
-                      controller: _itemname,
+                      controller: itemName,
                       decoration: InvStyle.emailForm,
                       autovalidateMode: AutovalidateMode.onUserInteraction,
                       validator: (value) {
@@ -863,7 +836,7 @@ class _InventoryEditScreenState extends State<InventoryEditScreen> {
                       ),
                     ),
                     TextFormField(
-                      controller: _itemqty,
+                      controller: itemQty,
                       keyboardType: TextInputType.number,
                       decoration: InvStyle.emailForm,
                       autovalidateMode: AutovalidateMode.onUserInteraction,
@@ -924,7 +897,7 @@ class _InventoryEditScreenState extends State<InventoryEditScreen> {
                       ),
                     ),
                     TextFormField(
-                      controller: _itemvolume,
+                      controller: itemVolume,
                       keyboardType: TextInputType.number,
                       decoration: InvStyle.emailForm,
                       autovalidateMode: AutovalidateMode.onUserInteraction,
@@ -950,7 +923,7 @@ class _InventoryEditScreenState extends State<InventoryEditScreen> {
                       ),
                     ),
                     TextFormField(
-                      controller: _itemuse,
+                      controller: itemUse,
                       keyboardType: TextInputType.number,
                       decoration: InvStyle.emailForm,
                       autovalidateMode: AutovalidateMode.onUserInteraction,

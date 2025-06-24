@@ -2,6 +2,7 @@
 
 import 'package:calendar_date_picker2/calendar_date_picker2.dart';
 import 'package:capstone/api_response.dart';
+import 'package:capstone/brandnew/ConstWidgets.dart';
 import 'package:capstone/brandnew/dialogs.dart';
 import 'package:capstone/connect/laravel.dart';
 import 'package:capstone/model/BookingInfo.dart';
@@ -9,7 +10,6 @@ import 'package:capstone/model/WalkinInfo.dart';
 import 'package:capstone/services/services.dart';
 import 'package:capstone/styles/loginStyle.dart';
 import 'package:capstone/styles/mainColorStyle.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_profile_picture/flutter_profile_picture.dart';
 import 'package:intl/intl.dart';
@@ -30,23 +30,11 @@ class _ForRegisteredScreenState extends State<ForRegisteredScreen> {
   List<dynamic> customer = []; String? customerId; String? customerName; String customerImage ='';
   List<dynamic> service = []; String? serviceName;
   List<dynamic> inventory = []; String? detergent;
+  String? serviceType; String serviceCost = ''; bool hasData = false; bool isLoading = true;
+  List<DateTime?> date = []; String chosenDate = ''; String schedule = ''; int multiplier = 0;
+  double weight = 0; int shopWeight = 0; int shopPrice = 0; int total = 0;
+  String time = ''; String timeFormatted = '';
 
-  String? serviceType;
-  String serviceCost = '';
-  bool hasData = false;
-  bool isLoading = true;
-  List<DateTime?> date = [];
-  String chosenDate = '';
-  String schedule = '';
-  bool isloading = true;
-  int multiplier = 0;
-  double weight = 0;
-  int shopweight = 0;
-  int shopprice = 0;
-  int total = 0;
-
-
-  String time = ''; String timeformatted = '';
   void showTimePickerDialog() {
     showTimePicker(
       context: context,
@@ -55,7 +43,7 @@ class _ForRegisteredScreenState extends State<ForRegisteredScreen> {
       if (selectedTime != null) {
         setState(() {
           time = "${selectedTime.hour}:${selectedTime.minute}";
-          timeformatted = selectedTime.format(context);
+          timeFormatted = selectedTime.format(context);
         });
       } else {
 
@@ -76,6 +64,8 @@ class _ForRegisteredScreenState extends State<ForRegisteredScreen> {
         isLoading = false;
       });
     }else{
+      if(!mounted) return;
+      await errorDialog(context, '${response.error}');
     }
   }
 
@@ -88,11 +78,12 @@ class _ForRegisteredScreenState extends State<ForRegisteredScreen> {
         customer = response.data as List<dynamic>;
       });
     }else{
+      if(!mounted) return;
       await errorDialog(context, '${response.error}');
     }
   }
 
-  Future<void> datepick1() async {
+  Future<void> datePick1() async {
     var pickedDates = await showCalendarDatePicker2Dialog(
       context: context,
       config: CalendarDatePicker2WithActionButtonsConfig(),
@@ -114,8 +105,11 @@ class _ForRegisteredScreenState extends State<ForRegisteredScreen> {
         serviceId: serviceName.toString(), loadCost: total.toString());
     ApiResponse response = await addBookings(info, '${prefs.getString('token')}');
 
+    if(!mounted) return;
+
     if(response.error == null){
       await successDialog(context, '${response.data}');
+      if(!mounted) return;
       Navigator.popUntil(context, (route) => route.isFirst);
     }else{
       await errorDialog(context, '${response.error}');
@@ -224,18 +218,9 @@ class _ForRegisteredScreenState extends State<ForRegisteredScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Set a Service'),
-        titleTextStyle: const TextStyle(
-          fontWeight: FontWeight.bold,
-          fontSize: 18
-        ),
-        leading: IconButton(
-          onPressed: (){
-            Navigator.pop(context);
-          },
-          icon: const Icon(CupertinoIcons.chevron_left,color: Colors.white,),
-        ),
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(kToolbarHeight),
+        child: backAppBar(context, 'Set A Service'),
       ),
       body: isLoading ? loading() : Padding(
         padding: const EdgeInsets.all(8),
@@ -324,8 +309,8 @@ class _ForRegisteredScreenState extends State<ForRegisteredScreen> {
                   setState(() {
                     if (value.isNotEmpty) {
                       weight = double.parse(value);
-                      multiplier = (weight / shopweight).ceil();
-                      total = multiplier * shopprice;
+                      multiplier = (weight / shopWeight).ceil();
+                      total = multiplier * shopPrice;
                     }
                   });
                 },
@@ -359,12 +344,12 @@ class _ForRegisteredScreenState extends State<ForRegisteredScreen> {
                       backgroundColor: Colors.white
                   ),
                   onPressed: ()async{
-                    await datepick1();
+                    await datePick1();
                     showTimePickerDialog();
 
                   },
                   child: Align(alignment: Alignment.centerLeft,
-                    child: Text(schedule.isEmpty ? 'Select Schedule' : '$schedule $timeformatted', style: const TextStyle(fontSize: 16, color: ColorStyle.tertiary),),)
+                    child: Text(schedule.isEmpty ? 'Select Schedule' : '$schedule $timeFormatted', style: const TextStyle(fontSize: 16, color: ColorStyle.tertiary),),)
               ),
 
               const SizedBox(height: 15,),
@@ -401,11 +386,7 @@ class _ForRegisteredScreenState extends State<ForRegisteredScreen> {
                     shrinkWrap: true,
                     itemBuilder: (context,index){
                       Map serve = service[index] as Map;
-                      List icon = [
-                        'assets/sport-wear.png',
-                        'assets/jacket.png',
-                        'assets/bed-sheets.png'
-                      ];
+
                       return Padding(
                         padding: const EdgeInsets.all(0),
                         child: Column(
@@ -416,12 +397,12 @@ class _ForRegisteredScreenState extends State<ForRegisteredScreen> {
                                   onTap: (){
                                     setState(() {
                                       serviceName = '${serve['ServiceID']}';
-                                      shopweight = serve['LoadWeight'];
-                                      shopprice = serve['LoadPrice'];
-                                      multiplier = (weight / shopweight).ceil();
+                                      shopWeight = serve['LoadWeight'];
+                                      shopPrice = serve['LoadPrice'];
+                                      multiplier = (weight / shopWeight).ceil();
 
 
-                                      total = multiplier * shopprice;
+                                      total = multiplier * shopPrice;
                                     });
                                   },
                                   leading: const Icon(Icons.local_laundry_service,size: 48, color: ColorStyle.tertiary,),
@@ -436,12 +417,12 @@ class _ForRegisteredScreenState extends State<ForRegisteredScreen> {
                                     onChanged: (value) {
                                       setState(() {
                                         serviceName = value;
-                                        shopweight = serve['LoadWeight'];
-                                        shopprice = serve['LoadPrice'];
-                                        multiplier = (weight / shopweight).ceil();
+                                        shopWeight = serve['LoadWeight'];
+                                        shopPrice = serve['LoadPrice'];
+                                        multiplier = (weight / shopWeight).ceil();
 
 
-                                        total = multiplier * shopprice;
+                                        total = multiplier * shopPrice;
                                       });
                                     },
                                   ),
@@ -515,23 +496,22 @@ class _ForWalkinScreenState extends State<ForWalkinScreen> {
   final TextEditingController _load = TextEditingController();
   String serviceType = ''; String? serviceName; String serviceCost = ''; String detergent = '';
   bool hasData = false; bool isLoading = true; int multiplier = 0; double weight = 0;
-  int shopweight = 0; int shopprice = 0; int total = 0;
+  int shopWeight = 0; int shopPrice = 0; int total = 0;
   List<dynamic> service = []; List<dynamic> inventory = [];
 
   Future<void> walkinAdd() async{
-
     final SharedPreferences pref = await SharedPreferences.getInstance();
 
     WalkinInfo info = WalkinInfo(
-        contact: _contact.text, walkinLoad: _load.text, serviceId: serviceName.toString(),
-        total: total.toString());
+        contact: _contact.text, walkinLoad: _load.text, serviceId: serviceName.toString(), total: total.toString());
 
     ApiResponse apiResponse = await addWalkin(info,'${pref.getString('token')}');
 
+    if(!mounted) return;
 
     if(apiResponse.error == null){
       await successDialog(context, '${apiResponse.data}');
-
+      if(!mounted) return;
       Navigator.popUntil(context, (route) => route.isFirst);
     } else {
       await errorDialog(context, '${apiResponse.error}');
@@ -550,10 +530,10 @@ class _ForWalkinScreenState extends State<ForWalkinScreen> {
         isLoading = false;
       });
     }else{
+      if(!mounted) return;
       await errorDialog(context, '${response.error}');
     }
   }
-
 
   @override
   void initState(){
@@ -584,15 +564,9 @@ class _ForWalkinScreenState extends State<ForWalkinScreen> {
 
     if(isLoading){
       return Scaffold(
-          appBar: AppBar(
-            title: const Text('Book Service'),
-            titleTextStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            leading: IconButton(
-              onPressed: (){
-                Navigator.pop(context);
-              },
-              icon: const Icon(CupertinoIcons.chevron_left,color: Colors.white,),
-            ),
+          appBar: PreferredSize(
+            preferredSize: const Size.fromHeight(kToolbarHeight),
+            child: backAppBar(context, 'Book Service'),
           ),
           body: Center(
             child: LoadingAnimationWidget.staggeredDotsWave(
@@ -603,16 +577,10 @@ class _ForWalkinScreenState extends State<ForWalkinScreen> {
       );
     }
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Book Service'),
-        titleTextStyle: const TextStyle(fontWeight: FontWeight.bold,fontSize: 18),
-        leading: IconButton(
-          onPressed: (){
-            Navigator.pop(context);
-          },
-          icon: const Icon(CupertinoIcons.chevron_left,color: Colors.white,),
+        appBar: PreferredSize(
+          preferredSize: const Size.fromHeight(kToolbarHeight),
+          child: backAppBar(context, 'Book Service'),
         ),
-      ),
       body: SingleChildScrollView(
         child: Padding(
               padding: const EdgeInsets.all(8.0),
@@ -684,8 +652,8 @@ class _ForWalkinScreenState extends State<ForWalkinScreen> {
                       setState(() {
                         if (value.isNotEmpty) {
                           weight = double.parse(value);
-                          multiplier = (weight / shopweight).ceil();
-                          total = multiplier * shopprice;
+                          multiplier = (weight / shopWeight).ceil();
+                          total = multiplier * shopPrice;
                         }
                       });
                     },
@@ -731,12 +699,12 @@ class _ForWalkinScreenState extends State<ForWalkinScreen> {
                                     onTap: (){
                                       setState(() {
                                         serviceName = '${serve['ServiceID']}';
-                                        shopweight = serve['LoadWeight'];
-                                        shopprice = serve['LoadPrice'];
-                                        multiplier = (weight / shopweight).ceil();
+                                        shopWeight = serve['LoadWeight'];
+                                        shopPrice = serve['LoadPrice'];
+                                        multiplier = (weight / shopWeight).ceil();
 
 
-                                        total = multiplier * shopprice;
+                                        total = multiplier * shopPrice;
                                       });
                                     },
                                     leading: const Icon(Icons.local_laundry_service,size: 48,color: ColorStyle.tertiary,),
@@ -751,12 +719,12 @@ class _ForWalkinScreenState extends State<ForWalkinScreen> {
                                       onChanged: (value) {
                                         setState(() {
                                           serviceName = value;
-                                          shopweight = serve['LoadWeight'];
-                                          shopprice = serve['LoadPrice'];
-                                          multiplier = (weight / shopweight).ceil();
+                                          shopWeight = serve['LoadWeight'];
+                                          shopPrice = serve['LoadPrice'];
+                                          multiplier = (weight / shopWeight).ceil();
 
 
-                                          total = multiplier * shopprice;
+                                          total = multiplier * shopPrice;
                                         });
                                       },
                                     ),

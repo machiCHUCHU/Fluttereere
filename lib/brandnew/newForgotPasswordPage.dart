@@ -1,11 +1,10 @@
 import 'package:capstone/api_response.dart';
+import 'package:capstone/brandnew/ConstWidgets.dart';
 import 'package:capstone/brandnew/dialogs.dart';
 import 'package:capstone/brandnew/newLoginPage.dart';
 import 'package:capstone/services/services.dart';
-import 'package:capstone/services/validation.dart';
 import 'package:capstone/styles/mainColorStyle.dart';
 import 'package:capstone/styles/signupStyle.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_timer_countdown/flutter_timer_countdown.dart';
 import 'package:pinput/pinput.dart';
@@ -38,15 +37,9 @@ class _NewForgotPasswordScreenState extends State<NewForgotPasswordScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Forgot Password'),
-        titleTextStyle: const TextStyle(fontSize: 18,fontWeight: FontWeight.bold),
-        leading: IconButton(
-          onPressed: (){
-            Navigator.pop(context,true);
-          },
-          icon: const Icon(CupertinoIcons.chevron_left,color: Colors.white,),
-        ),
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(kToolbarHeight),
+        child: backAppBar(context, 'Forgot Password'),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(8),
@@ -85,6 +78,7 @@ class _NewForgotPasswordScreenState extends State<NewForgotPasswordScreen> {
               ),
                 onPressed: ()async{
                 await validateNumber();
+                if(!context.mounted) return;
                   if(_contact.text.isEmpty){
                     warningDialog(context, 'Please fill up the form');
                   }
@@ -133,7 +127,7 @@ class _OTPScreenState extends State<OTPScreen> {
 
   Future<void> inputCodeCheck() async{
     ApiResponse response = await otpCheck(otp);
-
+    if(!mounted) return;
     if(response.error == null){
       Navigator.push(context, MaterialPageRoute(builder: (context) => PasswordChangeScreen(contact: widget.contact)));
     }else{
@@ -190,6 +184,7 @@ class _OTPScreenState extends State<OTPScreen> {
                     Pinput(
                       validator: (value){
                         otp = value!;
+                        return null;
                       },
                       length: 4,
                       defaultPinTheme: defaultPinTheme,
@@ -282,8 +277,10 @@ class _PasswordChangeScreenState extends State<PasswordChangeScreen> {
 
   Future<void> changePass() async{
     ApiResponse response = await changePassword(widget.contact, _newPass.text);
+    if(!mounted) return;
     if(response.error == null){
       await successDialog(context, '${response.data}');
+      if(!mounted) return;
       Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => const NewLoginScreen()), (route) => false);
     }else{
       errorDialog(context, 'Something went wrong');
@@ -357,7 +354,7 @@ class _PasswordChangeScreenState extends State<PasswordChangeScreen> {
               warningDialog(context, 'Please fill up the form');
             }else if(!validatePassword(_newPass.text)){
               warningTextDialog(context, 'Invalid Password Format',
-                  'Your password should contain atleast 8 characters, one uppercase letter, '
+                  'Your password should contain at least 8 characters, one uppercase letter, '
                       'one lowercase letter, one number, and one special character');
             }else if(_newPass.text != _confirmPass.text){
               warningTextDialog(context, 'Password not match', 'Password you entered don\'t match. Please try again.');

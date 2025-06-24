@@ -3,6 +3,7 @@
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:calendar_date_picker2/calendar_date_picker2.dart';
 import 'package:capstone/api_response.dart';
+import 'package:capstone/brandnew/ConstWidgets.dart';
 import 'package:capstone/brandnew/dialogs.dart';
 import 'package:capstone/brandnew/newAuditLogPage.dart';
 import 'package:capstone/brandnew/newChartPage.dart';
@@ -28,18 +29,9 @@ class _NewReportScreenState extends State<NewReportScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Report'),
-        titleTextStyle: const TextStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: 18
-        ),
-        leading: IconButton(
-          onPressed: (){
-            Navigator.pop(context);
-          },
-          icon: const Icon(CupertinoIcons.chevron_left,color: Colors.white,),
-        ),
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(kToolbarHeight),
+        child: backAppBar(context, 'Report'),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(8),
@@ -410,6 +402,7 @@ class _ServiceListScreenState extends State<ServiceListScreen> {
         isloading = false;
       });
     }else{
+      if(!mounted) return;
       await errorDialog(context, '${response.error}');
     }
   }
@@ -418,18 +411,9 @@ class _ServiceListScreenState extends State<ServiceListScreen> {
   Widget build(BuildContext context) {
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('All Transactions'),
-        titleTextStyle: const TextStyle(
-          fontWeight: FontWeight.bold,
-          fontSize: 18
-        ),
-        leading: IconButton(
-          onPressed: (){
-            Navigator.pop(context);
-          },
-          icon: const Icon(CupertinoIcons.chevron_left,color: Colors.white,),
-        ),
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(kToolbarHeight),
+        child: backAppBar(context, 'All Transactions'),
       ),
       body: isloading
           ? loading()

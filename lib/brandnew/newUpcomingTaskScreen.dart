@@ -1,10 +1,10 @@
 import 'package:capstone/api_response.dart';
+import 'package:capstone/brandnew/ConstWidgets.dart';
 import 'package:capstone/brandnew/dialogs.dart';
 import 'package:capstone/connect/laravel.dart';
-import 'package:capstone/services/servicesadd.dart';
+import 'package:capstone/services/services.dart';
 import 'package:capstone/styles/mainColorStyle.dart';
 import 'package:date_picker_timeline/date_picker_timeline.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_profile_picture/flutter_profile_picture.dart';
 import 'package:intl/intl.dart';
@@ -33,6 +33,7 @@ class _NewUpcomingTaskScreenState extends State<NewUpcomingTaskScreen> {
         isLoading = false;
       });
     }else{
+      if(!mounted) return;
       await errorDialog(context, '${response.error}');
     }
   }
@@ -218,18 +219,9 @@ class _NewUpcomingTaskScreenState extends State<NewUpcomingTaskScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Upcoming Laundry'),
-        titleTextStyle: const TextStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: 18
-        ),
-        leading: IconButton(
-          onPressed: (){
-            Navigator.pop(context);
-          },
-          icon: const Icon(CupertinoIcons.chevron_left,color: Colors.white,),
-        ),
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(kToolbarHeight),
+        child: backAppBar(context, 'Upcoming Laundry'),
       ),
       body: SingleChildScrollView(
         child: Column(
@@ -262,30 +254,6 @@ class _NewUpcomingTaskScreenState extends State<NewUpcomingTaskScreen> {
                 padding: const EdgeInsets.all(8),
                 itemBuilder: (context, index){
                   Map task = upTask[index] as Map;
-
-                  String pic = ''; Color picColor; Color bgColor;
-
-                  switch(task['ServiceName']){
-                    case 'Light Load':
-                      pic = 'assets/sport-wear.png';
-                      bgColor = Colors.lightGreen.shade100;
-                      picColor = Colors.green;
-                      break;
-                    case 'Heavy Load':
-                      pic = 'assets/jacket.png';
-                      bgColor = Colors.orangeAccent.shade100;
-                      picColor = Colors.orange;
-                      break;
-                    case 'Comforter Load':
-                      pic = 'assets/bed-sheets(1).png';
-                      bgColor = Colors.purpleAccent.shade100;
-                      picColor = Colors.purple;
-                      break;
-                    default:
-                      picColor = Colors.transparent;
-                      bgColor = Colors.transparent;
-                      break;
-                  }
 
                   return Padding(
                     padding: const EdgeInsets.symmetric(vertical: 4.0),

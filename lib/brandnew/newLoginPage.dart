@@ -28,7 +28,7 @@ class _NewLoginScreenState extends State<NewLoginScreen> {
   final TextEditingController _passForm = TextEditingController();
 
   bool isHidden = true;
-  bool isloading = true;
+  bool isLoading = true;
   bool isSubmitted = false;
 
   Future<void> loginUser() async {
@@ -49,8 +49,9 @@ class _NewLoginScreenState extends State<NewLoginScreen> {
       _saveAndRedirectToHome(response.data as User);
     } else {
       setState(() {
-        isloading = false;
+        isLoading = false;
       });
+      if(!mounted) return;
       Navigator.pop(context);
       errorDialog(context, '${response.error}');
     }
@@ -71,8 +72,9 @@ class _NewLoginScreenState extends State<NewLoginScreen> {
 
 
     if(user.usertype == 'owner' || user.usertype == 'co-owner'){
+      if(!mounted) return;
       await successDialog(context, 'Login Successfully');
-      await prefs.setString('accesstype', '${access.data}' ?? '');
+      await prefs.setString('accesstype', '${access.data}');
       if(apiResponse.data == 'empty'){
         if(mounted){
           Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => const NewSetupScreen()), (route) => false);
@@ -84,6 +86,7 @@ class _NewLoginScreenState extends State<NewLoginScreen> {
       }
     }
     else {
+      if(!mounted) return;
       await successDialog(context, 'Login Successfully');
 
       if(mounted){
@@ -121,6 +124,7 @@ class _NewLoginScreenState extends State<NewLoginScreen> {
                       NewSignupScreen(usertype: 'customer',)));
 
                       if(response == true){
+                        if(!context.mounted) return;
                         Navigator.pop(context);
                       }
                     },
@@ -156,6 +160,7 @@ class _NewLoginScreenState extends State<NewLoginScreen> {
                         usertype: 'owner',)));
 
                       if(response == true){
+                        if(!context.mounted) return;
                         Navigator.pop(context);
                       }
                     },
@@ -291,7 +296,7 @@ class _NewLoginScreenState extends State<NewLoginScreen> {
                                     });
                                     if(_formKey.currentState!.validate()){
                                       setState(() {
-                                        isloading = true;
+                                        isLoading = true;
                                         loginUser();
                                       });
                                     }

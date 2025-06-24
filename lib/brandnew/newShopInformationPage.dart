@@ -1,12 +1,12 @@
 import 'dart:convert';
 
 import 'package:capstone/api_response.dart';
+import 'package:capstone/brandnew/ConstWidgets.dart';
 import 'package:capstone/brandnew/dialogs.dart';
 import 'package:capstone/connect/laravel.dart';
 import 'package:capstone/model/ShopInfo.dart';
-import 'package:capstone/services/servicesadd.dart';
+import 'package:capstone/services/services.dart';
 import 'package:capstone/styles/mainColorStyle.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_profile_picture/flutter_profile_picture.dart';
 import 'package:image_picker/image_picker.dart';
@@ -46,6 +46,7 @@ class _NewShopInformationScreenState extends State<NewShopInformationScreen> {
         isLoading = false;
       });
     }else{
+      if(!mounted) return;
       await errorDialog(context, '${response.error}');
     }
   }
@@ -84,15 +85,9 @@ class _NewShopInformationScreenState extends State<NewShopInformationScreen> {
         break;
     }
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Shop Information'),
-        titleTextStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-        leading: IconButton(
-          onPressed: (){
-            Navigator.pop(context,true);
-          },
-          icon: const Icon(CupertinoIcons.chevron_left,color: Colors.white,),
-        ),
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(kToolbarHeight),
+        child: backAppBar(context, 'Shop Information'),
       ),
       body: isLoading
           ? loading()
@@ -287,13 +282,15 @@ class _EditShopInformationScreenState extends State<EditShopInformationScreen> {
       hasPickedImage = _image;
     }
     ShopInfo info = ShopInfo(
-        name: _shopname.text, address: _shopaddress.text, workDay: _businessdays,
+        name: _shopname.text, address: _shopaddress.text, workDay: _businessdays, workHour: _businesshours,
         maxLoad: _maxload.text, status: _shopstatus, image: hasPickedImage);
 
     ApiResponse response = await editShopInfo(info, '${prefs.getString('token')}');
 
+    if(!mounted) return;
     if(response.error == null){
       await successDialog(context, '${response.data}');
+      if(!mounted) return;
       Navigator.pop(context,true);
     }else{
       await warningDialog(context, '${response.error}');
@@ -315,15 +312,9 @@ class _EditShopInformationScreenState extends State<EditShopInformationScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Shop Information'),
-        titleTextStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-        leading: IconButton(
-          onPressed: (){
-            Navigator.pop(context,true);
-          },
-          icon: const Icon(CupertinoIcons.chevron_left,color: Colors.white,),
-        ),
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(kToolbarHeight),
+        child: backAppBar(context, 'Shop Information'),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(8),

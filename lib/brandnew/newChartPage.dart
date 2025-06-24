@@ -1,14 +1,13 @@
 
 import 'package:capstone/api_response.dart';
+import 'package:capstone/brandnew/ConstWidgets.dart';
 import 'package:capstone/brandnew/dialogs.dart';
 import 'package:capstone/services/services.dart';
 import 'package:capstone/styles/mainColorStyle.dart';
 import 'package:fl_chart/fl_chart.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:capstone/services/chart.dart';
 
 class NewChartScreen extends StatefulWidget {
   const NewChartScreen({super.key});
@@ -43,9 +42,9 @@ class _NewChartScreenState extends State<NewChartScreen> {
     if(response.error == null){
       setState(() {
         bar = response.data as Map;
-
       });
     }else{
+      if(!mounted) return;
       await errorDialog(context, '${response.error}');
     }
   }
@@ -59,6 +58,7 @@ class _NewChartScreenState extends State<NewChartScreen> {
         monthlyBar = response.data as Map;
       });
     }else{
+      if(!mounted) return;
       await errorDialog(context, '${response.error}');
     }
   }
@@ -76,6 +76,7 @@ class _NewChartScreenState extends State<NewChartScreen> {
         }).toList();
       });
     }else{
+      if(!mounted) return;
       await errorDialog(context, '${response.error}');
     }
   }
@@ -90,6 +91,7 @@ class _NewChartScreenState extends State<NewChartScreen> {
         invCount = response.count ?? 0;
       });
     }else{
+      if(!mounted) return;
       await errorDialog(context, '${response.error}');
     }
   }
@@ -325,15 +327,9 @@ class _NewChartScreenState extends State<NewChartScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Dashboard'),
-        titleTextStyle: const TextStyle(color: Colors.white,fontSize: 18,fontWeight: FontWeight.bold),
-        leading: IconButton(
-          onPressed: (){
-            Navigator.pop(context);
-          },
-          icon: const Icon(CupertinoIcons.chevron_left,color: Colors.white,),
-        ),
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(kToolbarHeight),
+        child: backAppBar(context, 'Dashboard'),
       ),
       body: isLoading
           ? const CircularProgressIndicator()

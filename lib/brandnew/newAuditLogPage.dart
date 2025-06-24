@@ -1,10 +1,10 @@
 
 import 'package:capstone/api_response.dart';
+import 'package:capstone/brandnew/ConstWidgets.dart';
 import 'package:capstone/brandnew/dialogs.dart';
+import 'package:capstone/services/services.dart';
 import 'package:capstone/styles/mainColorStyle.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:capstone/services/auditservice.dart';
 import 'package:row_item/row_item.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:toggle_switch/toggle_switch.dart';
@@ -17,8 +17,8 @@ class UserLogScreen extends StatefulWidget {
 }
 
 class _UserLogScreenState extends State<UserLogScreen> {
-  List<dynamic> useraudit = []; List<dynamic> userauditnow = []; bool isLoading = true; bool hasData = false;
-  String page = '';
+  List<dynamic> userAudit = []; List<dynamic> userAuditNow = [];
+  bool isLoading = true; bool hasData = false; String page = '';
 
   Future<void> auditDisplay() async{
     final SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -26,17 +26,16 @@ class _UserLogScreenState extends State<UserLogScreen> {
 
     if(response.error == null){
       setState(() {
-        useraudit = response.data as List<dynamic>;
+        userAudit = response.data as List<dynamic>;
         isLoading = false;
-        hasData = useraudit.isNotEmpty;
+        hasData = userAudit.isNotEmpty;
       });
     }else{
-      errorDialog(context, '${response.error}');
+      if(!mounted) return;
+      await errorDialog(context, '${response.error}');
     }
   }
-
-
-
+  
   @override
   void initState() {
     auditDisplay();
@@ -47,18 +46,9 @@ class _UserLogScreenState extends State<UserLogScreen> {
   Widget build(BuildContext context) {
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('User Log'),
-        titleTextStyle: const TextStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: 18
-        ),
-        leading: IconButton(
-          onPressed: (){
-            Navigator.pop(context);
-          },
-          icon: const Icon(CupertinoIcons.chevron_left,color: Colors.white,),
-        ),
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(kToolbarHeight),
+        child: backAppBar(context, 'User Log'),
       ),
       body: isLoading ? loading()
       : SingleChildScrollView(
@@ -138,10 +128,10 @@ class _UserLogScreenState extends State<UserLogScreen> {
 
                     Expanded(child: ListView.builder  (
                         shrinkWrap: true,
-                        itemCount: useraudit.length,
+                        itemCount: userAudit.length,
                         padding: const EdgeInsets.symmetric(horizontal: 4),
                         itemBuilder: (context, index){
-                          Map now = useraudit[index] as Map;
+                          Map now = userAudit[index] as Map;
 
                           return Column(
                             children: [
@@ -195,8 +185,8 @@ class InventoryLogScreen extends StatefulWidget {
 }
 
 class _InventoryLogScreenState extends State<InventoryLogScreen> {
-  List<dynamic> inventoryaudit = []; List<dynamic> inventoryauditnow = []; bool isLoading = true; bool hasData = false;
-  String page = '';
+  List<dynamic> inventoryAudit = []; List<dynamic> inventoryAuditNow = [];
+  bool isLoading = true; bool hasData = false; String page = '';
 
   Future<void> inventoryLog() async{
     final SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -204,13 +194,14 @@ class _InventoryLogScreenState extends State<InventoryLogScreen> {
 
     if(response.error == null){
       setState(() {
-        inventoryaudit = response.data as List<dynamic>;
+        inventoryAudit = response.data as List<dynamic>;
         isLoading = false;
-        hasData = inventoryaudit.isNotEmpty;
+        hasData = inventoryAudit.isNotEmpty;
       });
 
     }else{
-
+      if(!mounted) return;
+      await errorDialog(context, '${response.error}');
     }
   }
 
@@ -223,18 +214,9 @@ class _InventoryLogScreenState extends State<InventoryLogScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Inventory Log'),
-        titleTextStyle: const TextStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: 18
-        ),
-        leading: IconButton(
-          onPressed: (){
-            Navigator.pop(context);
-          },
-          icon: const Icon(CupertinoIcons.chevron_left,color: Colors.white,),
-        ),
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(kToolbarHeight),
+        child: backAppBar(context, 'Inventory Log'),
       ),
       body: isLoading ? loading()
           : SingleChildScrollView(
@@ -273,10 +255,10 @@ class _InventoryLogScreenState extends State<InventoryLogScreen> {
                 ),
                 child: ListView.builder  (
                     shrinkWrap: true,
-                    itemCount: inventoryaudit.length,
+                    itemCount: inventoryAudit.length,
                     padding: const EdgeInsets.symmetric(horizontal: 4),
                     itemBuilder: (context, index){
-                      Map now = inventoryaudit[index] as Map;
+                      Map now = inventoryAudit[index] as Map;
 
                       return Padding(
                         padding: const EdgeInsets.symmetric(vertical: 8.0),

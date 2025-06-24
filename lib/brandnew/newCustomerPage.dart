@@ -1,9 +1,9 @@
 
 import 'package:capstone/api_response.dart';
+import 'package:capstone/brandnew/ConstWidgets.dart';
 import 'package:capstone/brandnew/dialogs.dart';
-import 'package:capstone/services/servicesadd.dart';
+import 'package:capstone/services/services.dart';
 import 'package:capstone/styles/mainColorStyle.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:toggle_switch/toggle_switch.dart';
@@ -38,6 +38,7 @@ class _NewCustomerScreenState extends State<NewCustomerScreen> {
         hasData = true;
       });
     }else{
+      if(!mounted) return;
       await errorDialog(context, '${response.error}');
     }
   }
@@ -60,15 +61,9 @@ class _NewCustomerScreenState extends State<NewCustomerScreen> {
   Widget build(BuildContext context) {
     if(isLoading){
       return Scaffold(
-          appBar: AppBar(
-            title: const Text('Valued Customers'),
-            titleTextStyle: const TextStyle(fontSize: 18,fontWeight: FontWeight.bold),
-            leading: IconButton(
-              onPressed: (){
-                Navigator.pop(context);
-              },
-              icon: const Icon(CupertinoIcons.chevron_left,color: Colors.white,),
-            ),
+          appBar: PreferredSize(
+            preferredSize: const Size.fromHeight(kToolbarHeight),
+            child: backAppBar(context, 'Valued Customers'),
           ),
           body: loading()
       );
@@ -76,15 +71,9 @@ class _NewCustomerScreenState extends State<NewCustomerScreen> {
 
     if(hasData == false){
       return Scaffold(
-          appBar: AppBar(
-            title: const Text('Valued Customers'),
-            titleTextStyle: const TextStyle(fontSize: 18,fontWeight: FontWeight.bold),
-            leading: IconButton(
-              onPressed: (){
-                Navigator.pop(context);
-              },
-              icon: const Icon(CupertinoIcons.chevron_left,color: Colors.white,),
-            ),
+          appBar: PreferredSize(
+            preferredSize: const Size.fromHeight(kToolbarHeight),
+            child: backAppBar(context, 'Valued Customers'),
           ),
           body: const Center(
               child: Text(
@@ -95,15 +84,9 @@ class _NewCustomerScreenState extends State<NewCustomerScreen> {
     }
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Valued Customers'),
-        titleTextStyle: const TextStyle(fontSize: 18,fontWeight: FontWeight.bold),
-        leading: IconButton(
-          onPressed: (){
-            Navigator.pop(context);
-          },
-          icon: const Icon(CupertinoIcons.chevron_left,color: Colors.white,),
-        ),
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(kToolbarHeight),
+        child: backAppBar(context, 'Valued Customers'),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(8),

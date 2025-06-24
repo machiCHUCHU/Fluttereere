@@ -50,6 +50,7 @@ class _NewBookingScreenState extends State<NewBookingScreen> {
         });
     } else {
       isLoading = false;
+      if(!mounted) return;
       await errorDialog(context, '${response.error}');
     }
   }
@@ -64,6 +65,7 @@ class _NewBookingScreenState extends State<NewBookingScreen> {
           hasWalkin = walkins.isNotEmpty;
         });
     } else {
+      if(!mounted) return;
       await errorDialog(context, '${response.error}');
     }
   }
@@ -72,17 +74,21 @@ class _NewBookingScreenState extends State<NewBookingScreen> {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     ApiResponse response =
         await updateWalkin(stat, '${prefs.getString('token')}', id);
+    if(!mounted) return;
 
     if (response.error == null) {
       if (stat == '1') {
         await successDialog(context, '${response.data}');
+        if(!mounted) return;
         Navigator.pop(context);
       } else {
         await warningDialog(context, '${response.data}');
+        if(!mounted) return;
         Navigator.pop(context);
       }
       walkinDisplay();
     } else {
+      if(!mounted) return;
       await errorDialog(context, '${response.error}');
     }
   }
@@ -92,12 +98,16 @@ class _NewBookingScreenState extends State<NewBookingScreen> {
     ApiResponse response =
         await updateBooking(stat, '${prefs.getString('token')}', id,_finalWeight.text,_finalCost);
 
+    if(!mounted) return;
+
     if (response.error == null) {
       if (stat == '1') {
         await successDialog(context, '${response.data}');
+        if(!mounted) return;
         Navigator.pop(context);
       } else {
         await warningDialog(context, '${response.data}');
+        if(!mounted) return;
         Navigator.pop(context);
       }
       bookingsDisplay();
@@ -112,7 +122,6 @@ class _NewBookingScreenState extends State<NewBookingScreen> {
       ,String loadprice, String loadweight, String servicetype) {
     _finalWeight.text = load;
     int multiplier = 0;
-
 
     showMaterialModalBottomSheet(
       context: context,
@@ -151,7 +160,7 @@ class _NewBookingScreenState extends State<NewBookingScreen> {
                           name: name,
                           fontsize: 14,
                           radius: 18,
-                          img: customerImage == 'null' || customerImage == null
+                          img: customerImage == 'null'
                               ? null
                               : '$picaddress/$customerImage',
                         ),
@@ -549,7 +558,6 @@ class _NewBookingScreenState extends State<NewBookingScreen> {
 
   @override
   Widget build(BuildContext context) {
-      print(bookings);
       return DefaultTabController(
           length: 2,
           child: Scaffold(
@@ -833,7 +841,7 @@ class NewWashScreen extends StatefulWidget {
 }
 
 class _NewWashScreenState extends State<NewWashScreen> {
-  String? token; int? userid; int? shopid; Map home = {}; Map appbar = {};
+  String? token; int? userid; Map home = {}; Map appbar = {};
   bool hasWalkin = false; bool hasBook = false; bool isLoading = true;
   List<dynamic> bookings = []; List<dynamic> walkins = []; String? usertype;String? access;
 
@@ -859,6 +867,8 @@ class _NewWashScreenState extends State<NewWashScreen> {
         isLoading = false;
       });
     } else {
+      if(!mounted) return;
+      await errorDialog(context, '${response.error}');
     }
   }
 
@@ -878,14 +888,14 @@ class _NewWashScreenState extends State<NewWashScreen> {
     ApiResponse response =
         await updatePayment(type, id, '${prefs.getString('token')}');
 
+    if(!mounted) return;
     Navigator.pop(context);
 
     if (response.error == null) {
       await successDialog(context, '${response.data}');
+      if(!mounted) return;
       Navigator.pop(context);
-
-        getUser();
-
+      getUser();
     } else {
       await errorDialog(context, '${response.error}');
     }
@@ -895,7 +905,6 @@ class _NewWashScreenState extends State<NewWashScreen> {
       String name, String contact, String load, String total, String date,
       String payment, String service, String bookingId, String customerImage, String customerAddress
       ) {
-    bool isPaid = payment == 'paid';
 
     showMaterialModalBottomSheet(
       context: context,
@@ -934,7 +943,7 @@ class _NewWashScreenState extends State<NewWashScreen> {
                           name: name,
                           fontsize: 14,
                           radius: 18,
-                          img: customerImage == 'null' || customerImage == null
+                          img: customerImage == 'null'
                               ? null
                               : '$picaddress/$customerImage',
                         ),
@@ -1088,7 +1097,6 @@ class _NewWashScreenState extends State<NewWashScreen> {
   void _bottomModalWalkins(
       String contact, String load, String total, String date, String payment,
       String service, String walkinId) {
-    bool isPaid = payment == 'paid';
     showMaterialModalBottomSheet(
         context: context,
         shape: const RoundedRectangleBorder(
@@ -1257,156 +1265,6 @@ class _NewWashScreenState extends State<NewWashScreen> {
           );
         });
   }
-
-  /*void _bottomModalWalkins(
-      String contact, String load, String total, String date, String payment,
-      String service, String walkinId, bool isCancelled) {
-    showMaterialModalBottomSheet(
-        context: context,
-        shape: const RoundedRectangleBorder(
-            borderRadius: BorderRadius.vertical(top: Radius.circular(25))),
-        builder: (context) {
-          bool isPaid = payment == 'paid';
-          return SizedBox(
-              height: MediaQuery.of(context).size.height * .5,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 15),
-                child: Column(
-                  children: [
-                    const SizedBox(
-                      height: 10,
-                    ),
-                    Text(
-                      'Walkin ID: $walkinId',
-                      style: LoginStyle.modalTitle,
-                    ),
-                    const Divider(),
-                    Expanded(
-                        child: Align(
-                            alignment: Alignment.topLeft,
-                            child: SingleChildScrollView(
-                              child: Column(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceEvenly,
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  RowItem(
-                                      title: const Row(
-                                        children: [
-                                          Icon(Icons.calendar_month,
-                                              color: ColorStyle.tertiary),
-                                          Text(
-                                            'Date',
-                                          )
-                                        ],
-                                      ),
-                                      description: Text(
-                                        date,
-                                        style: const TextStyle(
-                                            fontWeight: FontWeight.bold),
-                                      )),
-                                  const SizedBox(height: 10),
-                                  RowItem(
-                                      title: const Row(
-                                        children: [
-                                          Icon(
-                                            Icons.call,
-                                            color: ColorStyle.tertiary,
-                                          ),
-                                          Text('Contact')
-                                        ],
-                                      ),
-                                      description: Text(
-                                        contact,
-                                        style: const TextStyle(
-                                            fontWeight: FontWeight.bold),
-                                      )),
-                                  const SizedBox(height: 10),
-                                  RowItem(
-                                      title: const Row(
-                                        children: [
-                                          Icon(Icons.monitor_weight,
-                                              color: ColorStyle.tertiary),
-                                          Text('Load')
-                                        ],
-                                      ),
-                                      description: Text(
-                                        '$load kg/s',
-                                        style: const TextStyle(
-                                            fontWeight: FontWeight.bold),
-                                      )),
-                                  const SizedBox(height: 10),
-                                  RowItem(
-                                      title: const Row(
-                                        children: [
-                                          Icon(Icons.local_laundry_service,
-                                              color: ColorStyle.tertiary),
-                                          Text('Service')
-                                        ],
-                                      ),
-                                      description: Text(
-                                        service,
-                                        style: const TextStyle(
-                                            fontWeight: FontWeight.bold),
-                                      )),
-                                  const SizedBox(height: 10),
-                                  RowItem(
-                                      title: const Row(
-                                        children: [
-                                          Icon(Icons.attach_money,
-                                              color: ColorStyle.tertiary),
-                                          Text(
-                                            'Total Cost',
-                                          )
-                                        ],
-                                      ),
-                                      description: Text(
-                                        total,
-                                        style: const TextStyle(
-                                            fontWeight: FontWeight.bold),
-                                      )),
-                                  const SizedBox(height: 10),
-                                  RowItem(
-                                      title: const Row(
-                                        children: [
-                                          Icon(Icons.payments,
-                                              color: ColorStyle.tertiary),
-                                          Text('Payment Status')
-                                        ],
-                                      ),
-                                      description: Text(
-                                        payment,
-                                        style: const TextStyle(
-                                            fontWeight: FontWeight.bold),
-                                      )),
-                                  const SizedBox(height: 10),
-                                ],
-                              ),
-                            ))),
-                    isPaid || isCancelled
-                        ? const SizedBox.shrink()
-                        : Align(
-                            alignment: Alignment.bottomCenter,
-                            child: ElevatedButton(
-                                style: ElevatedButton.styleFrom(
-                                    backgroundColor: ColorStyle.tertiary,
-                                    shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(5)),
-                                    fixedSize: Size(
-                                        MediaQuery.of(context).size.width, 20)),
-                                onPressed: () {
-                                  paymentUpdate('walkin', walkinId);
-                                },
-                                child: const Text(
-                                  'Paid',
-                                  style: TextStyle(color: Colors.white),
-                                )),
-                          )
-                  ],
-                ),
-              ));
-        });
-  }*/
 
   @override
   void initState() {
@@ -1785,6 +1643,8 @@ class _NewDryScreenState extends State<NewDryScreen> {
         });
 
     } else {
+      if(!mounted) return;
+      await errorDialog(context, '${response.error}');
     }
   }
 
@@ -1804,14 +1664,14 @@ class _NewDryScreenState extends State<NewDryScreen> {
     ApiResponse response =
         await updatePayment(type, id, '${prefs.getString('token')}');
 
+    if(!mounted) return;
     Navigator.pop(context);
 
     if (response.error == null) {
       await successDialog(context, '${response.data}');
+      if(!mounted) return;
       Navigator.pop(context);
-
-        getUser();
-
+      getUser();
     } else {
       await errorDialog(context, '${response.error}');
     }
@@ -1821,7 +1681,6 @@ class _NewDryScreenState extends State<NewDryScreen> {
       String name, String contact, String load, String total, String date,
       String payment, String service, String bookingId, String customerImage, String customerAddress
       ) {
-    bool isPaid = payment == 'paid';
 
     showMaterialModalBottomSheet(
       context: context,
@@ -1860,7 +1719,7 @@ class _NewDryScreenState extends State<NewDryScreen> {
                           name: name,
                           fontsize: 14,
                           radius: 18,
-                          img: customerImage == 'null' || customerImage == null
+                          img: customerImage == 'null'
                               ? null
                               : '$picaddress/$customerImage',
                         ),
@@ -2011,7 +1870,6 @@ class _NewDryScreenState extends State<NewDryScreen> {
   void _bottomModalWalkins(
       String contact, String load, String total, String date, String payment,
       String service, String walkinId) {
-    bool isPaid = payment == 'paid';
     showMaterialModalBottomSheet(
         context: context,
         shape: const RoundedRectangleBorder(
@@ -2564,6 +2422,8 @@ class _NewFoldScreenState extends State<NewFoldScreen> {
         });
 
     } else {
+      if(!mounted) return;
+      await errorDialog(context, '${response.error}');
     }
   }
 
@@ -2583,14 +2443,14 @@ class _NewFoldScreenState extends State<NewFoldScreen> {
     ApiResponse response =
         await updatePayment(type, id, '${prefs.getString('token')}');
 
+    if(!mounted) return;
     Navigator.pop(context);
 
     if (response.error == null) {
       await successDialog(context, '${response.data}');
+      if(!mounted) return;
       Navigator.pop(context);
-
-        getUser();
-
+      getUser();
     } else {
       await errorDialog(context, '${response.error}');
     }
@@ -2600,7 +2460,6 @@ class _NewFoldScreenState extends State<NewFoldScreen> {
       String name, String contact, String load, String total, String date,
       String payment, String service, String bookingId, String customerImage, String customerAddress
       ) {
-    bool isPaid = payment == 'paid';
 
     showMaterialModalBottomSheet(
       context: context,
@@ -2639,7 +2498,7 @@ class _NewFoldScreenState extends State<NewFoldScreen> {
                           name: name,
                           fontsize: 14,
                           radius: 18,
-                          img: customerImage == 'null' || customerImage == null
+                          img: customerImage == 'null'
                               ? null
                               : '$picaddress/$customerImage',
                         ),
@@ -2770,7 +2629,6 @@ class _NewFoldScreenState extends State<NewFoldScreen> {
   void _bottomModalWalkins(
       String contact, String load, String total, String date, String payment,
       String service, String walkinId) {
-    bool isPaid = payment == 'paid';
     showMaterialModalBottomSheet(
         context: context,
         shape: const RoundedRectangleBorder(
@@ -3305,6 +3163,8 @@ class _NewPickupScreenState extends State<NewPickupScreen> {
         });
 
     } else {
+      if(!mounted) return;
+      await errorDialog(context, '${response.error}');
     }
   }
 
@@ -3324,14 +3184,14 @@ class _NewPickupScreenState extends State<NewPickupScreen> {
     ApiResponse response =
         await updatePayment(type, id, '${prefs.getString('token')}');
 
+    if(!mounted) return;
     Navigator.pop(context);
 
     if (response.error == null) {
       await successDialog(context, '${response.data}');
+      if(!mounted) return;
       Navigator.pop(context);
-
-        getUser();
-
+      getUser();
     } else {
       await errorDialog(context, '${response.error}');
     }
@@ -3353,428 +3213,18 @@ class _NewPickupScreenState extends State<NewPickupScreen> {
     ApiResponse response =
         await updateComplete(type, id, paid, '${prefs.getString('token')}');
 
+    if(!mounted) return;
     Navigator.pop(context);
 
     if (response.error == null) {
       await successDialog(context, '${response.data}');
+      if(!mounted) return;
       Navigator.pop(context);
-
-        getUser();
-
+      getUser();
     } else {
       await errorDialog(context, '${response.error}');
     }
   }
-
-  /*void _bottomModalBookings(
-      String name, String contact, String load, String total, String date,
-      String payment, String service, String bookingId, bool isCancelled, bool isPending) {
-    showMaterialModalBottomSheet(
-        context: context,
-        shape: const RoundedRectangleBorder(
-            borderRadius: BorderRadius.vertical(top: Radius.circular(25))),
-        builder: (context) {
-          bool isPaid = payment == 'paid';
-          return SizedBox(
-              height: MediaQuery.of(context).size.height * .5,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 15),
-                child: Column(
-                  children: [
-                    const SizedBox(
-                      height: 20,
-                    ),
-                    Text(
-                      'Booking ID: $bookingId',
-                      style: LoginStyle.modalTitle,
-                    ),
-                    const SizedBox(
-                      height: 20,
-                    ),
-                    Expanded(
-                        child: Align(
-                            alignment: Alignment.topLeft,
-                            child: SingleChildScrollView(
-                              child: Column(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  RowItem(
-                                      title: const Row(
-                                        children: [
-                                          Icon(Icons.calendar_month,
-                                              color: ColorStyle.tertiary),
-                                          Text(
-                                            'Date',
-                                          )
-                                        ],
-                                      ),
-                                      description: Text(
-                                        date,
-                                        style: const TextStyle(
-                                            fontWeight: FontWeight.bold),
-                                      )),
-                                  const SizedBox(height: 10),
-                                  RowItem(
-                                      title: const Row(
-                                        children: [
-                                          Icon(Icons.person,
-                                              color: ColorStyle.tertiary),
-                                          Text(
-                                            'Name',
-                                          )
-                                        ],
-                                      ),
-                                      description: Text(
-                                        name,
-                                        style: const TextStyle(
-                                            fontWeight: FontWeight.bold),
-                                      )),
-                                  const SizedBox(height: 10),
-                                  RowItem(
-                                      title: const Row(
-                                        children: [
-                                          Icon(Icons.call,
-                                              color: ColorStyle.tertiary),
-                                          Text(
-                                            'Contact Number',
-                                          )
-                                        ],
-                                      ),
-                                      description: Text(
-                                        contact,
-                                        style: const TextStyle(
-                                            fontWeight: FontWeight.bold),
-                                      )),
-                                  const SizedBox(height: 10),
-                                  RowItem(
-                                      title: const Row(
-                                        children: [
-                                          Icon(Icons.monitor_weight,
-                                              color: ColorStyle.tertiary),
-                                          Text(
-                                            'Load',
-                                          )
-                                        ],
-                                      ),
-                                      description: Text(
-                                        '$load kg/s',
-                                        style: const TextStyle(
-                                            fontWeight: FontWeight.bold),
-                                      )),
-                                  const SizedBox(height: 10),
-                                  RowItem(
-                                      title: const Row(
-                                        children: [
-                                          Icon(Icons.local_laundry_service,
-                                              color: ColorStyle.tertiary),
-                                          Text(
-                                            'Service',
-                                          )
-                                        ],
-                                      ),
-                                      description: Text(
-                                        service,
-                                        style: const TextStyle(
-                                            fontWeight: FontWeight.bold),
-                                      )),
-                                  const SizedBox(height: 10),
-                                  RowItem(
-                                      title: const Row(
-                                        children: [
-                                          Icon(Icons.attach_money,
-                                              color: ColorStyle.tertiary),
-                                          Text(
-                                            'Total Cost',
-                                          )
-                                        ],
-                                      ),
-                                      description: Text(
-                                        total,
-                                        style: const TextStyle(
-                                            fontWeight: FontWeight.bold),
-                                      )),
-                                  const SizedBox(height: 10),
-                                  RowItem(
-                                      title: const Row(
-                                        children: [
-                                          Icon(Icons.person,
-                                              color: ColorStyle.tertiary),
-                                          Text(
-                                            'Payment Status',
-                                          )
-                                        ],
-                                      ),
-                                      description: Text(
-                                        payment,
-                                        style: const TextStyle(
-                                            fontWeight: FontWeight.bold),
-                                      )),
-                                  const SizedBox(height: 10),
-                                ],
-                              ),
-                            ))),
-                    isPaid
-                        ? isPending
-                            ? Align(
-                                alignment: Alignment.bottomCenter,
-                                child: ElevatedButton(
-                                    style: ElevatedButton.styleFrom(
-                                        backgroundColor: ColorStyle.tertiary,
-                                        shape: RoundedRectangleBorder(
-                                            borderRadius:
-                                                BorderRadius.circular(5)),
-                                        fixedSize: Size(
-                                            MediaQuery.of(context).size.width,
-                                            20)),
-                                    onPressed: () {
-                                      completeUpdate(
-                                          'booking', bookingId, 'paid');
-                                    },
-                                    child: const Text(
-                                      'Complete',
-                                      style: TextStyle(color: Colors.white),
-                                    )))
-                            : const SizedBox.shrink()
-                        : Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                            children: [
-                              ElevatedButton(
-                                  style: ElevatedButton.styleFrom(
-                                      backgroundColor: ColorStyle.tertiary,
-                                      shape: RoundedRectangleBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(5)),
-                                      fixedSize: Size(
-                                          MediaQuery.of(context).size.width *
-                                              .40,
-                                          20)),
-                                  onPressed: () {
-                                    paymentUpdate('booking', bookingId);
-                                  },
-                                  child: const Text(
-                                    'Paid',
-                                    style: TextStyle(color: Colors.white),
-                                  )),
-                              ElevatedButton(
-                                  style: ElevatedButton.styleFrom(
-                                      backgroundColor: ColorStyle.tertiary,
-                                      shape: RoundedRectangleBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(5)),
-                                      fixedSize: Size(
-                                          MediaQuery.of(context).size.width *
-                                              .40,
-                                          20)),
-                                  onPressed: () {
-                                    completeUpdate(
-                                        'booking', bookingId, 'notpaid');
-                                  },
-                                  child: const Text(
-                                    'Complete',
-                                    style: TextStyle(color: Colors.white),
-                                  )),
-                            ],
-                          )
-                  ],
-                ),
-              ));
-        });
-  }
-
-  void _bottomModalWalkins(
-      String contact, String load, String total, String date, String payment,
-      String service, String walkinId, bool isCancelled, bool isPending) {
-    showMaterialModalBottomSheet(
-        context: context,
-        shape: const RoundedRectangleBorder(
-            borderRadius: BorderRadius.vertical(top: Radius.circular(25))),
-        builder: (context) {
-          bool isPaid = payment == 'paid';
-          return SizedBox(
-              height: MediaQuery.of(context).size.height * .5,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 15),
-                child: Column(
-                  children: [
-                    const SizedBox(
-                      height: 10,
-                    ),
-                    Text(
-                      'Walkin ID: $walkinId',
-                      style: LoginStyle.modalTitle,
-                    ),
-                    const Divider(),
-                    Expanded(
-                        child: Align(
-                            alignment: Alignment.topLeft,
-                            child: SingleChildScrollView(
-                              child: Column(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceEvenly,
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  RowItem(
-                                      title: const Row(
-                                        children: [
-                                          Icon(Icons.calendar_month,
-                                              color: ColorStyle.tertiary),
-                                          Text(
-                                            'Date',
-                                          )
-                                        ],
-                                      ),
-                                      description: Text(
-                                        date,
-                                        style: const TextStyle(
-                                            fontWeight: FontWeight.bold),
-                                      )),
-                                  const SizedBox(height: 10),
-                                  RowItem(
-                                      title: const Row(
-                                        children: [
-                                          Icon(
-                                            Icons.call,
-                                            color: ColorStyle.tertiary,
-                                          ),
-                                          Text('Contact')
-                                        ],
-                                      ),
-                                      description: Text(
-                                        contact,
-                                        style: const TextStyle(
-                                            fontWeight: FontWeight.bold),
-                                      )),
-                                  const SizedBox(height: 10),
-                                  RowItem(
-                                      title: const Row(
-                                        children: [
-                                          Icon(Icons.monitor_weight,
-                                              color: ColorStyle.tertiary),
-                                          Text('Load')
-                                        ],
-                                      ),
-                                      description: Text(
-                                        '$load kg/s',
-                                        style: const TextStyle(
-                                            fontWeight: FontWeight.bold),
-                                      )),
-                                  const SizedBox(height: 10),
-                                  RowItem(
-                                      title: const Row(
-                                        children: [
-                                          Icon(Icons.local_laundry_service,
-                                              color: ColorStyle.tertiary),
-                                          Text('Service')
-                                        ],
-                                      ),
-                                      description: Text(
-                                        service,
-                                        style: const TextStyle(
-                                            fontWeight: FontWeight.bold),
-                                      )),
-                                  const SizedBox(height: 10),
-                                  RowItem(
-                                      title: const Row(
-                                        children: [
-                                          Icon(Icons.attach_money,
-                                              color: ColorStyle.tertiary),
-                                          Text(
-                                            'Total Cost',
-                                          )
-                                        ],
-                                      ),
-                                      description: Text(
-                                        total,
-                                        style: const TextStyle(
-                                            fontWeight: FontWeight.bold),
-                                      )),
-                                  const SizedBox(height: 10),
-                                  RowItem(
-                                      title: const Row(
-                                        children: [
-                                          Icon(Icons.payments,
-                                              color: ColorStyle.tertiary),
-                                          Text('Payment Status')
-                                        ],
-                                      ),
-                                      description: Text(
-                                        payment,
-                                        style: const TextStyle(
-                                            fontWeight: FontWeight.bold),
-                                      )),
-                                  const SizedBox(height: 10),
-                                ],
-                              ),
-                            ))),
-                    isPaid
-                        ? isPending
-                            ? Align(
-                                alignment: Alignment.bottomCenter,
-                                child: ElevatedButton(
-                                    style: ElevatedButton.styleFrom(
-                                        backgroundColor: ColorStyle.tertiary,
-                                        shape: RoundedRectangleBorder(
-                                            borderRadius:
-                                                BorderRadius.circular(5)),
-                                        fixedSize: Size(
-                                            MediaQuery.of(context).size.width,
-                                            20)),
-                                    onPressed: () {
-                                      completeUpdate(
-                                          'walkin', walkinId, 'paid');
-                                    },
-                                    child: const Text(
-                                      'Complete',
-                                      style: TextStyle(color: Colors.white),
-                                    )))
-                            : const SizedBox.shrink()
-                        : Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                            children: [
-                              ElevatedButton(
-                                  style: ElevatedButton.styleFrom(
-                                      backgroundColor: ColorStyle.tertiary,
-                                      shape: RoundedRectangleBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(5)),
-                                      fixedSize: Size(
-                                          MediaQuery.of(context).size.width *
-                                              .40,
-                                          20)),
-                                  onPressed: () {
-                                    paymentUpdate('walkin', walkinId);
-                                  },
-                                  child: const Text(
-                                    'Paid',
-                                    style: TextStyle(color: Colors.white),
-                                  )),
-                              ElevatedButton(
-                                  style: ElevatedButton.styleFrom(
-                                      backgroundColor: ColorStyle.tertiary,
-                                      shape: RoundedRectangleBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(5)),
-                                      fixedSize: Size(
-                                          MediaQuery.of(context).size.width *
-                                              .40,
-                                          20)),
-                                  onPressed: () {
-                                    completeUpdate(
-                                        'walkin', walkinId, 'notpaid');
-                                  },
-                                  child: const Text(
-                                    'Complete',
-                                    style: TextStyle(color: Colors.white),
-                                  )),
-                            ],
-                          )
-                  ],
-                ),
-              ));
-        });
-  }*/
 
   void _bottomModalBookings(
       String name, String contact, String load, String total, String date,
@@ -3820,7 +3270,7 @@ class _NewPickupScreenState extends State<NewPickupScreen> {
                           name: name,
                           fontsize: 14,
                           radius: 18,
-                          img: customerImage == 'null' || customerImage == null
+                          img: customerImage == 'null'
                               ? null
                               : '$picaddress/$customerImage',
                         ),
@@ -4661,7 +4111,6 @@ class _NewCompleteScreenState extends State<NewCompleteScreen> {
       String name, String contact, String load, String total, String date,
       String payment, String service, String bookingId, String customerImage, String customerAddress
       ) {
-    bool isPaid = payment == 'paid';
 
     showMaterialModalBottomSheet(
       context: context,
@@ -4700,7 +4149,7 @@ class _NewCompleteScreenState extends State<NewCompleteScreen> {
                           name: name,
                           fontsize: 14,
                           radius: 18,
-                          img: customerImage == 'null' || customerImage == null
+                          img: customerImage == 'null'
                               ? null
                               : '$picaddress/$customerImage',
                         ),
@@ -4832,7 +4281,6 @@ class _NewCompleteScreenState extends State<NewCompleteScreen> {
   void _bottomModalWalkins(
       String contact, String load, String total, String date, String payment,
       String service, String walkinId) {
-    bool isPaid = payment == 'paid';
     showMaterialModalBottomSheet(
         context: context,
         shape: const RoundedRectangleBorder(
@@ -5091,7 +4539,6 @@ class _NewCompleteScreenState extends State<NewCompleteScreen> {
                               Map book = bookings[index] as Map;
                               bool isCancelled = book['deleted_at'] != null &&
                                   book['Status'] == '0';
-                              bool isPickup = book['Status'] == '4';
                               String status = '';
                               Color? color;
 
@@ -5223,7 +4670,6 @@ class _NewCompleteScreenState extends State<NewCompleteScreen> {
                               Map walk = walkins[index] as Map;
                               bool isCancelled = walk['deleted_at'] != null &&
                                   walk['Status'] == '0';
-                              bool isComplete = walk['Status'] == '5';
                               String status = '';
                               Color? color;
 

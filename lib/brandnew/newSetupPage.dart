@@ -210,8 +210,11 @@ class _SetupInformationScreenState extends State<SetupInformationScreen> {
 
     ApiResponse response = await shopInfoRegister(shopInfo, serviceInfo, machineInfo,'${prefs.getString('token')}');
 
+    if(!mounted) return;
     if(response.error == null){
+      if(!mounted) return;
       await successDialog(context, '${response.data}');
+      if(!mounted) return;
       Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => const NewHomeScreen()), (route) => false);
     }else{
       await errorDialog(context, '${response.error}');

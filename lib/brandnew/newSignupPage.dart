@@ -16,7 +16,6 @@ import 'package:image_picker/image_picker.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 import 'package:pinput/pinput.dart';
-import 'package:capstone/services/validation.dart';
 
 class NewSignupScreen extends StatefulWidget {
   final String usertype;
@@ -399,6 +398,7 @@ class _NewSignupScreenState extends State<NewSignupScreen> {
                                     style: RegistrationStyle.signButton(),
                                     onPressed: ()async{
                                       await isNumberExists();
+                                      if(!context.mounted) return;
                                       if(_nameForm.text.isEmpty || _addressForm.text.isEmpty
                                           || _contactForm.text.isEmpty || _selectedGender == null || _passForm.text.isEmpty){
                                         warningDialog(context, 'Please fill out all the form');
@@ -472,14 +472,17 @@ class _NewOTPScreenState extends State<NewOTPScreen> {
           widget.name, widget.gender, widget.address, widget.contact,
           widget.password, base64Encode(widget.image), widget.usertype);
 
+    if(!mounted) return;
       if (apiResponse.error == null) {
         await successDialog(context, 'Registered Successfully');
+        if(!mounted) return;
         Navigator.pop(context);
         if (mounted) {
           Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => const NewLoginScreen()), (route) => false);
         }
       } else {
         await errorDialog(context, '${apiResponse.error}');
+        if(!mounted) return;
         Navigator.pop(context);
       }
     }
@@ -520,6 +523,7 @@ class _NewOTPScreenState extends State<NewOTPScreen> {
    if(response.error == null){
      regForm();
    }else{
+     if(!mounted) return;
      warningTextDialog(context, 'Invalid OTP', '${response.error}');
    }
   }
@@ -566,6 +570,7 @@ class _NewOTPScreenState extends State<NewOTPScreen> {
                     Pinput(
                       validator: (value){
                         otp = value!;
+                        return null;
                       },
                       length: 4,
                       defaultPinTheme: defaultPinTheme,

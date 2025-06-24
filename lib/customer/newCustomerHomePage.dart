@@ -11,7 +11,6 @@ import 'package:capstone/customer/newServiceSummaryPage.dart';
 import 'package:capstone/customer/newShopInfoPage.dart';
 import 'package:capstone/model/CustomerInfo.dart';
 import 'package:capstone/services/services.dart';
-import 'package:capstone/services/timelineservices.dart';
 import 'package:capstone/styles/mainColorStyle.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_profile_picture/flutter_profile_picture.dart';
@@ -1251,7 +1250,7 @@ class _AccountScreenState extends State<AccountScreen> {
                   onPressed: ()async{
                     CustomerInfo info = CustomerInfo(
                         image: '${prof['CustomerImage']}', name: '${prof['CustomerName']}', sex: '${prof['CustomerSex']}',
-                                contact: '${prof['CustomerContactNumber']}', id: '${prof['CustomerID']}');
+                                contact: '${prof['CustomerContactNumber']}', id: '${prof['CustomerID']}', address: '${prof['CustomerAddress']}');
                     final result = await pushWithoutNavBar(context, MaterialPageRoute(builder: (context) =>
                         NewProfileEditScreen(info: info)));
 

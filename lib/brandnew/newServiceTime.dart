@@ -1,10 +1,10 @@
 
 import 'package:capstone/api_response.dart';
+import 'package:capstone/brandnew/ConstWidgets.dart';
 import 'package:capstone/brandnew/dialogs.dart';
 import 'package:capstone/model/MachineInfo.dart';
-import 'package:capstone/services/servicesadd.dart';
+import 'package:capstone/services/services.dart';
 import 'package:capstone/styles/mainColorStyle.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:row_item/row_item.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -39,6 +39,7 @@ class _NewServiceTimeScreenState extends State<NewServiceTimeScreen> {
         isLoading = false;
       });
     }else{
+      if(!mounted) return;
       await errorDialog(context, '${response.error}');
     }
   }
@@ -54,15 +55,9 @@ class _NewServiceTimeScreenState extends State<NewServiceTimeScreen> {
   Widget build(BuildContext context) {
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Service Time'),
-        titleTextStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-        leading: IconButton(
-          onPressed: (){
-            Navigator.pop(context,true);
-          },
-          icon: const Icon(CupertinoIcons.chevron_left,color: Colors.white,),
-        ),
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(kToolbarHeight),
+        child: backAppBar(context, 'Service Time'),
       ),
       body: isLoading
           ? loading()
@@ -183,8 +178,10 @@ class _EditServiceTimeScreenState extends State<EditServiceTimeScreen> {
     dryerTime: _dryerDuration.text, foldingTime: _foldDuration.text, id: widget.info.id);
     ApiResponse response = await editServiceTime(info,'${prefs.getString('token')}');
 
+    if(!mounted) return;
     if(response.error == null){
       await successDialog(context, '${response.data}');
+      if(!mounted) return;
       Navigator.pop(context,true);
     }else{
       await errorDialog(context, '${response.error}');
@@ -204,17 +201,9 @@ class _EditServiceTimeScreenState extends State<EditServiceTimeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Edit Service Time'),
-        titleTextStyle: const TextStyle(
-            fontSize: 18, fontWeight: FontWeight.bold
-        ),
-        leading: IconButton(
-          onPressed: (){
-            Navigator.pop(context);
-          },
-          icon: const Icon(CupertinoIcons.chevron_left,color: Colors.white,),
-        ),
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(kToolbarHeight),
+        child: backAppBar(context, 'Edit Service Time'),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(8),

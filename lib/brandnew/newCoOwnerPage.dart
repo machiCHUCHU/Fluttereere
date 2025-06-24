@@ -1,13 +1,11 @@
 
 import 'package:capstone/api_response.dart';
+import 'package:capstone/brandnew/ConstWidgets.dart';
 import 'package:capstone/brandnew/dialogs.dart';
 import 'package:capstone/model/CoOwnerInfo.dart';
 import 'package:capstone/services/services.dart';
-import 'package:capstone/services/servicesadd.dart';
-import 'package:capstone/services/validation.dart';
 import 'package:capstone/styles/mainColorStyle.dart';
 import 'package:capstone/styles/registrationStyle.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_profile_picture/flutter_profile_picture.dart';
 import 'package:flutter_timer_countdown/flutter_timer_countdown.dart';
@@ -23,7 +21,7 @@ class NewCoOwnerScreen extends StatefulWidget {
 }
 
 class _NewCoOwnerScreenState extends State<NewCoOwnerScreen> {
-  List<dynamic> coOwners = []; bool isLoading = true; bool hasdata = false;
+  List<dynamic> coOwners = []; bool isLoading = true; bool hasData = false;
 
   Future<void> coOwnerDisplay() async{
     final SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -33,9 +31,10 @@ class _NewCoOwnerScreenState extends State<NewCoOwnerScreen> {
       setState(() {
         coOwners = response.data as List<dynamic>;
         isLoading = false;
-        hasdata = coOwners.isNotEmpty;
+        hasData = coOwners.isNotEmpty;
       });
     }else{
+      if(!mounted) return;
       await errorDialog(context, '${response.error}');
     }
   }
@@ -49,19 +48,13 @@ class _NewCoOwnerScreenState extends State<NewCoOwnerScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Co-Owners'),
-        titleTextStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-        leading: IconButton(
-          onPressed: (){
-            Navigator.pop(context,true);
-          },
-          icon: const Icon(CupertinoIcons.chevron_left,color: Colors.white,),
-        ),
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(kToolbarHeight),
+        child: backAppBar(context, 'Co-Owners'),
       ),
       body: isLoading
           ? loading()
-          : hasdata
+          : hasData
           ? ListView.builder(
           padding: const EdgeInsets.all(8),
           itemCount: coOwners.length,
@@ -182,15 +175,9 @@ class _AddCoOwnerScreenState extends State<AddCoOwnerScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Add Co-Owners'),
-        titleTextStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-        leading: IconButton(
-          onPressed: (){
-            Navigator.pop(context,true);
-          },
-          icon: const Icon(CupertinoIcons.chevron_left,color: Colors.white,),
-        ),
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(kToolbarHeight),
+        child: backAppBar(context, 'Add Co-Owners'),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(8),
@@ -432,6 +419,7 @@ class _AddCoOwnerScreenState extends State<AddCoOwnerScreen> {
           ),
           onPressed: ()async{
             await isNumberExists();
+            if(!context.mounted) return;
             if(_coName.text.isEmpty || _coAddress.text.isEmpty || _coContact.text.isEmpty || _coPassword.text.isEmpty || selectedAccess == ''){
               warningDialog(context, 'All fields are required');
             }else if(exist == true){
@@ -443,7 +431,7 @@ class _AddCoOwnerScreenState extends State<AddCoOwnerScreen> {
                       'e.g. 09123456789');
             }else if(!validatePassword(_coPassword.text)){
               warningTextDialog(context, 'Invalid Password Format',
-                  'Your password should contain atleast 8 characters, one uppercase letter, '
+                  'Your password should contain at least 8 characters, one uppercase letter, '
                       'one lowercase letter, one number, and one special character');
             }
             else{
@@ -476,7 +464,7 @@ class _NewOTPScreenState extends State<NewOTPScreen> {
 
   Future<void> regForm() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
-
+    if(!mounted) return;
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -497,14 +485,17 @@ class _NewOTPScreenState extends State<NewOTPScreen> {
 
     ApiResponse response = await addCoOwners(info, widget.password, '${prefs.getString('token')}');
 
+    if(!mounted) return;
     if (response.error == null) {
       await successDialog(context, '${response.data}');
+      if(!mounted) return;
       Navigator.pop(context);
       if (mounted) {
         Navigator.popUntil(context, (route) => route.isFirst);
       }
     } else {
       await errorDialog(context, '${response.error}');
+      if(!mounted) return;
       Navigator.pop(context);
     }
   }
@@ -514,7 +505,7 @@ class _NewOTPScreenState extends State<NewOTPScreen> {
 
   }
 
-  Future<void> addCoowner() async{
+  Future<void> addCoOwner() async{
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     CoOwnerInfo info = CoOwnerInfo(
         name: widget.info.name, address: widget.info.address, contact: widget.info.contact,
@@ -522,8 +513,10 @@ class _NewOTPScreenState extends State<NewOTPScreen> {
 
     ApiResponse response = await addCoOwners(info, widget.password, '${prefs.getString('token')}');
 
+    if(!mounted) return;
     if(response.error == null){
       await successDialog(context, '${response.data}');
+      if(!mounted) return;
       Navigator.popUntil(context, (route) => route.isFirst);
     }else{
     }
@@ -555,6 +548,7 @@ class _NewOTPScreenState extends State<NewOTPScreen> {
     if(response.error == null){
       regForm();
     }else{
+      if(!mounted) return;
       warningTextDialog(context, 'Invalid OTP', '${response.error}');
     }
   }
@@ -601,6 +595,7 @@ class _NewOTPScreenState extends State<NewOTPScreen> {
                     Pinput(
                       validator: (value){
                         otp = value!;
+                        return null;
                       },
                       length: 4,
                       defaultPinTheme: defaultPinTheme,
@@ -715,8 +710,10 @@ class _EditCoOwnerScreenState extends State<EditCoOwnerScreen> {
         access: selectedAccess.isEmpty ? widget.info.access : access, contact: editContact);
     ApiResponse response = await editCoOwners(info, widget.info.contact ?? '','${prefs.getString('token')}');
 
+    if(!mounted) return;
     if(response.error == null){
       await successDialog(context, '${response.data}');
+      if(!mounted) return;
         Navigator.pop(context,true);
     }else{
       await warningDialog(context, '${response.error}');
@@ -745,20 +742,14 @@ class _EditCoOwnerScreenState extends State<EditCoOwnerScreen> {
         selIndex = 1;
 
     }
-    GroupButtonController _controller = GroupButtonController(
+    GroupButtonController controller = GroupButtonController(
       selectedIndex: selIndex,
     );
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Edit Co-Owners Account'),
-        titleTextStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-        leading: IconButton(
-          onPressed: (){
-            Navigator.pop(context,true);
-          },
-          icon: const Icon(CupertinoIcons.chevron_left,color: Colors.white,),
-        ),
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(kToolbarHeight),
+        child: backAppBar(context, 'Edit Co-Owners Account'),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(8),
@@ -872,7 +863,7 @@ class _EditCoOwnerScreenState extends State<EditCoOwnerScreen> {
               child: Column(
                 children: [
                   GroupButton(
-                    controller: _controller,
+                    controller: controller,
                     isRadio: true,
                     options: const GroupButtonOptions(
                       selectedColor: Colors.blue,
@@ -1025,15 +1016,9 @@ class _NumberChangeScreenState extends State<NumberChangeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Change Number'),
-        titleTextStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-        leading: IconButton(
-          onPressed: (){
-            Navigator.pop(context,true);
-          },
-          icon: const Icon(CupertinoIcons.chevron_left,color: Colors.white,),
-        ),
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(kToolbarHeight),
+        child: backAppBar(context, 'Change Number'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(4.0),
@@ -1066,6 +1051,7 @@ class _NumberChangeScreenState extends State<NumberChangeScreen> {
                 ),
                 onPressed: ()async{
                   await isNumberExists();
+                  if(!context.mounted) return;
                   if(exist == true){
                     warningTextDialog(context, 'Invalid Contact Number',
                         'Contact number already existed. Please input another number.');
@@ -1077,7 +1063,7 @@ class _NumberChangeScreenState extends State<NumberChangeScreen> {
                   else{
                     final response = await Navigator.push(context, MaterialPageRoute(builder: (context) => ValidateNewContactOTP(contact: _newContact.text)));
                     otpDisplay();
-
+                    if(!context.mounted) return;
                     Navigator.pop(context,response);
                   }
                 },
@@ -1128,6 +1114,7 @@ class _ValidateNewContactOTPState extends State<ValidateNewContactOTP> {
 
   Future<void> inputCodeCheck() async{
     ApiResponse response = await otpCheck(otp);
+    if(!mounted) return;
 
     if(response.error == null){
       Navigator.pop(context, widget.contact);
@@ -1178,6 +1165,7 @@ class _ValidateNewContactOTPState extends State<ValidateNewContactOTP> {
                     Pinput(
                       validator: (value){
                         otp = value!;
+                        return null;
                       },
                       length: 4,
                       defaultPinTheme: defaultPinTheme,

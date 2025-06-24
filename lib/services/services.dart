@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:capstone/api_response.dart';
 import 'package:capstone/model/BookingInfo.dart';
+import 'package:capstone/model/CoOwnerInfo.dart';
 import 'package:capstone/model/CustomerInfo.dart';
 import 'package:capstone/model/Inventory.dart';
 import 'package:capstone/model/LaundryServiceInfo.dart';
@@ -19,7 +20,6 @@ Future<ApiResponse> register(String name, String sex, String address,
   ApiResponse apiResponse = ApiResponse();
 
   try{
-
     final response = await http.post(
         Uri.parse('$ipaddress/registration'),
         headers: {'Accept': 'application/json'},
@@ -130,12 +130,98 @@ Future<ApiResponse> changePassword(String contact, String password) async{
 
 }
 
+Future<ApiResponse> otpVerification(String contact) async{
+  ApiResponse apiResponse = ApiResponse();
+
+  try {
+
+    final response = await http.post(
+        Uri.parse('$ipaddress/verification'),
+        headers: {
+          'Accept': 'application/json',
+        },
+        body: {
+          'contact': contact
+        }
+    );
+
+    String? rawCookie = response.headers['set-cookie'];
+    if (rawCookie != null) {
+      session = rawCookie.split(';')[0];
+    }
+
+    if(response.statusCode == 200){
+      apiResponse.data = jsonDecode(response.body)['response'];
+    }else{
+      apiResponse.error = jsonDecode(response.body)['message'];
+    }
+
+  } catch(e){
+    apiResponse.error = 'Something went wrong';
+  }
+
+  return apiResponse;
+}
+
+Future<ApiResponse> otpCheck(String otpinput) async{
+  ApiResponse apiResponse = ApiResponse();
+
+  try {
+
+    final response = await http.post(
+        Uri.parse('$ipaddress/verification/otp'),
+        headers: {
+          'Accept': 'application/json',
+          'Cookie': session ?? ''
+        },
+        body: {
+          'otpinput': otpinput
+        }
+    );
+
+    if(response.statusCode == 200){
+      apiResponse.data = jsonDecode(response.body)['response'];
+    }else{
+      apiResponse.error = jsonDecode(response.body)['message'];
+    }
+
+  } catch(e){
+    apiResponse.error = 'Something went wrong';
+  }
+
+  return apiResponse;
+}
+
+Future<ApiResponse> rememberToken(String token) async{
+  ApiResponse apiResponse = ApiResponse();
+
+  try{
+    final response = await http.get(
+      Uri.parse('$ipaddress/remember'),
+      headers: {
+        'Authorization': 'Bearer $token'
+      },
+    );
+
+    if(response.statusCode == 200){
+      apiResponse.data = jsonDecode(response.body)['message'];
+    }else{
+      apiResponse.error = 'Something went wrong';
+    }
+  }catch(e){
+    apiResponse.error = 'Something went wrong';
+  }
+
+  return apiResponse;
+}
+
+//owner http services
+
 Future<ApiResponse> shopInfoRegister(ShopInfo shopInfo, LaundryServiceInfo service, MachineInfo machine, String token) async {
 
   ApiResponse apiResponse = ApiResponse();
 
   try{
-
     final response = await http.post(
         Uri.parse('$ipaddress/shop-setup'),
         headers: {
@@ -175,7 +261,6 @@ Future<ApiResponse> shopInfoRegister(ShopInfo shopInfo, LaundryServiceInfo servi
   }
 
   return apiResponse;
-
 }
 
 Future<ApiResponse> addInventory(Inventory inventory, String token) async {
@@ -260,68 +345,6 @@ Future<ApiResponse> deleteInventory(String id, String token) async{
     }
 
   }catch(e){
-    apiResponse.error = 'Something went wrong';
-  }
-
-  return apiResponse;
-}
-
-Future<ApiResponse> otpVerification(String contact) async{
-  ApiResponse apiResponse = ApiResponse();
-
-  try {
-
-    final response = await http.post(
-        Uri.parse('$ipaddress/verification'),
-        headers: {
-          'Accept': 'application/json',
-        },
-      body: {
-          'contact': contact
-      }
-    );
-
-    String? rawCookie = response.headers['set-cookie'];
-    if (rawCookie != null) {
-      session = rawCookie.split(';')[0];
-    }
-
-    if(response.statusCode == 200){
-      apiResponse.data = jsonDecode(response.body)['response'];
-    }else{
-      apiResponse.error = jsonDecode(response.body)['message'];
-    }
-
-  } catch(e){
-    apiResponse.error = 'Something went wrong';
-  }
-
-  return apiResponse;
-}
-
-Future<ApiResponse> otpCheck(String otpinput) async{
-  ApiResponse apiResponse = ApiResponse();
-
-  try {
-
-    final response = await http.post(
-        Uri.parse('$ipaddress/verification/otp'),
-        headers: {
-          'Accept': 'application/json',
-          'Cookie': session ?? ''
-        },
-        body: {
-          'otpinput': otpinput
-        }
-    );
-
-    if(response.statusCode == 200){
-      apiResponse.data = jsonDecode(response.body)['response'];
-    }else{
-      apiResponse.error = jsonDecode(response.body)['message'];
-    }
-
-  } catch(e){
     apiResponse.error = 'Something went wrong';
   }
 
@@ -1001,30 +1024,7 @@ Future<ApiResponse> updateComplete(String type, String id, String paid, String t
   return apiResponse;
 }
 
-Future<ApiResponse> getRequestShops(String token) async{
-  ApiResponse apiResponse = ApiResponse();
-  
-  try{
-    final response = await http.get(
-      Uri.parse('$ipaddress/shop-request/display'),
-      headers: {
-        'Accept': 'application/json',
-        'Authorization': 'Bearer $token'
-      }
-    );
-
-    if(response.statusCode == 200){
-      apiResponse.data = jsonDecode(response.body)['response'];
-    }else{
-      apiResponse.error = 'Something went wrong';
-    }
-  }catch(e){
-    apiResponse.error = 'Something went wrong';
-  }
-
-  return apiResponse;
-}
-
+//customer http services
 Future<ApiResponse> getLaundry(String nav,String token) async{
   ApiResponse apiResponse = ApiResponse();
   try{
@@ -1056,15 +1056,15 @@ Future<ApiResponse> getSummary(String bookId, String token) async{
 
   try{
     final response = await http.get(
-        Uri.parse('$ipaddress/laundry/summary/$bookId'),
-        headers: {
-          'Accept': 'application/json',
-          'Authorization': 'Bearer $token'
-        },
+      Uri.parse('$ipaddress/laundry/summary/$bookId'),
+      headers: {
+        'Accept': 'application/json',
+        'Authorization': 'Bearer $token'
+      },
     );
 
     if(response.statusCode == 200){
-        apiResponse.data = jsonDecode(response.body)['response'];
+      apiResponse.data = jsonDecode(response.body)['response'];
     }else{
       apiResponse.error = 'Something went wrong';
     }
@@ -1110,6 +1110,30 @@ Future<ApiResponse> completeService(String bookId,String token) async{
         'Accept': 'application/json',
         'Authorization': 'Bearer $token'
       },
+    );
+
+    if(response.statusCode == 200){
+      apiResponse.data = jsonDecode(response.body)['response'];
+    }else{
+      apiResponse.error = 'Something went wrong';
+    }
+  }catch(e){
+    apiResponse.error = 'Something went wrong';
+  }
+
+  return apiResponse;
+}
+
+Future<ApiResponse> getRequestShops(String token) async{
+  ApiResponse apiResponse = ApiResponse();
+
+  try{
+    final response = await http.get(
+        Uri.parse('$ipaddress/shop-request/display'),
+        headers: {
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $token'
+        }
     );
 
     if(response.statusCode == 200){
@@ -1295,84 +1319,9 @@ Future<ApiResponse> customerProfile(String token) async{
     );
 
     if(response.statusCode == 200){
-      apiResponse.data = jsonDecode(response.body)['customer'];
+      apiResponse.data = jsonDecode(response.body)['response'];
     }else{
       apiResponse.error = 'Something went wrong';
-    }
-  }catch(e){
-    apiResponse.error = 'Something went wrong';
-  }
-
-  return apiResponse;
-}
-
-Future<ApiResponse> rememberToken(String token) async{
-  ApiResponse apiResponse = ApiResponse();
-
-  try{
-    final response = await http.get(
-      Uri.parse('$ipaddress/remember'),
-      headers: {
-        'Authorization': 'Bearer $token'
-      },
-    );
-
-    if(response.statusCode == 200){
-      apiResponse.data = jsonDecode(response.body)['message'];
-    }else{
-      apiResponse.error = 'Something went wrong';
-    }
-  }catch(e){
-    apiResponse.error = 'Something went wrong';
-  }
-
-  return apiResponse;
-}
-
-Future<ApiResponse> updateShop(
-    String lightid, String heavyid, String comforterid, String lightload, String lightprice,
-    String heavyload, String heavyprice, String comforterload, String comforterprice,
-    String shopname, String shopadd, String workday, String workhour,String token) async{
-  ApiResponse apiResponse = ApiResponse();
-
-  try{
-    final response = await http.put(
-      Uri.parse('$ipaddress/shop/update'),
-      headers: {
-        'Accept': 'application/json',
-        'Authorization': 'Bearer $token'
-      },
-      body: {
-        'lightid': lightid,
-        'heavyid': heavyid,
-        'comforterid': comforterid,
-        'lightload': lightload,
-        'heavyload': heavyload,
-        'comforterload': comforterload,
-        'lightprice': lightprice,
-        'heavyprice': heavyprice,
-        'comforterprice': comforterprice,
-        'shopname': shopname,
-        'shopadd': shopadd,
-        'workday': workday,
-        'workhour': workhour
-      }
-    );
-
-    switch(response.statusCode){
-      case 200:
-        apiResponse.data = jsonDecode(response.body)['message'];
-        break;
-      case 422:
-        final errors = jsonDecode(response.body)['message'];
-        apiResponse.error = errors;
-        break;
-      case 403:
-        apiResponse.error = jsonDecode(response.body)['message'];
-        break;
-      default:
-        apiResponse.error = jsonDecode(response.body)['message'];
-        break;
     }
   }catch(e){
     apiResponse.error = 'Something went wrong';
@@ -1410,7 +1359,6 @@ Future<ApiResponse> updateCustomerProfile(CustomerInfo info, String token) async
 
   return apiResponse;
 }
-
 
 Future<ApiResponse> accessType(String token) async{
   ApiResponse apiResponse = ApiResponse();
@@ -1456,11 +1404,697 @@ Future<ApiResponse> getRequestShopInfo(String shopId, String token) async{
       apiResponse.data2 = jsonDecode(response.body)['ratings'];
       apiResponse.total = jsonDecode(response.body)['rateSum'];
       apiResponse.count = jsonDecode(response.body)['rateCount'];
-      apiResponse.message = jsonDecode(response.body)['message'];
     }else{
       apiResponse.error = 'Something went wrong';
     }
   }catch(e){
+    apiResponse.error = 'Something went wrong';
+  }
+
+  return apiResponse;
+}
+
+Future<ApiResponse> getUpcomingTask(String date, String token) async{
+  ApiResponse apiResponse = ApiResponse();
+
+  try{
+    final response = await http.post(
+        Uri.parse('$ipaddress/upcoming-task'),
+        headers: {
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $token'
+        },
+        body: {
+          'date': date
+        }
+    );
+
+    if(response.statusCode == 200){
+      apiResponse.data = jsonDecode(response.body)['response'];
+    }else{
+      apiResponse.error = jsonDecode(response.body)['message'];
+    }
+  }catch(e){
+    apiResponse.error = 'Something went wrong';
+  }
+
+  return apiResponse;
+}
+
+Future<ApiResponse> getProfile(String token) async{
+  ApiResponse apiResponse = ApiResponse();
+
+  try{
+    final response = await http.get(
+      Uri.parse('$ipaddress/settings/profile'),
+      headers: {
+        'Accept': 'application/json',
+        'Authorization': 'Bearer $token'
+      },
+    );
+
+    if(response.statusCode == 200){
+      apiResponse.data = jsonDecode(response.body)['response'];
+    }else{
+      apiResponse.error = 'Something went wrong';
+    }
+  }catch(e){
+    apiResponse.error = 'Something went wrong';
+  }
+
+  return apiResponse;
+}
+
+Future<ApiResponse> getShopInformation(String token) async{
+  ApiResponse apiResponse = ApiResponse();
+
+  try{
+    final response = await http.get(
+      Uri.parse('$ipaddress/settings/shop-information'),
+      headers: {
+        'Accept': 'application/json',
+        'Authorization': 'Bearer $token'
+      },
+    );
+
+    if(response.statusCode == 200){
+      apiResponse.data = jsonDecode(response.body)['response'];
+    }else{
+      apiResponse.error = 'Something went wrong';
+    }
+  }catch(e){
+    apiResponse.error = 'Something went wrong';
+  }
+
+  return apiResponse;
+}
+
+Future<ApiResponse> getLaundryServices(String token) async{
+  ApiResponse apiResponse = ApiResponse();
+
+  try{
+    final response = await http.get(
+      Uri.parse('$ipaddress/settings/laundry-services'),
+      headers: {
+        'Accept': 'application/json',
+        'Authorization': 'Bearer $token'
+      },
+    );
+
+    if(response.statusCode == 200){
+      apiResponse.data = jsonDecode(response.body)['response'];
+    }else{
+      apiResponse.error = 'Something went wrong';
+    }
+
+  }catch(e){
+    apiResponse.error = 'Something went wrong';
+  }
+
+  return apiResponse;
+}
+
+Future<ApiResponse> getOperation(String token) async{
+  ApiResponse apiResponse = ApiResponse();
+
+  try{
+    final response = await http.get(
+      Uri.parse('$ipaddress/settings/service-time'),
+      headers: {
+        'Accept': 'application/json',
+        'Authorization': 'Bearer $token'
+      },
+    );
+
+    if(response.statusCode == 200){
+      apiResponse.data = jsonDecode(response.body)['response'];
+    }else{
+      apiResponse.error = 'Something went wrong';
+    }
+
+  }catch(e){
+    apiResponse.error = 'Something went wrong';
+  }
+
+  return apiResponse;
+}
+
+Future<ApiResponse> addLaundryServices(LaundryServiceInfo service,String token) async{
+  ApiResponse apiResponse = ApiResponse();
+
+  try{
+    final response = await http.post(
+        Uri.parse('$ipaddress/settings/laundry-services/add'),
+        headers: {
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $token'
+        },
+        body: {
+          'servicename':service.name,
+          'weight':service.loadWeight,
+          'servicetype':service.type,
+          'offer':service.offer,
+          'price':service.loadPrice,
+          'desc':service.description,
+          'loadtype':service.loadType
+        }
+    );
+
+    if(response.statusCode == 200){
+      apiResponse.data = jsonDecode(response.body)['response'];
+    }else{
+      apiResponse.error = jsonDecode(response.body)['message'];
+    }
+
+  }catch(e){
+    apiResponse.error = 'Something went wrong';
+  }
+
+  return apiResponse;
+}
+
+Future<ApiResponse> editLaundryServices(LaundryServiceInfo service, String token) async{
+  ApiResponse apiResponse = ApiResponse();
+
+  try{
+    final response = await http.put(
+        Uri.parse('$ipaddress/settings/laundry-services/update'),
+        headers: {
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $token'
+        },
+        body: {
+          'servicename':service.name,
+          'weight':service.loadWeight,
+          'servicetype':service.type,
+          'offer':service.offer,
+          'price':service.loadPrice,
+          'desc':service.description,
+          'loadtype':service.loadType,
+          'serviceid':service.id
+        }
+    );
+
+    if(response.statusCode == 200){
+      apiResponse.data = jsonDecode(response.body)['response'];
+    }else{
+      apiResponse.error = jsonDecode(response.body)['message'];
+    }
+  }catch(e){
+    apiResponse.error = 'Something went wrong';
+  }
+
+  return apiResponse;
+}
+
+Future<ApiResponse> editShopInfo(ShopInfo info, String token) async{
+  ApiResponse apiResponse = ApiResponse();
+
+  try{
+    final response = await http.put(
+        Uri.parse('$ipaddress/settings/shop-information/update'),
+        headers: {
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $token'
+        },
+        body: {
+          'shopname':info.name,
+          'shopaddress':info.address,
+          'days':info.workDay,
+          'hours':info.workHour,
+          'maxload':info.maxLoad,
+          'status':info.status,
+          'image':info.image,
+        }
+    );
+
+    if(response.statusCode == 200){
+      apiResponse.data = jsonDecode(response.body)['response'];
+    }else{
+      apiResponse.error = jsonDecode(response.body)['message'];
+    }
+  }catch(e){
+    apiResponse.error = 'Something went wrong';
+  }
+
+  return apiResponse;
+}
+
+Future<ApiResponse> getValuedCustomers(String page, String token) async{
+  ApiResponse apiResponse = ApiResponse();
+
+  try{
+    final response = await http.post(
+        Uri.parse('$ipaddress/valued-customers'),
+        headers: {
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $token'
+        },
+        body: {
+          'page':page
+        }
+    );
+
+    if(response.statusCode == 200){
+      apiResponse.data = jsonDecode(response.body)['top'];
+      apiResponse.data1 = jsonDecode(response.body)['rest'];
+    }else{
+      apiResponse.error = 'Something went wrong';
+    }
+  }catch(e){
+    apiResponse.error = 'Something went wrong';
+  }
+
+  return apiResponse;
+}
+
+Future<ApiResponse> getCoOwners(String token) async{
+  ApiResponse apiResponse = ApiResponse();
+
+  try{
+    final response = await http.get(
+      Uri.parse('$ipaddress/settings/co-owners'),
+      headers: {
+        'Accept': 'application/json',
+        'Authorization': 'Bearer $token'
+      },
+    );
+
+    if(response.statusCode == 200){
+      apiResponse.data = jsonDecode(response.body)['response'];
+    }else{
+      apiResponse.error = 'Something went wrong';
+    }
+  }catch(e){
+    apiResponse.error = 'Something went wrong';
+  }
+
+  return apiResponse;
+}
+
+Future<ApiResponse> addCoOwners(CoOwnerInfo info, String password, String token) async{
+  ApiResponse apiResponse = ApiResponse();
+
+  try{
+    final response = await http.post(
+        Uri.parse('$ipaddress/settings/co-owners/add'),
+        headers: {
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $token'
+        },
+        body: {
+          'coname':info.name,
+          'coaddress':info.address,
+          'cocontact':info.contact,
+          'password':password,
+          'access':info.access
+        }
+    );
+
+    if(response.statusCode == 200){
+      apiResponse.data = jsonDecode(response.body)['response'];
+    }else{
+      apiResponse.error = jsonDecode(response.body)['message'];
+    }
+  }catch(e){
+    apiResponse.error = 'Something went wrong';
+  }
+
+  return apiResponse;
+}
+
+Future<ApiResponse> editCoOwners(CoOwnerInfo info, String oldcontact, String token) async{
+  ApiResponse apiResponse = ApiResponse();
+
+  try{
+    final response = await http.post(
+        Uri.parse('$ipaddress/settings/co-owners/update'),
+        headers: {
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $token'
+        },
+        body: {
+          'coname':info.name,
+          'coaddress':info.address,
+          'cocontact':info.contact,
+          'oldcontact':oldcontact,
+          'co_owner_id':info.id,
+          'access':info.access
+        }
+    );
+
+    if(response.statusCode == 200){
+      apiResponse.data = jsonDecode(response.body)['response'];
+    }else{
+      apiResponse.error = jsonDecode(response.body)['message'];
+    }
+  }catch(e){
+    apiResponse.error = 'Something went wrong';
+  }
+
+  return apiResponse;
+}
+
+Future<ApiResponse> shopPerformance(String token) async{
+  ApiResponse apiResponse = ApiResponse();
+
+  try{
+    final response = await http.get(
+      Uri.parse('$ipaddress/report/shop-rating/performance'),
+      headers: {
+        'Accept': 'application/json',
+        'Authorization': 'Bearer $token'
+      },
+    );
+
+    if(response.statusCode == 200){
+      apiResponse.data = jsonDecode(response.body);
+    }else{
+      apiResponse.error = 'Something went wrong';
+    }
+  }catch(e){
+    apiResponse.error = 'Something went wrong';
+  }
+
+  return apiResponse;
+}
+
+Future<ApiResponse> getNewRatings(String token) async{
+  ApiResponse apiResponse = ApiResponse();
+
+  try{
+    final response = await http.get(
+      Uri.parse('$ipaddress/report/shop-rating/reviews'),
+      headers: {
+        'Accept': 'application/json',
+        'Authorization': 'Bearer $token'
+      },
+    );
+
+    if(response.statusCode == 200){
+      apiResponse.data = jsonDecode(response.body)['response'];
+    }else{
+      apiResponse.error = 'Something went wrong';
+    }
+  }catch(e){
+    apiResponse.error = 'Something went wrong';
+  }
+
+  return apiResponse;
+}
+
+Future<ApiResponse> editServiceTime(MachineInfo info,String token) async{
+  ApiResponse apiResponse = ApiResponse();
+
+  try{
+    final response = await http.post(
+        Uri.parse('$ipaddress/settings/service-time/update'),
+        headers: {
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $token'
+        },
+        body: {
+          'washqty':info.washerQty,
+          'washtime':info.washerTime,
+          'dryqty':info.dryerQty,
+          'drytime':info.dryerTime,
+          'foldtime':info.foldingTime,
+          'machineid':info.id
+        }
+    );
+
+    if(response.statusCode == 200){
+      apiResponse.data = jsonDecode(response.body)['response'];
+    }else{
+      apiResponse.error = jsonDecode(response.body)['message'];
+    }
+  }catch(e){
+    apiResponse.error = 'Something went wrong';
+  }
+
+  return apiResponse;
+}
+
+Future<ApiResponse> getAuditUser(String page,String token) async{
+  ApiResponse apiResponse = ApiResponse();
+
+  try{
+    final response = await http.post(
+        Uri.parse('$ipaddress/report/user-log'),
+        headers: {
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $token'
+        },
+        body: {
+          'page':page
+        }
+    );
+
+    if(response.statusCode == 200){
+      apiResponse.data = jsonDecode(response.body)['response'];
+    }else{
+      apiResponse.error = jsonDecode(response.body)['message'];
+    }
+  }catch(e){
+    apiResponse.error = 'Something went wrong';
+  }
+
+  return apiResponse;
+}
+
+Future<ApiResponse> getAuditInventory(String page,String token) async{
+  ApiResponse apiResponse = ApiResponse();
+
+  try{
+    final response = await http.post(
+        Uri.parse('$ipaddress/report/inventory-log'),
+        headers: {
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $token'
+        },
+        body: {
+          'page': page
+        }
+    );
+
+    if(response.statusCode == 200){
+      apiResponse.data = jsonDecode(response.body)['response'];
+    }else{
+      apiResponse.error = jsonDecode(response.body)['message'];
+    }
+  }catch(e){
+    apiResponse.error = 'Something went wrong';
+  }
+
+  return apiResponse;
+}
+
+Future<ApiResponse> getTimelines(String bookid,String token) async{
+  ApiResponse apiResponse = ApiResponse();
+
+  try{
+    final response = await http.post(
+        Uri.parse('$ipaddress/timeline'),
+        headers: {
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $token'
+        },
+        body: {
+          'bookid':bookid
+        }
+    );
+
+    if(response.statusCode == 200){
+      apiResponse.data = jsonDecode(response.body)['response'];
+    }else{
+      apiResponse.error = 'Something went wrong';
+    }
+  }catch(e){
+    apiResponse.error = 'Something went wrong';
+  }
+
+  return apiResponse;
+}
+
+Future<ApiResponse> getTimelineNotif(String token) async{
+  ApiResponse apiResponse = ApiResponse();
+
+  try{
+    final response = await http.get(
+      Uri.parse('$ipaddress/timeline-notif'),
+      headers: {
+        'Accept': 'application/json',
+        'Authorization': 'Bearer $token'
+      },
+
+    );
+
+    if(response.statusCode == 200){
+      apiResponse.data = jsonDecode(response.body)['response'];
+    }else{
+      apiResponse.error = 'Something went wrong';
+    }
+  }catch(e){
+    apiResponse.error = 'Something went wrong';
+  }
+
+  return apiResponse;
+}
+
+Future<ApiResponse> confirmationNotif(String token) async{
+  ApiResponse apiResponse = ApiResponse();
+
+  try{
+    final response = await http.get(
+      Uri.parse('$ipaddress/confirmation-notif'),
+      headers: {
+        'Accept': 'application/json',
+        'Authorization': 'Bearer $token'
+      },
+
+    );
+
+    if(response.statusCode == 200){
+      apiResponse.data = jsonDecode(response.body)['response'];
+    }else{
+      apiResponse.error = 'Something went wrong';
+    }
+  }catch(e){
+    apiResponse.error = 'Something went wrong';
+  }
+
+  return apiResponse;
+}
+
+Future<ApiResponse>confirmLaundry(String bookid,String confirm,String notifid,String token) async{
+  ApiResponse apiResponse = ApiResponse();
+
+  try{
+    final response = await http.post(
+        Uri.parse('$ipaddress/confirm-laundry'),
+        headers: {
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $token'
+        },
+        body: {
+          'bookid':bookid,
+          'notifid':notifid,
+          'confirm':confirm
+        }
+    );
+
+    if(response.statusCode == 200){
+      apiResponse.data = jsonDecode(response.body)['response'];
+    }else{
+      apiResponse.error = jsonDecode(response.body)['message'];
+    }
+  }catch(e){
+    apiResponse.error = 'Something went wrong';
+  }
+
+  return apiResponse;
+}
+
+Future<ApiResponse> numberExist(String contact) async{
+  ApiResponse apiResponse = ApiResponse();
+
+  try{
+    final response = await http.post(
+        Uri.parse('$ipaddress/check/number'),
+        headers: {
+          'Accept': 'application/json'
+        },
+        body: {
+          'contact': contact
+        }
+    );
+
+    if(response.statusCode == 200){
+      apiResponse.data = jsonDecode(response.body)['response'];
+    }else{
+      apiResponse.error = 'Something went wrong';
+    }
+  }catch(e){
+    apiResponse.error = 'Something went wrong';
+  }
+
+  return apiResponse;
+}
+
+Future<ApiResponse> getDonutChart(String token) async{
+  ApiResponse apiResponse = ApiResponse();
+
+  try {
+
+    final response = await http.get(
+        Uri.parse('$ipaddress/donut'),
+        headers: {
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $token'
+        }
+    );
+
+    if(response.statusCode == 200){
+      apiResponse.data = jsonDecode(response.body)['services'];
+      apiResponse.count = jsonDecode(response.body)['servicemade'];
+    }else{
+      apiResponse.error = 'Something went wrong';
+    }
+
+  } catch(e){
+    apiResponse.error = 'Something went wrong';
+  }
+
+  return apiResponse;
+}
+
+Future<ApiResponse> getInventoryChart(String token) async{
+  ApiResponse apiResponse = ApiResponse();
+
+  try {
+
+    final response = await http.get(
+        Uri.parse('$ipaddress/inventory-chart'),
+        headers: {
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $token'
+        }
+    );
+
+    if(response.statusCode == 200){
+      apiResponse.data = jsonDecode(response.body)['inventory'];
+      apiResponse.count = jsonDecode(response.body)['count'];
+    }else{
+      apiResponse.error = 'Something went wrong';
+    }
+
+  } catch(e){
+    apiResponse.error = 'Something went wrong';
+  }
+
+  return apiResponse;
+}
+
+Future<ApiResponse> getMonthlySalesBarChart(String token) async{
+  ApiResponse apiResponse = ApiResponse();
+
+  try {
+
+    final response = await http.get(
+        Uri.parse('$ipaddress/sales/monthly'),
+        headers: {
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $token'
+        }
+    );
+
+    if(response.statusCode == 200){
+      apiResponse.data = jsonDecode(response.body);
+    }else{
+      apiResponse.error = 'Something went wrong';
+    }
+
+  } catch(e){
     apiResponse.error = 'Something went wrong';
   }
 

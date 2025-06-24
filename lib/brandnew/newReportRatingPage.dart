@@ -1,12 +1,11 @@
 
 
 import 'package:capstone/api_response.dart';
+import 'package:capstone/brandnew/ConstWidgets.dart';
 import 'package:capstone/brandnew/dialogs.dart';
 import 'package:capstone/services/services.dart';
-import 'package:capstone/services/servicesadd.dart';
 import 'package:capstone/styles/mainColorStyle.dart';
 import 'package:fl_chart/fl_chart.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_profile_picture/flutter_profile_picture.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
@@ -35,6 +34,7 @@ class _NewReportRatingScreenState extends State<NewReportRatingScreen> {
       setState(() {
         isLoading = false;
       });
+      if(!mounted) return;
       await errorDialog(context, '${response.error}');
     }
   }
@@ -49,6 +49,7 @@ class _NewReportRatingScreenState extends State<NewReportRatingScreen> {
         isLoading = false;
       });
     } else {
+      if(!mounted) return;
       await errorDialog(context, '${response.error}');
     }
   }
@@ -66,6 +67,7 @@ class _NewReportRatingScreenState extends State<NewReportRatingScreen> {
       setState(() {
         isLoading = false;
       });
+      if(!mounted) return;
       await errorDialog(context, '${response.error}');
     }
   }
@@ -154,18 +156,9 @@ class _NewReportRatingScreenState extends State<NewReportRatingScreen> {
     }
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Shop Rating'),
-        titleTextStyle: const TextStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: 18
-        ),
-        leading: IconButton(
-          onPressed: (){
-            Navigator.pop(context);
-          },
-          icon: const Icon(CupertinoIcons.chevron_left,color: Colors.white,),
-        ),
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(kToolbarHeight),
+        child: backAppBar(context, 'Shop Rating'),
       ),
       body: isLoading
           ? loading()

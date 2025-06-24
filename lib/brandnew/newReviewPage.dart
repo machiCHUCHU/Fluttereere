@@ -1,12 +1,12 @@
 
 
 import 'package:capstone/api_response.dart';
+import 'package:capstone/brandnew/ConstWidgets.dart';
 import 'package:capstone/brandnew/dialogs.dart';
 import 'package:capstone/brandnew/newLoginPage.dart';
 import 'package:capstone/connect/laravel.dart';
 import 'package:capstone/services/services.dart';
 import 'package:capstone/styles/mainColorStyle.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_profile_picture/flutter_profile_picture.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
@@ -60,6 +60,7 @@ class _NewReviewPageState extends State<NewReviewPage> {
         isLoading = false;
         hasData = false;
       });
+      if(!mounted) return;
       await errorDialog(context, '${response.error}');
     }
   }
@@ -77,6 +78,7 @@ class _NewReviewPageState extends State<NewReviewPage> {
         Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => const NewLoginScreen()), (route) => false);
       }
     }else{
+      if(!mounted) return;
       await errorDialog(context, '${response.error}');
     }
   }
@@ -96,17 +98,9 @@ class _NewReviewPageState extends State<NewReviewPage> {
   Widget build(BuildContext context) {
     if(isLoading == true){
       return Scaffold(
-          appBar: AppBar(
-            title: const Text('Service Rating'),
-            titleTextStyle: const TextStyle(
-                fontSize: 18, fontWeight: FontWeight.bold
-            ),
-            leading: IconButton(
-              onPressed: (){
-                Navigator.pop(context);
-              },
-              icon: const Icon(CupertinoIcons.chevron_left,color: Colors.white,),
-            ),
+          appBar: PreferredSize(
+            preferredSize: const Size.fromHeight(kToolbarHeight),
+            child: backAppBar(context, 'Service Rating'),
           ),
           body: loading()
       );
@@ -114,17 +108,9 @@ class _NewReviewPageState extends State<NewReviewPage> {
 
     if(hasData == false){
       return Scaffold(
-          appBar: AppBar(
-            title: const Text('Service Rating'),
-            titleTextStyle: const TextStyle(
-                fontSize: 18, fontWeight: FontWeight.bold
-            ),
-            leading: IconButton(
-              onPressed: (){
-                Navigator.pop(context);
-              },
-              icon: const Icon(CupertinoIcons.chevron_left,color: Colors.white,),
-            ),
+          appBar: PreferredSize(
+            preferredSize: const Size.fromHeight(kToolbarHeight),
+            child: backAppBar(context, 'Service Rating'),
           ),
           body: SingleChildScrollView(
             padding: const EdgeInsets.all(8),
@@ -242,17 +228,9 @@ class _NewReviewPageState extends State<NewReviewPage> {
     }
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Service Rating'),
-        titleTextStyle: const TextStyle(
-          fontSize: 18, fontWeight: FontWeight.bold
-        ),
-        leading: IconButton(
-          onPressed: (){
-            Navigator.pop(context);
-          },
-          icon: const Icon(CupertinoIcons.chevron_left,color: Colors.white,),
-        ),
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(kToolbarHeight),
+        child: backAppBar(context, 'Service Rating'),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(8),

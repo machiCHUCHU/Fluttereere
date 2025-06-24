@@ -52,6 +52,7 @@ class _NewHomeScreenState extends State<NewHomeScreen> {
         hasData = home.isNotEmpty;
       });
     }else{
+      if(!mounted) return;
       await errorDialog(context, '${response.error}');
     }
   }
