@@ -30,7 +30,7 @@ class _NewReviewPageState extends State<NewReviewPage> {
 
   int totalReviews = 0;
   int overallRating = 0;
-  Map ratings = {};
+  Map data = {};
 
 
 
@@ -49,8 +49,8 @@ class _NewReviewPageState extends State<NewReviewPage> {
 
     if(response.error == null){
       setState(() {
-        review = response.data as List<dynamic>;
-        ratings = response.totalstar as Map;
+        data = response.data as Map;
+        review = data['ratings'];
         isLoading = false;
         hasData = review.isNotEmpty;
         totalReviews = review.length;
@@ -60,24 +60,6 @@ class _NewReviewPageState extends State<NewReviewPage> {
         isLoading = false;
         hasData = false;
       });
-      if(!mounted) return;
-      await errorDialog(context, '${response.error}');
-    }
-  }
-
-
-
-  Future<void> logoutState() async{
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    ApiResponse response = await logout(token.toString());
-
-
-    if(response.error == null){
-      await prefs.clear();
-      if(mounted){
-        Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => const NewLoginScreen()), (route) => false);
-      }
-    }else{
       if(!mounted) return;
       await errorDialog(context, '${response.error}');
     }
@@ -132,9 +114,9 @@ class _NewReviewPageState extends State<NewReviewPage> {
                     children: [
                       Column(
                         children: [
-                          Text('${(ratings['rate_sum'] ?? 0/ratings['rater']).toStringAsFixed(1)}',style: const TextStyle(fontSize: 24,fontWeight: FontWeight.bold),selectionColor: Colors.red,),
+                          Text('${((data['star_counts']['rate_sum'] ?? 0)/data['star_counts']['rater']).toStringAsFixed(1)}',style: const TextStyle(fontSize: 24,fontWeight: FontWeight.bold),selectionColor: Colors.red,),
                           RatingBar.builder(
-                            initialRating: ratings['rate_sum']/ratings['rater'],
+                            initialRating: data['star_counts']['rate_sum']/data['star_counts']['rater'],
                             direction: Axis.horizontal,
                             allowHalfRating: true,
                             itemCount: 5,
@@ -182,9 +164,9 @@ class _NewReviewPageState extends State<NewReviewPage> {
                                 },
 
                                 buttons: [
-                                  "All (${ratings['rater']})", "5 Star (${ratings['five_star']})",
-                                  "4 Star (${ratings['four_star']})", "3 Star (${ratings['three_star']})",
-                                  "2 Star (${ratings['two_star']})", "1 Star (${ratings['one_star']})"
+                                  "All (${data['star_counts']['rater']})", "5 Star (${data['star_counts']['five_star']})",
+                                  "4 Star (${data['star_counts']['four_star']})", "3 Star (${data['star_counts']['three_star']})",
+                                  "2 Star (${data['star_counts']['two_star']})", "1 Star (${data['star_counts']['one_star']})"
                                 ],
                                 buttonBuilder: (selected, value, context) {
                                   return Container(
@@ -252,9 +234,9 @@ class _NewReviewPageState extends State<NewReviewPage> {
                 children: [
                   Column(
                     children: [
-                      Text('${(ratings['rate_sum']/ratings['rater']).toStringAsFixed(1)}',style: const TextStyle(fontSize: 24,fontWeight: FontWeight.bold),selectionColor: Colors.red,),
+                      Text('${((data['star_counts']['rate_sum'] ?? 0)/data['star_counts']['rater']).toStringAsFixed(1)}',style: const TextStyle(fontSize: 24,fontWeight: FontWeight.bold),selectionColor: Colors.red,),
                       RatingBar.builder(
-                        initialRating: ratings['rate_sum']/ratings['rater'],
+                        initialRating: data['star_counts']['rate_sum']/data['star_counts']['rater'],
                         direction: Axis.horizontal,
                         allowHalfRating: true,
                         itemCount: 5,
@@ -302,9 +284,9 @@ class _NewReviewPageState extends State<NewReviewPage> {
                         },
 
                         buttons: [
-                          "All (${ratings['rater']})", "5 Star (${ratings['five_star']})",
-                          "4 Star (${ratings['four_star']})", "3 Star (${ratings['three_star']})",
-                          "2 Star (${ratings['two_star']})", "1 Star (${ratings['one_star']})"
+                          "All (${data['star_counts']['rater']})", "5 Star (${data['star_counts']['five_star']})",
+                          "4 Star (${data['star_counts']['four_star']})", "3 Star (${data['star_counts']['three_star']})",
+                          "2 Star (${data['star_counts']['two_star']})", "1 Star (${data['star_counts']['one_star']})"
                         ],
                         buttonBuilder: (selected, value, context) {
                           return Container(

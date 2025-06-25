@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:capstone/api_response.dart';
+import 'package:capstone/brandnew/ConstWidgets.dart';
 import 'package:capstone/brandnew/dialogs.dart';
 import 'package:capstone/connect/laravel.dart';
 import 'package:capstone/model/CustomerInfo.dart';
@@ -137,16 +138,20 @@ class _NewProfileEditScreenState extends State<NewProfileEditScreen> {
     if(!mounted) return;
     Navigator.pop(context);
 
+    if(!mounted) return;
     if (response.error == null) {
       await successDialog(context, '${response.data}');
       if(_contact != widget.info.contact){
+        if(!mounted) return;
         await reloginDialog(context);
         prefs.clear();
       }else{
+        if(!mounted) return;
         Navigator.pop(context,true);
       }
     } else {
       await errorDialog(context, '${response.error}');
+      if(!mounted) return;
       Navigator.pop(context);
     }
   }
@@ -485,15 +490,9 @@ class _InputNumberScreenState extends State<InputNumberScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Change Phone Number'),
-        titleTextStyle: const TextStyle(color: Colors.white,fontSize: 18,fontWeight: FontWeight.bold),
-        leading: IconButton(
-          onPressed: (){
-            Navigator.pop(context);
-          },
-          icon: const Icon(CupertinoIcons.chevron_left,color: Colors.white,),
-        ),
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(kToolbarHeight),
+        child: backAppBar(context, 'Change Phone Number'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(8),
@@ -541,7 +540,7 @@ class _InputNumberScreenState extends State<InputNumberScreen> {
                     if(_formKey.currentState!.validate()){
 
                       final response = await Navigator.push(context, MaterialPageRoute(builder: (context) => OTPScreen(contact: numInput!)));
-
+                      if(!context.mounted) return;
                       Navigator.pop(context, response);
                     }
                   },
@@ -581,18 +580,9 @@ class _InputAddressScreenState extends State<InputAddressScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Change Address'),
-        titleTextStyle: const TextStyle(
-          color: Colors.white,
-          fontSize: 18
-        ),
-        leading: IconButton(
-          onPressed: (){
-            Navigator.pop(context);
-          },
-          icon: const Icon(CupertinoIcons.chevron_left,color: Colors.white,),
-        ),
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(kToolbarHeight),
+        child: backAppBar(context, 'Change Address'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(8),
@@ -665,18 +655,9 @@ class _InputNameScreenState extends State<InputNameScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Change Name'),
-        titleTextStyle: const TextStyle(
-            color: Colors.white,
-            fontSize: 18
-        ),
-        leading: IconButton(
-          onPressed: (){
-            Navigator.pop(context);
-          },
-          icon: const Icon(CupertinoIcons.chevron_left,color: Colors.white,),
-        ),
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(kToolbarHeight),
+        child: backAppBar(context, 'Change Name'),
       ),
       body: Padding(
           padding: const EdgeInsets.all(8),
@@ -761,6 +742,7 @@ class _OTPScreenState extends State<OTPScreen> {
   Future<void> inputCodeCheck() async{
     ApiResponse response = await otpCheck(otp);
 
+    if(!mounted) return;
     if(response.error == null){
       Navigator.pop(context, widget.contact);
     }else{
@@ -814,6 +796,7 @@ class _OTPScreenState extends State<OTPScreen> {
                     Pinput(
                       validator: (value){
                         otp = value!;
+                        return null;
                       },
                       length: 4,
                       defaultPinTheme: defaultPinTheme,

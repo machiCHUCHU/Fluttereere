@@ -21,7 +21,7 @@ class NewInventoryScreen extends StatefulWidget {
 class _NewInventoryScreenState extends State<NewInventoryScreen> {
   List<dynamic> inventory = []; bool isLoading = true; String? token; int? total;
   int? out; bool hasData = false; String? categoryName; String? usertype; String? access;
-
+  Map data = {};
   void getUser() async{
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
@@ -38,9 +38,8 @@ class _NewInventoryScreenState extends State<NewInventoryScreen> {
 
     if(response.error == null){
       setState(() {
-        inventory = response.data as List<dynamic>;
-        out = response.out;
-        total = response.total;
+        data = response.data as Map;
+        inventory = data['inventory'];
         isLoading = false;
         hasData = inventory.isNotEmpty;
       });
@@ -216,6 +215,7 @@ class _NewInventoryScreenState extends State<NewInventoryScreen> {
 
   @override
   Widget build(BuildContext context) {
+    print(data);
     if(isLoading){
       return Scaffold(
           appBar: PreferredSize(
@@ -316,13 +316,13 @@ class _NewInventoryScreenState extends State<NewInventoryScreen> {
                     child: RowItem(
                         title: Column(
                           children: [
-                            Text('$total',style: const TextStyle(fontWeight: FontWeight.bold,fontSize: 24,color: ColorStyle.tertiary),),
+                            Text('${data['total']}',style: const TextStyle(fontWeight: FontWeight.bold,fontSize: 24,color: ColorStyle.tertiary),),
                             const Text('Total Item',style: TextStyle(fontSize: 12),)
                           ],
                         ),
                         description: Column(
                           children: [
-                            Text('$out',style: const TextStyle(fontWeight: FontWeight.bold,fontSize: 24,color: ColorStyle.tertiary)),
+                            Text('${data['out']}',style: const TextStyle(fontWeight: FontWeight.bold,fontSize: 24,color: ColorStyle.tertiary)),
                             const Text('Empty Stock',style: TextStyle(fontSize: 12))
                           ],
                         ),

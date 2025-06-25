@@ -1,4 +1,5 @@
 import 'package:capstone/api_response.dart';
+import 'package:capstone/brandnew/ConstWidgets.dart';
 import 'package:capstone/brandnew/dialogs.dart';
 import 'package:capstone/services/services.dart';
 import 'package:capstone/styles/mainColorStyle.dart';
@@ -33,6 +34,7 @@ class _NewNotificationInfoScreenState extends State<NewNotificationInfoScreen> {
         isLoading = false;
       });
     }else{
+      if(!mounted) return;
       await errorDialog(context, '${response.error}');
     }
   }
@@ -41,13 +43,14 @@ class _NewNotificationInfoScreenState extends State<NewNotificationInfoScreen> {
      final SharedPreferences prefs = await SharedPreferences.getInstance();
      ApiResponse response = await confirmLaundry(widget.bookId, confirm, widget.notifid,'${prefs.getString('token')}');
 
+     if(!mounted) return;
      if(response.error == null){
        if(confirm == '1'){
          await successTextDialog(context, 'Laundry Request Confirmed', '${response.data}');
        }else{
          await warningDialog(context, '${response.data}');
        }
-
+       if(!mounted) return;
        Navigator.pop(context,true);
      }else{
        Navigator.pop(context,true);
@@ -64,16 +67,9 @@ class _NewNotificationInfoScreenState extends State<NewNotificationInfoScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Laundry Details'),
-        titleTextStyle: const TextStyle(color: Colors.white,fontSize: 18,fontWeight: FontWeight.bold),
-        leading: IconButton(
-          onPressed: (){
-            Navigator.pop(context,true);
-          },
-          icon: const Icon(CupertinoIcons.chevron_left,color: Colors.white,),
-        ),
-
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(kToolbarHeight),
+        child: backAppBar(context, 'Laundry Details'),
       ),
       body: Padding(
           padding: const EdgeInsets.all(8),
@@ -249,16 +245,9 @@ class _LaundryUpdatesScreenState extends State<LaundryUpdatesScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Laundry Details'),
-        titleTextStyle: const TextStyle(color: Colors.white,fontSize: 18,fontWeight: FontWeight.bold),
-        leading: IconButton(
-          onPressed: (){
-            Navigator.pop(context,true);
-          },
-          icon: const Icon(CupertinoIcons.chevron_left,color: Colors.white,),
-        ),
-
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(kToolbarHeight),
+        child: backAppBar(context, 'Laundry Details'),
       ),
       body: isLoading
           ? loading()

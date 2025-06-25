@@ -313,9 +313,7 @@ Future<ApiResponse> getInventory(String token) async {
     );
 
     if(response.statusCode == 200){
-      apiResponse.data = jsonDecode(response.body)['inventory'];
-      apiResponse.total = jsonDecode(response.body)['total'];
-      apiResponse.out = jsonDecode(response.body)['out'];
+      apiResponse.data = jsonDecode(response.body)['response'];
     }else{
       apiResponse.error = jsonDecode(response.body)['message'];
     }
@@ -424,8 +422,7 @@ Future<ApiResponse> getRating(String index,String token) async{
     );
 
     if(response.statusCode == 200){
-      apiResponse.data = jsonDecode(response.body)['ratings'];
-      apiResponse.totalstar = jsonDecode(response.body)['star_counts'];
+      apiResponse.data = jsonDecode(response.body)['response'];
     }else{
       apiResponse.error = jsonDecode(response.body)['message'];
     }
@@ -476,7 +473,7 @@ Future<ApiResponse> getWeeklySalesChart(String token) async{
     );
 
     if(response.statusCode == 200){
-      apiResponse.data = jsonDecode(response.body);
+      apiResponse.data = jsonDecode(response.body)['response'];
     }else{
       apiResponse.error = jsonDecode(response.body)['message'];
     }
@@ -542,7 +539,7 @@ Future<ApiResponse> getHome(String token) async{
     );
 
     if(response.statusCode == 200){
-      apiResponse.data = jsonDecode(response.body);
+      apiResponse.data = jsonDecode(response.body)['response'];
     }else{
       apiResponse.error = jsonDecode(response.body)['message'];
     }
@@ -592,8 +589,7 @@ Future<ApiResponse> getInfos(String token) async {
     );
 
     if(response.statusCode == 200){
-      apiResponse.data = jsonDecode(response.body)['info'];
-      apiResponse.data1 = jsonDecode(response.body)['service'];
+      apiResponse.data = jsonDecode(response.body)['response'];
     }else{
       apiResponse.error = jsonDecode(response.body)['message'];
     }
@@ -851,8 +847,7 @@ Future<ApiResponse> getWashing(String token) async{
     );
 
     if(response.statusCode == 200){
-      apiResponse.data = jsonDecode(response.body)['bookings'];
-      apiResponse.data1 = jsonDecode(response.body)['walkin'];
+      apiResponse.data = jsonDecode(response.body)['response'];
     }else{
       apiResponse.error = jsonDecode(response.body)['message'];
     }
@@ -877,8 +872,7 @@ Future<ApiResponse> getDrying(String token) async{
     );
 
     if(response.statusCode == 200){
-      apiResponse.data = jsonDecode(response.body)['bookings'];
-      apiResponse.data1 = jsonDecode(response.body)['walkin'];
+      apiResponse.data = jsonDecode(response.body)['response'];
     }else{
       apiResponse.error = jsonDecode(response.body)['message'];
     }
@@ -902,8 +896,7 @@ Future<ApiResponse> getFolding(String token) async{
     );
 
     if(response.statusCode == 200){
-      apiResponse.data = jsonDecode(response.body)['bookings'];
-      apiResponse.data1 = jsonDecode(response.body)['walkin'];
+      apiResponse.data = jsonDecode(response.body)['response'];
     }else{
       apiResponse.error = jsonDecode(response.body)['message'];
     }
@@ -928,8 +921,7 @@ Future<ApiResponse> getPickup(String token) async{
     );
 
     if(response.statusCode == 200){
-      apiResponse.data = jsonDecode(response.body)['bookings'];
-      apiResponse.data1 = jsonDecode(response.body)['walkin'];
+      apiResponse.data = jsonDecode(response.body)['response'];
     }else{
       apiResponse.error = jsonDecode(response.body)['message'];
     }
@@ -954,8 +946,7 @@ Future<ApiResponse> getComplete(String token) async{
     );
 
     if(response.statusCode == 200){
-      apiResponse.data = jsonDecode(response.body)['bookings'];
-      apiResponse.data1 = jsonDecode(response.body)['walkin'];
+      apiResponse.data = jsonDecode(response.body)['response'];
     }else{
       apiResponse.error = jsonDecode(response.body)['message'];
     }
@@ -1656,8 +1647,7 @@ Future<ApiResponse> getValuedCustomers(String page, String token) async{
     );
 
     if(response.statusCode == 200){
-      apiResponse.data = jsonDecode(response.body)['top'];
-      apiResponse.data1 = jsonDecode(response.body)['rest'];
+      apiResponse.data = jsonDecode(response.body)['response'];
     }else{
       apiResponse.error = 'Something went wrong';
     }
@@ -1768,7 +1758,7 @@ Future<ApiResponse> shopPerformance(String token) async{
     );
 
     if(response.statusCode == 200){
-      apiResponse.data = jsonDecode(response.body);
+      apiResponse.data = jsonDecode(response.body)['response'];
     }else{
       apiResponse.error = 'Something went wrong';
     }

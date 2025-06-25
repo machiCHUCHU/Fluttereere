@@ -1,5 +1,6 @@
 
 import 'package:capstone/api_response.dart';
+import 'package:capstone/brandnew/ConstWidgets.dart';
 import 'package:capstone/brandnew/dialogs.dart';
 import 'package:capstone/connect/laravel.dart';
 import 'package:capstone/customer/NewServiceBookingPage.dart';
@@ -43,6 +44,7 @@ class _NewShopInfoScreenState extends State<NewShopInfoScreen> {
         hasRating = ratings.isNotEmpty;
       });
     }else{
+      if(!mounted) return;
       await errorDialog(context, '${response.error}');
     }
   }
@@ -109,29 +111,17 @@ class _NewShopInfoScreenState extends State<NewShopInfoScreen> {
 
     if(isLoading){
       return Scaffold(
-          appBar: AppBar(
-            title: const Text('Shop Information'),
-            titleTextStyle: const TextStyle(color: Colors.white,fontSize: 18,fontWeight: FontWeight.bold),
-            leading: IconButton(
-              onPressed: (){
-                Navigator.pop(context);
-              },
-              icon: const Icon(CupertinoIcons.chevron_left,color: Colors.white,),
-            ),
+          appBar: PreferredSize(
+            preferredSize: const Size.fromHeight(kToolbarHeight),
+            child: backAppBar(context, 'Shop Information'),
           ),
           body: loading()
       );
     }
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Shop Information'),
-        titleTextStyle: const TextStyle(color: Colors.white,fontSize: 18,fontWeight: FontWeight.bold),
-        leading: IconButton(
-          onPressed: (){
-            Navigator.pop(context);
-          },
-          icon: const Icon(CupertinoIcons.chevron_left,color: Colors.white,),
-        ),
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(kToolbarHeight),
+        child: backAppBar(context, 'Shop Information'),
       ),
       body: SingleChildScrollView(
             child: Column(

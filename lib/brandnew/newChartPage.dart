@@ -324,6 +324,7 @@ class _NewChartScreenState extends State<NewChartScreen> {
 
   @override
   Widget build(BuildContext context) {
+    print(bar);
     CalendarWeek week = CalendarWeek(
         monday: '${bar['monday']}', tuesday: '${bar['tuesday']}', wednesday: '${bar['wednesday']}', thursday: '${bar['thursday']}',
         friday: '${bar['friday']}', saturday: '${bar['saturday']}', sunday: '${bar['sunday']}');

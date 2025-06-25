@@ -27,8 +27,8 @@ class ForRegisteredScreen extends StatefulWidget {
 class _ForRegisteredScreenState extends State<ForRegisteredScreen> {
   final TextEditingController _load = TextEditingController();
   List<dynamic> customer = []; String? customerId; String? customerName; String customerImage ='';
-  List<dynamic> service = []; String? serviceName;
-  List<dynamic> inventory = []; String? detergent;
+  Map service = {}; String? serviceName;
+  Map inventory = {}; String? detergent;
   String? serviceType; String serviceCost = ''; bool hasData = false; bool isLoading = true;
   List<DateTime?> date = []; String chosenDate = ''; String schedule = ''; int multiplier = 0;
   double weight = 0; int shopWeight = 0; int shopPrice = 0; int total = 0;
@@ -58,8 +58,8 @@ class _ForRegisteredScreenState extends State<ForRegisteredScreen> {
 
     if(response.error == null){
       setState(() {
-        service = response.data1 as List<dynamic>;
-        inventory = settingRes.data as List<dynamic>;
+        service = response.data as Map;
+        inventory = settingRes.data as Map;
         isLoading = false;
       });
     }else{
@@ -381,10 +381,11 @@ class _ForRegisteredScreenState extends State<ForRegisteredScreen> {
                   ]
                 ),
                 child: ListView.builder(
-                    itemCount: service.length,
+                    itemCount: service['service'].length,
                     shrinkWrap: true,
                     itemBuilder: (context,index){
-                      Map serve = service[index] as Map;
+                      List<dynamic> services = service['service'] as List<dynamic>;
+                      Map serve = services[index] as Map;
 
                       return Padding(
                         padding: const EdgeInsets.all(0),
@@ -496,7 +497,7 @@ class _ForWalkinScreenState extends State<ForWalkinScreen> {
   String serviceType = ''; String? serviceName; String serviceCost = ''; String detergent = '';
   bool hasData = false; bool isLoading = true; int multiplier = 0; double weight = 0;
   int shopWeight = 0; int shopPrice = 0; int total = 0;
-  List<dynamic> service = []; List<dynamic> inventory = [];
+  Map service = {}; Map inventory = {};
 
   Future<void> walkinAdd() async{
     final SharedPreferences pref = await SharedPreferences.getInstance();
@@ -524,8 +525,8 @@ class _ForWalkinScreenState extends State<ForWalkinScreen> {
 
     if(response.error == null){
       setState(() {
-        service = response.data1 as List<dynamic>;
-        inventory = settingRes.data as List<dynamic>;
+        service = response.data as Map;
+        inventory = settingRes.data as Map;
         isLoading = false;
       });
     }else{
@@ -678,10 +679,11 @@ class _ForWalkinScreenState extends State<ForWalkinScreen> {
                       borderRadius: BorderRadius.vertical(bottom: Radius.circular(5))
                     ),
                     child: ListView.builder(
-                        itemCount: service.length,
+                        itemCount: service['service'].length,
                         shrinkWrap: true,
                         itemBuilder: (context,index){
-                          Map serve = service[index] as Map;
+                          List<dynamic> services = service['service'] as List<dynamic>;
+                          Map serve = services[index] as Map;
 
                           return Padding(
                               padding: const EdgeInsets.all(0),

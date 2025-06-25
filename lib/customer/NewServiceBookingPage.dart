@@ -1,6 +1,7 @@
 
 import 'package:calendar_date_picker2/calendar_date_picker2.dart';
 import 'package:capstone/api_response.dart';
+import 'package:capstone/brandnew/ConstWidgets.dart';
 import 'package:capstone/brandnew/dialogs.dart';
 import 'package:capstone/services/services.dart';
 import 'package:capstone/styles/mainColorStyle.dart';
@@ -57,6 +58,7 @@ class _NewServiceBookingScreenState extends State<NewServiceBookingScreen> {
         isLoading = false;
       });
     }else{
+      if(!mounted) return;
       await errorDialog(context, '${response.error}');
     }
   }
@@ -75,9 +77,10 @@ class _NewServiceBookingScreenState extends State<NewServiceBookingScreen> {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     ApiResponse response = await availService(records,'${prefs.getString('token')}');
 
-
+    if(!mounted) return;
     if(response.error == null){
       await successDialog(context, '${response.data}');
+      if(!mounted) return;
       Navigator.popUntil(context, (route) => route.isFirst);
     }else{
       await warningTextDialog(context, 'Service Unavailable', '${response.error}');
@@ -300,15 +303,9 @@ class _NewServiceBookingScreenState extends State<NewServiceBookingScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Avail Service'),
-        titleTextStyle: const TextStyle(color: Colors.white,fontSize: 18,fontWeight: FontWeight.bold),
-        leading: IconButton(
-          onPressed: (){
-            Navigator.pop(context);
-          },
-          icon: const Icon(CupertinoIcons.chevron_left,color: Colors.white,),
-        ),
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(kToolbarHeight),
+        child: backAppBar(context, 'Avail Service'),
       ),
       body: isLoading
           ? loading()

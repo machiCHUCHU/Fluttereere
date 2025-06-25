@@ -842,7 +842,7 @@ class NewWashScreen extends StatefulWidget {
 class _NewWashScreenState extends State<NewWashScreen> {
   String? token; int? userid; Map home = {}; Map appbar = {};
   bool hasWalkin = false; bool hasBook = false; bool isLoading = true;
-  List<dynamic> bookings = []; List<dynamic> walkins = []; String? usertype;String? access;
+  Map washing = {}; List<dynamic> walkins = []; String? usertype;String? access;
 
   void getUser() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -859,10 +859,9 @@ class _NewWashScreenState extends State<NewWashScreen> {
 
     if (response.error == null) {
       setState(() {
-        bookings = response.data as List<dynamic>;
-        walkins = response.data1 as List<dynamic>;
-        hasBook = bookings.isNotEmpty;
-        hasWalkin = walkins.isNotEmpty;
+        washing = response.data as Map;
+        hasBook = washing['bookings'].isNotEmpty;
+        hasWalkin = washing['walkin'].isNotEmpty;
         isLoading = false;
       });
     } else {
@@ -1268,6 +1267,7 @@ class _NewWashScreenState extends State<NewWashScreen> {
 
   @override
   Widget build(BuildContext context) {
+
     if (isLoading) {
       return DefaultTabController(
           length: 2,
@@ -1364,9 +1364,10 @@ class _NewWashScreenState extends State<NewWashScreen> {
                           ListView.builder(
                             shrinkWrap: true,
                             physics: const NeverScrollableScrollPhysics(),
-                            itemCount: bookings.length,
+                            itemCount: washing['bookings'].length,
                             itemBuilder: (context, index) {
-                              Map book = bookings[index] as Map;
+                              List<dynamic> wash = washing['bookings'];
+                              Map book = wash[index] as Map;
                               bool isCancelled = book['deleted_at'] != null &&
                                   book['Status'] == '0';
                               String status = '';
@@ -1495,9 +1496,10 @@ class _NewWashScreenState extends State<NewWashScreen> {
                           ListView.builder(
                             shrinkWrap: true,
                             physics: const NeverScrollableScrollPhysics(),
-                            itemCount: walkins.length,
+                            itemCount: washing['walkin'].length,
                             itemBuilder: (context, index) {
-                              Map walk = walkins[index] as Map;
+                              List<dynamic> wash = washing['walkin'];
+                              Map walk = wash[index] as Map;
                               bool isCancelled = walk['deleted_at'] != null &&
                                   walk['Status'] == '0';
                               String status = '';
@@ -1605,7 +1607,7 @@ class NewDryScreen extends StatefulWidget {
 class _NewDryScreenState extends State<NewDryScreen> {
   String? token;int? userid;int? shopid;Map home = {};Map appbar = {};
   bool hasWalkin = false;bool hasBook = false;bool isLoading = true;
-  List<dynamic> bookings = [];List<dynamic> walkins = []; String? usertype;
+  Map drying = {}; String? usertype;
   String? access;
 
   void getUser() async {
@@ -1624,10 +1626,9 @@ class _NewDryScreenState extends State<NewDryScreen> {
     if (response.error == null) {
 
         setState(() {
-          bookings = response.data as List<dynamic>;
-          walkins = response.data1 as List<dynamic>;
-          hasBook = bookings.isNotEmpty;
-          hasWalkin = walkins.isNotEmpty;
+          drying = response.data as Map;
+          hasBook = drying['bookings'].isNotEmpty;
+          hasWalkin = drying['walkin'].isNotEmpty;
           isLoading = false;
         });
 
@@ -1825,25 +1826,6 @@ class _NewDryScreenState extends State<NewDryScreen> {
                   ),
                 ),
               ),
-              /*isPaid
-                  ? const SizedBox.shrink()
-                  : Align(
-                alignment: Alignment.bottomCenter,
-                child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                        backgroundColor: ColorStyle.tertiary,
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(5)),
-                        fixedSize: Size(
-                            MediaQuery.of(context).size.width, 20)),
-                    onPressed: () {
-                      paymentUpdate('booking', bookingId);
-                    },
-                    child: const Text(
-                      'Paid',
-                      style: TextStyle(color: Colors.white),
-                    )),
-              )*/
             ],
           ),
         );
@@ -2124,9 +2106,10 @@ class _NewDryScreenState extends State<NewDryScreen> {
                           ListView.builder(
                             shrinkWrap: true,
                             physics: const NeverScrollableScrollPhysics(),
-                            itemCount: bookings.length,
+                            itemCount: drying['bookings'].length,
                             itemBuilder: (context, index) {
-                              Map book = bookings[index] as Map;
+                              List<dynamic> dry = drying['bookings'];
+                              Map book = dry[index] as Map;
                               bool isCancelled = book['deleted_at'] != null &&
                                   book['Status'] == '0';
                               String status = '';
@@ -2255,9 +2238,10 @@ class _NewDryScreenState extends State<NewDryScreen> {
                           ListView.builder(
                             shrinkWrap: true,
                             physics: const NeverScrollableScrollPhysics(),
-                            itemCount: walkins.length,
+                            itemCount: drying['walkin'].length,
                             itemBuilder: (context, index) {
-                              Map walk = walkins[index] as Map;
+                              List<dynamic> dry = drying['walkin'];
+                              Map walk = dry[index] as Map;
                               bool isCancelled = walk['deleted_at'] != null &&
                                   walk['Status'] == '0';
                               String status = '';
@@ -2363,17 +2347,9 @@ class NewFoldScreen extends StatefulWidget {
 }
 
 class _NewFoldScreenState extends State<NewFoldScreen> {
-  String? token;
-  int? userid;
-  int? shopid;
-  Map home = {};
-  Map appbar = {};
-  bool hasWalkin = false;
-  bool hasBook = false;
-  bool isLoading = true;
-
-  List<dynamic> bookings = [];
-  List<dynamic> walkins = [];
+  String? token; int? userid; int? shopid; Map home = {}; Map appbar = {};
+  bool hasWalkin = false; bool hasBook = false; bool isLoading = true;
+  Map folding = {};
 
   void getUser() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -2393,10 +2369,9 @@ class _NewFoldScreenState extends State<NewFoldScreen> {
     if (response.error == null) {
 
         setState(() {
-          bookings = response.data as List<dynamic>;
-          walkins = response.data1 as List<dynamic>;
-          hasBook = bookings.isNotEmpty;
-          hasWalkin = walkins.isNotEmpty;
+          folding = response.data as Map;
+          hasBook = folding['bookings'].isNotEmpty;
+          hasWalkin = folding['walkin'].isNotEmpty;
           isLoading = false;
         });
 
@@ -2853,9 +2828,10 @@ class _NewFoldScreenState extends State<NewFoldScreen> {
                           ListView.builder(
                             shrinkWrap: true,
                             physics: const NeverScrollableScrollPhysics(),
-                            itemCount: bookings.length,
+                            itemCount: folding['bookings'].length,
                             itemBuilder: (context, index) {
-                              Map book = bookings[index] as Map;
+                              List<dynamic> fold = folding['bookings'] as List<dynamic>;
+                              Map book = fold[index] as Map;
                               bool isCancelled = book['deleted_at'] != null &&
                                   book['Status'] == '0';
                               String status = '';
@@ -2984,9 +2960,10 @@ class _NewFoldScreenState extends State<NewFoldScreen> {
                           ListView.builder(
                             shrinkWrap: true,
                             physics: const NeverScrollableScrollPhysics(),
-                            itemCount: walkins.length,
+                            itemCount: folding['walkin'].length,
                             itemBuilder: (context, index) {
-                              Map walk = walkins[index] as Map;
+                              List<dynamic> fold = folding['walkin'] as List<dynamic>;
+                              Map walk = fold[index] as Map;
                               bool isCancelled = walk['deleted_at'] != null &&
                                   walk['Status'] == '0';
                               String status = '';
@@ -3092,19 +3069,9 @@ class NewPickupScreen extends StatefulWidget {
 }
 
 class _NewPickupScreenState extends State<NewPickupScreen> {
-  String? token;
-  int? userid;
-  int? shopid;
-  Map home = {};
-  Map appbar = {};
-  bool hasWalkin = false;
-  bool hasBook = false;
-  bool isLoading = true;
-  String? usertype;
-  String? access;
-
-  List<dynamic> bookings = [];
-  List<dynamic> walkins = [];
+  String? token; int? userid; int? shopid; Map home = {}; Map appbar = {};
+  bool hasWalkin = false; bool hasBook = false; bool isLoading = true;
+  String? usertype; String? access; Map pickup = {};
 
   void getUser() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -3124,10 +3091,9 @@ class _NewPickupScreenState extends State<NewPickupScreen> {
     if (response.error == null) {
 
         setState(() {
-          bookings = response.data as List<dynamic>;
-          walkins = response.data1 as List<dynamic>;
-          hasBook = bookings.isNotEmpty;
-          hasWalkin = walkins.isNotEmpty;
+          pickup = response.data as Map;
+          hasBook = pickup['bookings'].isNotEmpty;
+          hasWalkin = pickup['walkin'].isNotEmpty;
           isLoading = false;
         });
 
@@ -3747,9 +3713,10 @@ class _NewPickupScreenState extends State<NewPickupScreen> {
                           ListView.builder(
                             shrinkWrap: true,
                             physics: const NeverScrollableScrollPhysics(),
-                            itemCount: bookings.length,
+                            itemCount: pickup['bookings'].length,
                             itemBuilder: (context, index) {
-                              Map book = bookings[index] as Map;
+                              List<dynamic> pick = pickup['bookings'] as List<dynamic>;
+                              Map book = pick[index] as Map;
                               bool isCancelled = book['deleted_at'] != null &&
                                   book['Status'] == '0';
                               bool isPending = book['Status'] == '4';
@@ -3880,9 +3847,10 @@ class _NewPickupScreenState extends State<NewPickupScreen> {
                           ListView.builder(
                             shrinkWrap: true,
                             physics: const NeverScrollableScrollPhysics(),
-                            itemCount: walkins.length,
+                            itemCount: pickup['walkin'].length,
                             itemBuilder: (context, index) {
-                              Map walk = walkins[index] as Map;
+                              List<dynamic> pick = pickup['walkin'] as List<dynamic>;
+                              Map walk = pick[index] as Map;
                               bool isCancelled = walk['deleted_at'] != null &&
                                   walk['Status'] == '0';
                               bool isPending = walk['Status'] == '4';
@@ -3991,14 +3959,9 @@ class NewCompleteScreen extends StatefulWidget {
 }
 
 class _NewCompleteScreenState extends State<NewCompleteScreen> {
-  String? token;
-  int? userid;
-  int? shopid;
-  Map home = {};
-  Map appbar = {};
-  bool hasWalkin = false;
-  bool hasBook = false;
-  bool isLoading = true;
+  String? token; int? userid; int? shopid; Map home = {};
+  Map appbar = {}; bool hasWalkin = false; bool hasBook = false;
+  bool isLoading = true; Map complete = {};
 
   List<dynamic> bookings = [];
   List<dynamic> walkins = [];
@@ -4018,10 +3981,9 @@ class _NewCompleteScreenState extends State<NewCompleteScreen> {
 
     if (response.error == null) {
       setState(() {
-        bookings = response.data as List<dynamic>;
-        walkins = response.data1 as List<dynamic>;
-        hasBook = bookings.isNotEmpty;
-        hasWalkin = walkins.isNotEmpty;
+        complete = response.data as Map;
+        hasBook = complete['bookings'].isNotEmpty;
+        hasWalkin = complete['walkin'].isNotEmpty;
         isLoading = false;
       });
     } else {
@@ -4478,9 +4440,10 @@ class _NewCompleteScreenState extends State<NewCompleteScreen> {
                           ListView.builder(
                             shrinkWrap: true,
                             physics: const NeverScrollableScrollPhysics(),
-                            itemCount: bookings.length,
+                            itemCount: complete['bookings'].length,
                             itemBuilder: (context, index) {
-                              Map book = bookings[index] as Map;
+                              List<dynamic> comp = complete['bookings'] as List<dynamic>;
+                              Map book = comp[index] as Map;
                               bool isCancelled = book['deleted_at'] != null &&
                                   book['Status'] == '0';
                               String status = '';
@@ -4609,9 +4572,10 @@ class _NewCompleteScreenState extends State<NewCompleteScreen> {
                           ListView.builder(
                             shrinkWrap: true,
                             physics: const NeverScrollableScrollPhysics(),
-                            itemCount: walkins.length,
+                            itemCount: complete['walkin'].length,
                             itemBuilder: (context, index) {
-                              Map walk = walkins[index] as Map;
+                              List<dynamic> comp = complete['walkin'] as List<dynamic>;
+                              Map walk = comp[index] as Map;
                               bool isCancelled = walk['deleted_at'] != null &&
                                   walk['Status'] == '0';
                               String status = '';

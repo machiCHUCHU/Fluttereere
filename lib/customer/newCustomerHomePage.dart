@@ -46,6 +46,7 @@ class _NewCustomerHomeScreenState extends State<NewCustomerHomeScreen> {
         shops = response.data as List<dynamic>;
       });
     }else{
+      if(!mounted) return;
       await errorDialog(context, '${response.error}');
     }
   }
@@ -146,7 +147,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   List<dynamic> shops = [];
-  final TextEditingController _code = TextEditingController();
+
   bool isloading = true;
   Future<void> shopreqDisplay() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -289,6 +290,7 @@ class _TrackScreenState extends State<TrackScreen> {
         hasdata = laundry.isNotEmpty;
       });
     }else{
+      if(!mounted) return;
       await errorDialog(context, '${response.error}');
     }
   }
@@ -304,8 +306,7 @@ class _TrackScreenState extends State<TrackScreen> {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     ApiResponse response = await cancelService(bookId, '${prefs.getString('token')}');
 
-
-
+    if(!mounted) return;
     if(response.error == null){
 
       await successDialog(context, '${response.data}');
@@ -320,6 +321,7 @@ class _TrackScreenState extends State<TrackScreen> {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     ApiResponse response = await completeService(bookId, '${prefs.getString('token')}');
 
+    if(!mounted) return;
     if(response.error == null){
       await successDialog(context, '${response.data}');
       laundryDisplay();
@@ -954,6 +956,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
         hasData1 = notification.isNotEmpty;
       });
     }else{
+      if(!mounted) return;
       await errorDialog(context, '${response.error}');
     }
   }
@@ -1022,7 +1025,6 @@ class _NotificationScreenState extends State<NotificationScreen> {
                       Map notif = notification[index] as Map;
                       notifId = '${notif['NotifID']}';
 
-                      print(notifId);
                       return Column(
                         children: [
                           InkWell(
@@ -1134,6 +1136,7 @@ class _AccountScreenState extends State<AccountScreen> {
         isloading = false;
       });
     }else{
+      if(!mounted) return;
       await errorDialog(context, '${response.error}');
     }
   }
@@ -1148,6 +1151,7 @@ class _AccountScreenState extends State<AccountScreen> {
         pushReplacementWithoutNavBar(context, MaterialPageRoute(builder: (context) => const NewLoginScreen()));
       }
     } else {
+      if(!mounted) return;
       await errorDialog(context, '${response.error}');
     }
   }

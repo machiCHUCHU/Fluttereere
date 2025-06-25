@@ -1,5 +1,6 @@
 
 import 'package:capstone/api_response.dart';
+import 'package:capstone/brandnew/ConstWidgets.dart';
 import 'package:capstone/brandnew/dialogs.dart';
 import 'package:capstone/services/services.dart';
 import 'package:capstone/styles/mainColorStyle.dart';
@@ -34,6 +35,7 @@ class _NewServiceSummaryScreenState extends State<NewServiceSummaryScreen> {
 
       });
     }else{
+      if(!mounted) return;
       await errorDialog(context, '${response.error}');
     }
   }
@@ -48,6 +50,7 @@ class _NewServiceSummaryScreenState extends State<NewServiceSummaryScreen> {
         isLoading = false;
       });
     }else{
+      if(!mounted) return;
       await errorDialog(context, '${response.error}');
     }
   }
@@ -77,15 +80,9 @@ class _NewServiceSummaryScreenState extends State<NewServiceSummaryScreen> {
      }
    }
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Summary'),
-        titleTextStyle: const TextStyle(color: Colors.white,fontSize: 18,fontWeight: FontWeight.bold),
-        leading: IconButton(
-          onPressed: (){
-            Navigator.pop(context);
-          },
-          icon: const Icon(CupertinoIcons.chevron_left,color: Colors.white,),
-        ),
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(kToolbarHeight),
+        child: backAppBar(context, 'Summary'),
       ),
       body: isLoading
           ? loading()

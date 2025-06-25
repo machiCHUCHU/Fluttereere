@@ -19,7 +19,7 @@ class NewCustomerScreen extends StatefulWidget {
 class _NewCustomerScreenState extends State<NewCustomerScreen> {
   String? token; bool isLoading = true; String page = '';
   String? id; String? status; bool isValued = false; bool hasData = false;
-  List<dynamic> topCustomers = []; List<dynamic> restCustomers = [];
+  Map customers = {};
 
   List<Color> topColor = [
     const Color(0xFFFFD700), const Color(0xFFC0C0C0),const Color(0xFFCD7F32),
@@ -32,8 +32,7 @@ class _NewCustomerScreenState extends State<NewCustomerScreen> {
 
     if(response.error == null){
       setState(() {
-        topCustomers = response.data as List<dynamic>;
-        restCustomers = response.data1 as List<dynamic>;
+        customers = response.data as Map;
         isLoading = false;
         hasData = true;
       });
@@ -136,10 +135,11 @@ class _NewCustomerScreenState extends State<NewCustomerScreen> {
                       padding: const EdgeInsets.all(8),
                       child: ListView.builder(
                           shrinkWrap: true,
-                          itemCount: topCustomers.length,
+                          itemCount: customers['top'].length,
                           physics: const NeverScrollableScrollPhysics(),
                           itemBuilder: (context,index){
-                            Map top = topCustomers[index] as Map;
+                            List<dynamic> cust = customers['top'] as List<dynamic>;
+                            Map top = cust[index] as Map;
                             bool isPage = page == '0' || page == '' ? true : false;
 
                             return Padding(
@@ -179,13 +179,14 @@ class _NewCustomerScreenState extends State<NewCustomerScreen> {
                             ]
                         ),
 
-                        child: restCustomers.isEmpty
+                        child: customers['rest'].isEmpty
                             ? const Text('No additional records',textAlign: TextAlign.center,)
                             : ListView.builder(
                             shrinkWrap: true,
-                            itemCount: restCustomers.length,
+                            itemCount: customers['rest'].length,
                             itemBuilder: (context,index){
-                              Map rest = restCustomers[index] as Map;
+                              List<dynamic> cust = customers['rest'] as List<dynamic>;
+                              Map rest = cust[index] as Map;
                               bool isPage = page == '1' ? true : false;
 
                               return Padding(
